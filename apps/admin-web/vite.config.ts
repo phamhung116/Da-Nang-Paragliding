@@ -1,0 +1,21 @@
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
+export default defineConfig({
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": resolve(__dirname, "src"),
+      "@paragliding/ui": resolve(__dirname, "../../packages/ui/src"),
+      "@paragliding/api-client": resolve(__dirname, "../../packages/api-client/src")
+    }
+  },
+  server: {
+    port: 5174
+  }
+});

@@ -1,0 +1,499 @@
+body {
+  color: var(--ink);
+}
+
+.pilot-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 1.4rem;
+  padding: 1.4rem;
+  background:
+    radial-gradient(circle at top left, rgba(201, 24, 66, 0.08), transparent 24%),
+    linear-gradient(180deg, #fffefe 0%, #fff8fa 100%);
+}
+
+.pilot-sidebar,
+.pilot-topbar,
+.pilot-content .ui-card,
+.pilot-post-detail__hero,
+.pilot-login-shell .ui-card {
+  box-shadow: 0 22px 48px rgba(80, 18, 33, 0.08);
+}
+
+.pilot-sidebar {
+  display: grid;
+  align-content: start;
+  gap: 1.15rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.pilot-sidebar__brandmark {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.pilot-sidebar__icon {
+  width: 50px;
+  height: 50px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #d61f4b 0%, #a60f32 100%);
+  color: white;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  box-shadow: 0 14px 32px rgba(201, 24, 66, 0.24);
+}
+
+.pilot-sidebar__brand {
+  display: grid;
+  gap: 0.18rem;
+}
+
+.pilot-sidebar__brand span {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.pilot-sidebar__brand small,
+.pilot-sidebar__copy p,
+.pilot-topbar__inner p,
+.pilot-user-meta small,
+.pilot-heading p,
+.pilot-error,
+.pilot-post-detail__content,
+.pilot-meta {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.pilot-sidebar__copy {
+  display: grid;
+  gap: 0.7rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 240, 244, 0.76) 100%);
+}
+
+.pilot-sidebar__nav {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.pilot-sidebar__link {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 0.9rem 1rem;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  color: var(--ink-soft);
+  font-weight: 700;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.pilot-sidebar__link:hover {
+  border-color: var(--line);
+  background: rgba(255, 240, 244, 0.6);
+  transform: translateX(2px);
+}
+
+.pilot-sidebar__link.active {
+  color: white;
+  background: linear-gradient(135deg, #d61f4b 0%, #a60f32 100%);
+  box-shadow: 0 16px 30px rgba(201, 24, 66, 0.18);
+}
+
+.pilot-main {
+  min-width: 0;
+}
+
+.pilot-topbar {
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.pilot-topbar__inner {
+  padding: 1rem 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pilot-topbar__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.9rem;
+}
+
+.pilot-topbar__profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.45rem 0.65rem 0.45rem 0.45rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.pilot-user-avatar {
+  width: 38px;
+  height: 38px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #d61f4b 0%, #a60f32 100%);
+  color: white;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.pilot-user-meta {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.pilot-user-meta strong {
+  font-size: 0.92rem;
+}
+
+.pilot-content {
+  padding: 0.35rem 0 2rem;
+}
+
+.pilot-stack,
+.pilot-heading,
+.pilot-flight-card,
+.pilot-status-actions,
+.pilot-timeline,
+.pilot-card-grid,
+.pilot-flight-board,
+.pilot-flight-summary,
+.pilot-flight-visual,
+.pilot-live-panel,
+.pilot-live-panel__copy {
+  display: grid;
+  gap: 1rem;
+}
+
+.pilot-heading {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.pilot-heading h1 {
+  margin: 0.1rem 0 0;
+  font-size: clamp(1.9rem, 3vw, 2.7rem);
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.pilot-quick-stats {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.pilot-stat {
+  min-width: 120px;
+  padding: 0.95rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.pilot-stat span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pilot-stat strong {
+  display: block;
+  margin-top: 0.2rem;
+  font-size: 1.45rem;
+  letter-spacing: -0.04em;
+}
+
+.pilot-flight-grid,
+.pilot-post-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.pilot-flight-board {
+  grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+  align-items: start;
+}
+
+.pilot-flight-summary {
+  align-content: start;
+}
+
+.pilot-flight-visual {
+  align-content: start;
+}
+
+.pilot-flight-title {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.pilot-post-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pilot-content .ui-card,
+.pilot-flight-card {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.pilot-card-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pilot-card-grid article {
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.pilot-card-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.pilot-card-grid strong {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 1rem;
+}
+
+.pilot-status-actions {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.pilot-status-actions .ui-button {
+  min-height: 44px;
+}
+
+.pilot-live-panel {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 243, 246, 0.82) 100%);
+}
+
+.pilot-live-panel__copy p,
+.pilot-map-note p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pilot-live-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.pilot-flight-map {
+  position: relative;
+  min-height: 320px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 240, 244, 0.78) 100%);
+}
+
+.pilot-flight-map .leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.pilot-flight-map__empty {
+  position: absolute;
+  inset: auto 1rem 1rem 1rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--muted);
+  z-index: 500;
+}
+
+.pilot-map-note {
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.pilot-map-note strong {
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.pilot-timeline {
+  padding-top: 0.2rem;
+}
+
+.pilot-timeline__item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid rgba(96, 31, 49, 0.08);
+}
+
+.pilot-timeline__item:last-child {
+  border-bottom: 0;
+}
+
+.pilot-post-card__image,
+.pilot-post-detail__hero {
+  width: 100%;
+  object-fit: cover;
+}
+
+.pilot-post-card__image {
+  aspect-ratio: 16 / 9;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+}
+
+.pilot-post-card__body {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.pilot-post-card__body h3,
+.pilot-flight-card h3,
+.pilot-flight-card h2 {
+  margin: 0;
+  line-height: 1.18;
+}
+
+.pilot-post-card__body p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.pilot-post-detail__hero {
+  aspect-ratio: 16 / 6;
+  border-radius: 28px;
+}
+
+.pilot-post-detail__content {
+  white-space: pre-line;
+}
+
+.pilot-empty {
+  padding: 1.1rem 1.2rem;
+  border: 1px dashed rgba(126, 17, 43, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+}
+
+.pilot-login-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background:
+    radial-gradient(circle at top right, rgba(201, 24, 66, 0.12), transparent 24%),
+    linear-gradient(180deg, #fffefe 0%, #fff7f9 100%);
+}
+
+.pilot-login-shell .ui-card {
+  width: min(100%, 440px);
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.pilot-login-shell h1 {
+  margin: 0;
+  font-size: 2rem;
+  line-height: 1.06;
+  letter-spacing: -0.04em;
+}
+
+.pilot-login-shell p {
+  margin: 0;
+  color: var(--muted);
+}
+
+@media (max-width: 1160px) {
+  .pilot-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .pilot-flight-board,
+  .pilot-card-grid,
+  .pilot-status-actions,
+  .pilot-post-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pilot-heading {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .pilot-shell {
+    padding: 0.8rem;
+    gap: 0.8rem;
+  }
+
+  .pilot-sidebar,
+  .pilot-topbar,
+  .pilot-login-shell .ui-card,
+  .pilot-post-detail__hero {
+    border-radius: 22px;
+  }
+
+  .pilot-topbar__inner,
+  .pilot-topbar__actions,
+  .pilot-quick-stats {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .pilot-flight-board,
+  .pilot-card-grid,
+  .pilot-status-actions,
+  .pilot-post-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pilot-content {
+    padding-bottom: 1.5rem;
+  }
+}

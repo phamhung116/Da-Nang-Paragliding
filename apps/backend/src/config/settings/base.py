@@ -1,0 +1,105 @@
+from __future__ import annotations
+
+import os
+from pathlib import Path
+
+from django_mongodb_backend.utils import parse_uri
+from dotenv import load_dotenv
+
+load_dotenv()
+
+BASE_DIR = Path(__file__).resolve().parents[3]
+
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "change-me-in-production")
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
+ALLOWED_HOSTS = [host for host in os.getenv("DJANGO_ALLOWED_HOSTS", "*").split(",") if host]
+
+INSTALLED_APPS = [
+    "django.contrib.staticfiles",
+    "corsheaders",
+    "rest_framework",
+    "modules.accounts",
+    "modules.catalog",
+    "modules.posts",
+    "modules.availability",
+    "modules.bookings",
+    "modules.payments",
+    "modules.tracking",
+    "modules.notifications",
+]
+
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
+]
+
+ROOT_URLCONF = "config.urls"
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+            ],
+        },
+    }
+]
+
+WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
+
+DATABASES = {
+    "default": parse_uri(
+        os.getenv("MONGODB_URI", "mongodb://127.0.0.1:27017"),
+        db_name=os.getenv("MONGODB_NAME", "paragliding_platform"),
+    )
+}
+
+AUTH_PASSWORD_VALIDATORS = []
+
+LANGUAGE_CODE = "vi-vn"
+TIME_ZONE = os.getenv("APP_TIME_ZONE", "Asia/Bangkok")
+USE_I18N = True
+USE_TZ = True
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+
+DEFAULT_AUTO_FIELD = "django_mongodb_backend.fields.ObjectIdAutoField"
+
+REST_FRAMEWORK = {
+    "DEFAULT_RENDERER_CLASSES": ["rest_framework.renderers.JSONRenderer"],
+    "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
+    "DEFAULT_AUTHENTICATION_CLASSES": [],
+    "DEFAULT_PERMISSION_CLASSES": [],
+    "UNAUTHENTICATED_USER": None,
+}
+
+CORS_ALLOWED_ORIGINS = [
+    origin
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173,http://localhost:5174",
+    ).split(",")
+    if origin
+]
+CORS_ALLOW_CREDENTIALS = True
+
+ONLINE_PAYMENT_DISCOUNT_PERCENT = int(os.getenv("ONLINE_PAYMENT_DISCOUNT_PERCENT", "10"))
+ONLINE_DEPOSIT_PERCENT = int(os.getenv("ONLINE_DEPOSIT_PERCENT", "30"))
+
+BUSINESS_INFO = {
+    "name": os.getenv("BUSINESS_NAME", "SkyNest Paragliding"),
+    "phone": os.getenv("BUSINESS_PHONE", "+84 909 000 123"),
+    "email": os.getenv("BUSINESS_EMAIL", "hello@skynest.vn"),
+    "address": os.getenv("BUSINESS_ADDRESS", "Đồi bay Sơn Trà, Đà Nẵng"),
+}
+
+NOTIFICATION_PROVIDER = os.getenv("NOTIFICATION_PROVIDER", "console")
+PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "mockpay")
+ACCESS_TOKEN_TTL_HOURS = int(os.getenv("ACCESS_TOKEN_TTL_HOURS", "168"))
