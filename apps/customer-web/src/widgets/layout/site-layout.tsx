@@ -1,5 +1,6 @@
 import type { PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion, AnimatePresence } from 'motion/react';
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button, Container } from "@paragliding/ui";
 import { useAuth } from "@/app/providers/auth-provider";
@@ -11,6 +12,8 @@ type SiteLayoutProps = PropsWithChildren<{
   hideHeader?: boolean;
   hideFooter?: boolean;
 }>;
+
+
 
 export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }: SiteLayoutProps) => {
   const { account, isAuthenticated, logout } = useAuth();
@@ -242,20 +245,36 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
       <main>{children}</main>
 
       {!hideFooter ? (
-        <footer className="site-footer">
-          <Container className="site-footer__grid">
-            <div className="stack-sm">
-              <strong className="site-footer__title">{businessInfo.name}</strong>
-              <p>{businessInfo.intro}</p>
-              <p>Support hours: {businessInfo.supportHours}</p>
+        <footer className="bg-stone-900 text-white py-16">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold">Da Nang Paragliding</span>
+                </div>
+                <p className="text-stone-400 text-sm leading-relaxed">
+                  Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp hùng vĩ của bán đảo Sơn Trà từ độ cao 600m.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-bold mb-6">Liên kết</h3>
+              </div>
+              <div>
+                <h3 className="font-bold mb-6">Liên hệ</h3>
+              </div>
+              <div>
+                <h3 className="font-bold mb-6">Theo dõi</h3>
+                <div className="flex gap-4">
+                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">FB</div>
+                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">IG</div>
+                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">YT</div>
+                </div>
+              </div>
             </div>
-            <div className="stack-sm">
-              <strong className="site-footer__title">Lien he</strong>
-              <p>{businessInfo.phone}</p>
-              <p>{businessInfo.email}</p>
-              <p>{businessInfo.address}</p>
+            <div className="border-t border-stone-800 mt-16 pt-8 text-center text-stone-500 text-xs">
+              © 2024 Da Nang Paragliding. All rights reserved.
             </div>
-          </Container>
+          </div>
         </footer>
       ) : null}
     </div>
