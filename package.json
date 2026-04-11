@@ -14,6 +14,7 @@
     "dev:pilot": "npm run dev --workspace @paragliding/pilot-web",
     "dev:all": "node ./scripts/dev-all.mjs",
     "dev:all:fresh": "node ./scripts/dev-all.mjs --bootstrap",
+    "arch:check": "python scripts/check_architecture.py",
     "build:customer": "npm run build --workspace @paragliding/customer-web",
     "build:admin": "npm run build --workspace @paragliding/admin-web",
     "build:pilot": "npm run build --workspace @paragliding/pilot-web"

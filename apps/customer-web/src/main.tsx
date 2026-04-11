@@ -9,7 +9,16 @@ import { AppRouter } from "@/app/router";
 import { AuthProvider } from "@/app/providers/auth-provider";
 import { I18nProvider } from "@/app/providers/i18n-provider";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 60_000,
+      gcTime: 5 * 60_000,
+      refetchOnWindowFocus: false,
+      retry: 1
+    }
+  }
+});
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>

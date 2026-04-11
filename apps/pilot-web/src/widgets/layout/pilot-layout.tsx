@@ -1,11 +1,12 @@
 import type { PropsWithChildren } from "react";
 import { Badge, Button, Container } from "@paragliding/ui";
 import { NavLink } from "react-router-dom";
-import { usePilotAuth } from "@/app/providers/auth-provider";
+import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { routes } from "@/shared/config/routes";
 
 const navItems = [
   { to: routes.home, label: "Assigned flights" },
+  { to: routes.account, label: "Account" },
   { to: routes.posts, label: "Posts" }
 ];
 

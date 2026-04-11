@@ -232,6 +232,10 @@ body {
   gap: 1rem;
 }
 
+.portal-metrics--four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .portal-metric {
   display: grid;
   gap: 0.3rem;
@@ -340,6 +344,14 @@ body {
 
 .data-table tbody tr:hover td {
   background: rgba(255, 240, 244, 0.44);
+}
+
+.data-table tbody tr.is-clickable {
+  cursor: pointer;
+}
+
+.data-table tbody tr.is-selected td {
+  background: rgba(201, 24, 66, 0.07);
 }
 
 .row-meta strong {
@@ -452,6 +464,265 @@ body {
   color: var(--muted);
 }
 
+.admin-list-card,
+.admin-form-card,
+.booking-detail-panel,
+.admin-detail-card,
+.post-editor-card {
+  width: 100%;
+}
+
+.admin-detail-card,
+.post-editor-card {
+  overflow: hidden;
+}
+
+.admin-detail-card > .ui-panel,
+.post-editor-card > .ui-panel {
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.96)),
+    radial-gradient(circle, rgba(126, 17, 43, 0.14) 1px, transparent 1px);
+  background-size: auto, 18px 18px;
+}
+
+.admin-tabs {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  padding: 0.35rem;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.62);
+}
+
+.admin-tabs button {
+  min-height: 40px;
+  padding: 0 0.9rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-tabs button.is-active,
+.admin-tabs button[data-state="active"] {
+  background: linear-gradient(180deg, #ffffff 0%, #fff3f6 100%);
+  color: var(--accent-strong);
+  box-shadow: 0 10px 22px rgba(80, 18, 33, 0.1);
+}
+
+.admin-tabs span {
+  margin-left: 0.35rem;
+  color: var(--accent);
+}
+
+.admin-filter-bar {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+  padding: 0.9rem;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.detail-list {
+  display: grid;
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 8px;
+  background: white;
+}
+
+.detail-list > div {
+  display: grid;
+  grid-template-columns: minmax(160px, 240px) minmax(0, 1fr);
+  gap: 1rem;
+  min-height: 58px;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid rgba(126, 17, 43, 0.08);
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.detail-list > div:last-child {
+  border-bottom: 0;
+}
+
+.detail-list > div:nth-child(odd) {
+  background: rgba(255, 248, 250, 0.72);
+}
+
+.detail-list span {
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.detail-list strong {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--ink);
+}
+
+.admin-form--compact {
+  gap: 1rem;
+}
+
+.inline-field-grid--three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.row-muted {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.booking-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.booking-detail-grid article,
+.booking-decision-card {
+  display: grid;
+  gap: 0.8rem;
+  padding: 1.1rem;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 34px rgba(80, 18, 33, 0.08);
+}
+
+.booking-detail-grid span,
+.booking-detail-grid small,
+.booking-decision-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.booking-detail-grid strong,
+.booking-decision-card strong {
+  color: var(--ink);
+}
+
+.booking-decision-card {
+  border-left: 4px solid var(--accent);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 248, 250, 0.92) 100%);
+}
+
+.booking-decision-card--danger {
+  border-color: rgba(166, 61, 53, 0.18);
+  border-left-color: var(--danger);
+  background: rgba(255, 246, 246, 0.92);
+}
+
+.booking-decision-card .ui-button,
+.post-editor-sidebar__actions .ui-button,
+.admin-detail-card .table-actions--inline .ui-button {
+  min-height: 46px;
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(80, 18, 33, 0.1);
+}
+
+.post-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 1.1rem;
+  align-items: start;
+}
+
+.rich-text-editor {
+  min-width: 0;
+  border: 1px solid rgba(126, 17, 43, 0.14);
+  border-radius: 8px;
+  overflow: hidden;
+  background: white;
+  box-shadow: 0 24px 52px rgba(80, 18, 33, 0.1);
+}
+
+.rich-text-editor .tox.tox-tinymce {
+  border: 0;
+  border-radius: 8px;
+}
+
+.rich-text-editor .tox .tox-editor-header {
+  border-bottom: 1px solid rgba(96, 31, 49, 0.08);
+  box-shadow: none;
+}
+
+.rich-text-editor .tox .tox-toolbar,
+.rich-text-editor .tox .tox-toolbar__overflow,
+.rich-text-editor .tox .tox-toolbar__primary {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(255, 247, 249, 0.98)),
+    radial-gradient(circle, rgba(126, 17, 43, 0.14) 1px, transparent 1px);
+  background-size: auto, 16px 16px;
+}
+
+.rich-text-editor .tox .tox-tbtn,
+.rich-text-editor .tox .tox-split-button,
+.rich-text-editor .tox .tox-listboxfield .tox-listbox--select,
+.rich-text-editor .tox .tox-textfield {
+  border-radius: 8px;
+}
+
+.rich-text-editor .tox .tox-statusbar {
+  border-top-color: rgba(126, 17, 43, 0.08);
+}
+
+.post-editor-sidebar {
+  position: sticky;
+  top: 1rem;
+  display: grid;
+  gap: 0.9rem;
+  padding: 1rem;
+  border: 1px solid rgba(126, 17, 43, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 24px 52px rgba(80, 18, 33, 0.08);
+}
+
+.post-publish-card {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem;
+  border: 1px solid rgba(201, 24, 66, 0.12);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fff7f9 0%, #ffffff 100%);
+}
+
+.post-publish-card strong {
+  font-size: 1rem;
+}
+
+.post-publish-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.post-editor-sidebar__thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(201, 24, 66, 0.08);
+}
+
+.post-editor-sidebar__actions {
+  display: grid;
+  gap: 0.65rem;
+}
+
 .admin-login-shell {
   min-height: 100vh;
   display: grid;
@@ -499,9 +770,18 @@ body {
 
   .portal-metrics,
   .admin-grid,
-  .inline-field-grid--two {
+  .inline-field-grid--two,
+  .inline-field-grid--three,
+  .booking-detail-grid,
+  .post-editor-layout,
+  .detail-list > div {
     grid-template-columns: 1fr;
   }
+
+  .post-editor-sidebar {
+    position: static;
+  }
+
 }
 
 @media (max-width: 720px) {
@@ -528,6 +808,16 @@ body {
 
   .portal-heading__note {
     max-width: none;
+  }
+
+  .admin-tabs,
+  .admin-tabs button,
+  .admin-filter-bar {
+    width: 100%;
+  }
+
+  .admin-filter-bar {
+    grid-template-columns: 1fr;
   }
 
   .portal-content {

@@ -53,7 +53,7 @@ export const HomePage = () => {
   });
 
   const upcomingForecast = forecast
-    .filter((item) => new Date(item.date) >= new Date(new Date().toDateString()))
+    .filter((item) => item.weather_available && new Date(item.date) >= new Date(new Date().toDateString()))
     .slice(0, 7);
 
   return (

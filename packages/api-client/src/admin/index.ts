@@ -2,37 +2,37 @@ import { createHttpClient } from "../http";
 import type {
   Account,
   Booking,
+  BookingCancelPayload,
   ManagedAccountPayload,
   Post,
   PostWritePayload,
   ServicePackage,
-  ServicePackageWritePayload,
-  Tracking
+  ServicePackageWritePayload
 } from "../types";
 
 export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | null) => {
   const http = createHttpClient(baseUrl, { getAccessToken });
 
   return {
-    listBookingRequests: () => http.request<Booking[]>("/booking-requests/"),
     reviewBooking: (
       code: string,
       payload: { decision: "confirm" | "reject"; reason?: string; pilot_name?: string; pilot_phone?: string }
     ) =>
-      http.request<Booking>(`/booking-requests/${code}/review/`, {
+      http.request<Booking>(`/bookings/${code}/review/`, {
         method: "POST",
         body: JSON.stringify(payload)
       }),
     listBookings: () => http.request<Booking[]>("/bookings/"),
+    getBooking: (code: string) => http.request<Booking>(`/bookings/${code}/`),
+    cancelBooking: (code: string, payload: BookingCancelPayload) =>
+      http.request<Booking>(`/bookings/${code}/cancel/`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }),
     assignPilot: (code: string, payload: { pilot_name: string; pilot_phone: string }) =>
       http.request<Booking>(`/bookings/${code}/pilot/`, {
         method: "PATCH",
         body: JSON.stringify(payload)
-      }),
-    updateFlightStatus: (code: string, status: string) =>
-      http.request<{ booking: Booking; tracking: Tracking }>(`/bookings/${code}/flight-status/`, {
-        method: "PATCH",
-        body: JSON.stringify({ status })
       }),
     listPosts: () => http.request<Post[]>("/posts/"),
     getPost: (slug: string) => http.request<Post>(`/posts/${slug}/`),
@@ -77,6 +77,7 @@ export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | 
           }, {})
         ).toString()}`
       ),
+    getAccount: (accountId: string) => http.request<Account>(`/accounts/${accountId}/`),
     createAccount: (payload: ManagedAccountPayload) =>
       http.request<Account>("/accounts/", {
         method: "POST",
@@ -90,6 +91,10 @@ export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | 
     disableAccount: (accountId: string) =>
       http.request<Account>(`/accounts/${accountId}/disable/`, {
         method: "POST"
+      }),
+    deleteAccount: (accountId: string) =>
+      http.request<{ id: string }>(`/accounts/${accountId}/`, {
+        method: "DELETE"
       })
   };
 };

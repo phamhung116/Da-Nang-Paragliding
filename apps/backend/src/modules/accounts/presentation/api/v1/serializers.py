@@ -5,6 +5,9 @@ import re
 from rest_framework import serializers
 
 from modules.accounts.application.dto import (
+    ChangePasswordRequest,
+    EmailAuthClaimRequest,
+    EmailAuthStartRequest,
     LoginRequest,
     ManagedAccountRequest,
     RegisterAccountRequest,
@@ -52,6 +55,7 @@ class AccountReadSerializer(serializers.Serializer):
     role = serializers.CharField()
     preferred_language = serializers.CharField()
     is_active = serializers.BooleanField()
+    email_verified = serializers.BooleanField()
     created_at = serializers.DateTimeField(allow_null=True)
     updated_at = serializers.DateTimeField(allow_null=True)
 
@@ -96,6 +100,28 @@ class LoginSerializer(serializers.Serializer):
             email=self.validated_data["email"],
             password=self.validated_data["password"],
         )
+
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(max_length=160)
+
+
+class ResendVerificationEmailSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class EmailAuthStartSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def to_request(self) -> EmailAuthStartRequest:
+        return EmailAuthStartRequest(email=self.validated_data["email"])
+
+
+class EmailAuthClaimSerializer(serializers.Serializer):
+    poll_token = serializers.CharField(max_length=160)
+
+    def to_request(self) -> EmailAuthClaimRequest:
+        return EmailAuthClaimRequest(poll_token=self.validated_data["poll_token"])
 
 
 class UpdateProfileSerializer(serializers.Serializer):
@@ -146,4 +172,18 @@ class ManagedAccountSerializer(serializers.Serializer):
             role=self.validated_data["role"],
             preferred_language=self.validated_data["preferred_language"],
             is_active=self.validated_data["is_active"],
+        )
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    current_password = serializers.CharField(min_length=8, max_length=128)
+    new_password = serializers.CharField(min_length=8, max_length=128)
+
+    def validate_new_password(self, value: str) -> str:
+        return _validate_password(value)
+
+    def to_request(self) -> ChangePasswordRequest:
+        return ChangePasswordRequest(
+            current_password=self.validated_data["current_password"],
+            new_password=self.validated_data["new_password"],
         )

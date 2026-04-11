@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from modules.catalog.application.dto import ServicePackagePayload
 from modules.catalog.domain.entities import ServicePackage
+from modules.catalog.domain.payloads import ServicePackagePayload
 
 
 class ServicePackageRepository(Protocol):

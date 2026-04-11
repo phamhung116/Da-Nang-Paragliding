@@ -1,104 +1,123 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Badge, Button, Card, Panel, Select } from "@paragliding/ui";
-import type { Account, Booking } from "@paragliding/api-client";
+import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import { Badge, Button, Card, Field, Panel, Select, Tabs, TabsList, TabsTrigger } from "@paragliding/ui";
+import type { Booking } from "@paragliding/api-client";
 import { adminApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
 import { AdminLayout } from "@/widgets/layout/admin-layout";
 import { DataTable } from "@/widgets/data-table/data-table";
 
-const statusOptions = ["WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
+
+const flightLabels: Record<string, string> = {
+  WAITING_CONFIRMATION: "Cho xac nhan",
+  WAITING: "Dang cho",
+  EN_ROUTE: "Dang di chuyen",
+  FLYING: "Dang bay",
+  LANDED: "Da ha canh"
+};
+
+const formatDateTime = (booking: Booking) => `${booking.flight_date} - ${booking.flight_time}`;
 
 export const BookingsPage = () => {
-  const queryClient = useQueryClient();
-  const [pilotSelections, setPilotSelections] = useState<Record<string, string>>({});
-
-  const { data = [] } = useQuery({
+  const navigate = useNavigate();
+  const [tab, setTab] = useState<"active" | "cancelled">("active");
+  const [pilotFilter, setPilotFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const { data: bookings = [] } = useQuery({
     queryKey: ["admin-bookings"],
     queryFn: () => adminApi.listBookings()
   });
-
-  const { data: activePilots = [] } = useQuery({
+  const { data: pilots = [] } = useQuery({
     queryKey: ["admin-active-pilots"],
     queryFn: () => adminApi.listAccounts({ role: "PILOT", active: "true" })
   });
 
-  const metrics = useMemo(
-    () => [
-      { label: "Confirmed", value: data.length },
-      { label: "Assigned", value: data.filter((item) => item.assigned_pilot_name).length },
-      { label: "Flying now", value: data.filter((item) => item.flight_status === "FLYING").length }
-    ],
-    [data]
+  const activeBookings = useMemo(
+    () => bookings.filter((booking) => !cancelledStatuses.has(booking.approval_status)),
+    [bookings]
   );
-
-  const statusMutation = useMutation({
-    mutationFn: ({ code, status }: { code: string; status: string }) => adminApi.updateFlightStatus(code, status),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
-    }
-  });
-
-  const assignPilotMutation = useMutation({
-    mutationFn: ({ code, pilot_name, pilot_phone }: { code: string; pilot_name: string; pilot_phone: string }) =>
-      adminApi.assignPilot(code, { pilot_name, pilot_phone }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
-    }
-  });
-
-  const getAvailablePilots = (booking: Booking): Account[] => {
-    const busyPhones = new Set(
-      data
-        .filter(
-          (item) =>
-            item.code !== booking.code &&
-            item.flight_date === booking.flight_date &&
-            item.flight_time === booking.flight_time &&
-            item.assigned_pilot_phone
-        )
-        .map((item) => item.assigned_pilot_phone)
-    );
-
-    return activePilots.filter((pilot) => !busyPhones.has(pilot.phone) || pilot.phone === booking.assigned_pilot_phone);
-  };
+  const cancelledBookings = useMemo(
+    () => bookings.filter((booking) => cancelledStatuses.has(booking.approval_status)),
+    [bookings]
+  );
+  const tabBookings = tab === "active" ? activeBookings : cancelledBookings;
+  const visibleBookings = useMemo(
+    () =>
+      tabBookings.filter((booking) => {
+        const matchesPilot =
+          !pilotFilter ||
+          (pilotFilter === "__unassigned" ? !booking.assigned_pilot_phone : booking.assigned_pilot_phone === pilotFilter);
+        const statusValue = cancelledStatuses.has(booking.approval_status) ? "CANCELLED" : booking.flight_status;
+        const matchesStatus = !statusFilter || statusValue === statusFilter;
+        return matchesPilot && matchesStatus;
+      }),
+    [pilotFilter, statusFilter, tabBookings]
+  );
 
   return (
     <AdminLayout>
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge tone="success">Flight operations</Badge>
-            <h1>Confirmed bookings</h1>
-            <p>Each booking can only hold one pilot, and one pilot can only serve one booking per slot.</p>
+            <Badge tone="success">Bookings</Badge>
+            <h1>Booking operations</h1>
+            <p>Click vao mot booking de xem chi tiet, gan pilot hoac huy booking.</p>
           </div>
           <div className="portal-heading__note">
-            Reassignment stays limited to pilots that are still free at the same date and time.
+            Booking da huy duoc tach sang tab rieng de danh sach dang van hanh gon hon.
           </div>
         </div>
 
-        <div className="portal-metrics">
-          {metrics.map((metric) => (
-            <Card key={metric.label}>
-              <Panel className="portal-metric">
-                <span>{metric.label}</span>
-                <strong>{metric.value}</strong>
-              </Panel>
-            </Card>
-          ))}
-        </div>
-
-        <Card>
+        <Card className="admin-list-card">
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Ops board</h3>
-                <p>Assign free pilots and update live flight status from a single operational table.</p>
+                <h3>Danh sach booking</h3>
+                <p>Bang chi hien booking va trang thai bay. Thao tac huy nam trong trang chi tiet.</p>
               </div>
+              <Tabs value={tab} onValueChange={(value) => setTab(value as "active" | "cancelled")}>
+                <TabsList className="admin-tabs">
+                  <TabsTrigger value="active">
+                    Danh sach bookings <span>{activeBookings.length}</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="cancelled">
+                    Bookings da huy <span>{cancelledBookings.length}</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            </div>
+
+            <div className="admin-filter-bar">
+              <Field label="Loc theo pilot">
+                <Select value={pilotFilter} onChange={(event) => setPilotFilter(event.target.value)}>
+                  <option value="">Tat ca pilot</option>
+                  <option value="__unassigned">Chua gan pilot</option>
+                  {pilots.map((pilot) => (
+                    <option key={pilot.id} value={pilot.phone}>
+                      {pilot.full_name} - {pilot.phone}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+              <Field label="Loc theo trang thai">
+                <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <option value="">Tat ca trang thai</option>
+                  <option value="WAITING_CONFIRMATION">Cho xac nhan</option>
+                  <option value="WAITING">Dang cho</option>
+                  <option value="EN_ROUTE">Dang di chuyen</option>
+                  <option value="FLYING">Dang bay</option>
+                  <option value="LANDED">Da ha canh</option>
+                  <option value="CANCELLED">Da huy</option>
+                </Select>
+              </Field>
             </div>
 
             <DataTable<Booking>
-              data={data}
+              data={visibleBookings}
+              getRowKey={(row) => row.code}
+              onRowClick={(row) => navigate(`/bookings/${row.code}`)}
               columns={[
                 {
                   key: "booking",
@@ -107,84 +126,59 @@ export const BookingsPage = () => {
                     <div className="row-meta">
                       <strong>{row.code}</strong>
                       <span>{row.customer_name}</span>
-                      <small>{row.service_name}</small>
+                      <small>{row.email}</small>
                     </div>
                   )
                 },
                 {
-                  key: "schedule",
-                  title: "Schedule",
+                  key: "service",
+                  title: "Dich vu",
                   render: (row) => (
                     <div className="row-meta">
-                      <strong>
-                        {row.flight_date} - {row.flight_time}
-                      </strong>
-                      <small>{formatCurrency(row.final_total)}</small>
+                      <strong>{row.service_name}</strong>
+                      <span>{formatDateTime(row)}</span>
+                      <small>{row.adults + row.children} khach</small>
                     </div>
                   )
+                },
+                {
+                  key: "flight",
+                  title: "Trang thai",
+                  render: (row) => <Badge>{flightLabels[row.flight_status] ?? row.flight_status}</Badge>
                 },
                 {
                   key: "pilot",
                   title: "Pilot",
-                  render: (row) => {
-                    const availablePilots = getAvailablePilots(row);
-                    const selectedPhone = pilotSelections[row.code] ?? row.assigned_pilot_phone ?? "";
-                    const selectedPilot = availablePilots.find((pilot) => pilot.phone === selectedPhone);
-                    return (
-                      <div className="inline-field-grid">
-                        <Select
-                          value={selectedPhone}
-                          onChange={(event) =>
-                            setPilotSelections((current) => ({
-                              ...current,
-                              [row.code]: event.target.value
-                            }))
-                          }
-                        >
-                          <option value="">Select pilot</option>
-                          {availablePilots.map((pilot) => (
-                            <option key={pilot.id} value={pilot.phone}>
-                              {pilot.full_name}
-                            </option>
-                          ))}
-                        </Select>
-                        <div className="table-actions--inline">
-                          <Button
-                            variant="secondary"
-                            disabled={!selectedPilot}
-                            onClick={() =>
-                              assignPilotMutation.mutate({
-                                code: row.code,
-                                pilot_name: selectedPilot?.full_name ?? "",
-                                pilot_phone: selectedPilot?.phone ?? ""
-                              })
-                            }
-                          >
-                            Save pilot
-                          </Button>
-                          {row.assigned_pilot_name ? <Badge>{row.assigned_pilot_name}</Badge> : null}
-                        </div>
-                      </div>
-                    );
-                  }
+                  render: (row) => (
+                    <div className="row-meta">
+                      <strong>{row.assigned_pilot_name ?? "Chua gan"}</strong>
+                      <span>{row.assigned_pilot_phone ?? "Gan trong chi tiet"}</span>
+                    </div>
+                  )
                 },
                 {
-                  key: "status",
-                  title: "Flight status",
+                  key: "payment",
+                  title: "Thanh toan",
                   render: (row) => (
-                    <div className="status-stack">
-                      <Badge>{row.flight_status}</Badge>
-                      <Select
-                        defaultValue={row.flight_status}
-                        onChange={(event) => statusMutation.mutate({ code: row.code, status: event.target.value })}
-                      >
-                        {statusOptions.map((status) => (
-                          <option key={status} value={status}>
-                            {status}
-                          </option>
-                        ))}
-                      </Select>
+                    <div className="row-meta">
+                      <strong>{formatCurrency(row.final_total)}</strong>
+                      <span>{row.payment_status}</span>
                     </div>
+                  )
+                },
+                {
+                  key: "open",
+                  title: "",
+                  render: (row) => (
+                    <Button
+                      variant="secondary"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        navigate(`/bookings/${row.code}`);
+                      }}
+                    >
+                      Xem chi tiet
+                    </Button>
                   )
                 }
               ]}

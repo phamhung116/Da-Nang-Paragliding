@@ -9,9 +9,18 @@ type Column<T> = {
 type DataTableProps<T> = {
   columns: Array<Column<T>>;
   data: T[];
+  getRowKey?: (row: T, index: number) => string;
+  onRowClick?: (row: T) => void;
+  selectedRowKey?: string | null;
 };
 
-export const DataTable = <T,>({ columns, data }: DataTableProps<T>) => (
+export const DataTable = <T,>({
+  columns,
+  data,
+  getRowKey,
+  onRowClick,
+  selectedRowKey
+}: DataTableProps<T>) => (
   <div className="data-table">
     <table>
       <thead>
@@ -22,13 +31,20 @@ export const DataTable = <T,>({ columns, data }: DataTableProps<T>) => (
         </tr>
       </thead>
       <tbody>
-        {data.map((row, index) => (
-          <tr key={index}>
-            {columns.map((column) => (
-              <td key={column.key}>{column.render(row)}</td>
-            ))}
-          </tr>
-        ))}
+        {data.map((row, index) => {
+          const rowKey = getRowKey?.(row, index) ?? String(index);
+          return (
+            <tr
+              key={rowKey}
+              className={`${onRowClick ? "is-clickable" : ""} ${selectedRowKey === rowKey ? "is-selected" : ""}`}
+              onClick={() => onRowClick?.(row)}
+            >
+              {columns.map((column) => (
+                <td key={column.key}>{column.render(row)}</td>
+              ))}
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   </div>

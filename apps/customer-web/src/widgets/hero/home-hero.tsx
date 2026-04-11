@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Button, Container } from "@paragliding/ui";
-import { useI18n } from "@/app/providers/i18n-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
 

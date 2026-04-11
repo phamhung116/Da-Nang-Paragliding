@@ -29,7 +29,7 @@ export const PostDetailPage = () => {
             <Badge>{new Date(data.published_at ?? data.created_at ?? "").toLocaleDateString("vi-VN")}</Badge>
             <h1>{data.title}</h1>
             <p className="pilot-meta">{data.excerpt}</p>
-            <div className="pilot-post-detail__content">{data.content}</div>
+            <div className="pilot-post-detail__content" dangerouslySetInnerHTML={{ __html: data.content }} />
           </Panel>
         </Card>
       </div>

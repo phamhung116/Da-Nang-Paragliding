@@ -1,7 +1,9 @@
 import { useMutation } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
+import { useAuth } from "@/shared/providers/auth-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { trackingSupportNotes } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
@@ -11,12 +13,13 @@ import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
 type LookupForm = { query: string };
 
-const statusOrder = ["WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
 
 export const TrackingPage = () => {
+  const { account, isAuthenticated } = useAuth();
   const { register, handleSubmit } = useForm<LookupForm>({
     defaultValues: {
-      query: trackingLookupStorage.get()
+      query: account?.email ?? trackingLookupStorage.get()
     }
   });
 
@@ -27,6 +30,12 @@ export const TrackingPage = () => {
 
   const result = mutation.data;
   const currentStep = result ? statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]) : -1;
+
+  useEffect(() => {
+    if (isAuthenticated && account?.email && mutation.status === "idle") {
+      mutation.mutate({ query: account.email });
+    }
+  }, [account?.email, isAuthenticated, mutation]);
 
   return (
     <SiteLayout>
@@ -40,8 +49,8 @@ export const TrackingPage = () => {
         </div>
         <Container className="page-banner__content">
           <Badge>Theo doi hanh trinh</Badge>
-          <h1>Nhap email hoac so dien thoai de xem lai booking va vi tri GPS.</h1>
-          <p>Khach co the quay lai trang nay bat ky luc nao de theo doi timeline chuyen bay da dat.</p>
+          <h1>Theo doi booking va vi tri GPS.</h1>
+          <p>Khach da dang nhap se thay hanh trinh gan nhat ngay lap tuc.</p>
         </Container>
       </section>
 
@@ -58,16 +67,18 @@ export const TrackingPage = () => {
             ))}
           </div>
 
-          <Card className="tracking-search-card">
-            <Panel>
-              <form className="tracking-lookup" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
-                <Field label="Email hoac so dien thoai">
-                  <Input {...register("query", { required: true })} />
-                </Field>
-                <Button>{mutation.isPending ? "Dang tra cuu..." : "Tra cuu booking"}</Button>
-              </form>
-            </Panel>
-          </Card>
+          {!isAuthenticated ? (
+            <Card className="tracking-search-card">
+              <Panel>
+                <form className="tracking-lookup" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+                  <Field label="Email hoac so dien thoai">
+                    <Input {...register("query", { required: true })} />
+                  </Field>
+                  <Button>{mutation.isPending ? "Dang tra cuu..." : "Tra cuu booking"}</Button>
+                </form>
+              </Panel>
+            </Card>
+          ) : null}
 
           {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 

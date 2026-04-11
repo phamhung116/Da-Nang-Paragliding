@@ -9,6 +9,7 @@ from modules.bookings.domain.value_objects import (
     FLIGHT_STATUS_FLYING,
     FLIGHT_STATUS_LANDED,
     FLIGHT_STATUS_WAITING,
+    FLIGHT_STATUS_WAITING_CONFIRMATION,
 )
 from modules.catalog.domain.repositories import ServicePackageRepository
 from modules.tracking.domain.repositories import TrackingRepository
@@ -77,6 +78,12 @@ class UpdateFlightStatusUseCase:
         return {"booking": updated_booking, "tracking": tracking}
 
     def _build_location(self, status: str, service_package):
+        if status == FLIGHT_STATUS_WAITING_CONFIRMATION:
+            return {
+                "name": "Cho admin xac nhan booking",
+                "lat": service_package.launch_lat,
+                "lng": service_package.launch_lng,
+            }
         if status == FLIGHT_STATUS_WAITING:
             return {
                 "name": service_package.launch_site_name,
@@ -105,6 +112,7 @@ class UpdateFlightStatusUseCase:
 
     def _status_label(self, status: str) -> str:
         labels = {
+            FLIGHT_STATUS_WAITING_CONFIRMATION: "Cho xac nhan",
             FLIGHT_STATUS_WAITING: "Dang cho",
             FLIGHT_STATUS_EN_ROUTE: "Dang di chuyen",
             FLIGHT_STATUS_FLYING: "Dang bay",

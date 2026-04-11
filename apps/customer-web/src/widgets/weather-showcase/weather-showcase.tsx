@@ -6,11 +6,11 @@ type WeatherShowcaseProps = {
 };
 
 const getWeatherTone = (condition: string): "default" | "success" | "danger" => {
-  if (condition === "Good") {
+  if (condition === "Thoi tiet tot") {
     return "success";
   }
 
-  if (condition === "No Fly") {
+  if (condition === "Thoi tiet xau") {
     return "danger";
   }
 
@@ -18,7 +18,7 @@ const getWeatherTone = (condition: string): "default" | "success" | "danger" => 
 };
 
 export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
-  const forecast = days.slice(0, 7);
+  const forecast = days.filter((day) => day.weather_available).slice(0, 7);
   const today = forecast[0];
 
   if (!today) {
@@ -32,7 +32,7 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
           <div className="weather-showcase__head">
             <div>
               <Badge>Hom nay</Badge>
-              <h3>Du bao tai diem bay Son Tra</h3>
+              <h3>Du bao tai Da Nang, Viet Nam</h3>
               <p className="weather-showcase__summary">Thong tin tong quan de khach quyet dinh ngay dat lich.</p>
             </div>
             <Badge tone={getWeatherTone(today.flight_condition)}>{today.flight_condition}</Badge>
@@ -40,7 +40,7 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
 
           <div className="weather-showcase__hero">
             <div>
-              <strong>{today.temperature_c}°C</strong>
+              <strong>{today.temperature_c} deg C</strong>
               <span>
                 {new Date(today.date).toLocaleDateString("vi-VN", {
                   weekday: "long",
@@ -50,7 +50,7 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
               </span>
             </div>
             <div className="weather-showcase__hero-pill">
-              <small>Dieu kien bay</small>
+              <small>Danh gia thoi tiet</small>
               <b>{today.flight_condition}</b>
             </div>
           </div>
@@ -58,7 +58,7 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
           <div className="weather-showcase__stats">
             <article>
               <span>Nhiet do</span>
-              <strong>{today.temperature_c}°C</strong>
+              <strong>{today.temperature_c} deg C</strong>
             </article>
             <article>
               <span>Suc gio</span>
@@ -69,8 +69,8 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
               <strong>{today.uv_index}</strong>
             </article>
             <article>
-              <span>Dieu kien</span>
-              <strong>{today.flight_condition}</strong>
+              <span>Tam nhin</span>
+              <strong>{today.visibility_km} km</strong>
             </article>
           </div>
         </Panel>
@@ -96,10 +96,11 @@ export const WeatherShowcase = ({ days }: WeatherShowcaseProps) => {
                       month: "2-digit"
                     })}
                   </strong>
-                  <small>{item.temperature_c}°C</small>
+                  <small>{item.temperature_c} deg C</small>
                 </div>
                 <span>{item.wind_kph} km/h</span>
                 <span>UV {item.uv_index}</span>
+                <span>{item.visibility_km} km</span>
                 <Badge tone={getWeatherTone(item.flight_condition)}>{item.flight_condition}</Badge>
               </article>
             ))}

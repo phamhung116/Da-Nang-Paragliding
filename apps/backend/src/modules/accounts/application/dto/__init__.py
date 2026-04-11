@@ -2,15 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
-@dataclass(slots=True)
-class AccountPayload:
-    full_name: str
-    email: str
-    phone: str
-    role: str
-    preferred_language: str
-    is_active: bool
+from modules.accounts.domain.payloads import AccountPayload
 
 
 @dataclass(slots=True)
@@ -45,3 +37,18 @@ class ManagedAccountRequest:
     preferred_language: str
     is_active: bool
 
+
+@dataclass(slots=True)
+class EmailAuthStartRequest:
+    email: str
+
+
+@dataclass(slots=True)
+class EmailAuthClaimRequest:
+    poll_token: str
+
+
+@dataclass(slots=True)
+class ChangePasswordRequest:
+    current_password: str
+    new_password: str

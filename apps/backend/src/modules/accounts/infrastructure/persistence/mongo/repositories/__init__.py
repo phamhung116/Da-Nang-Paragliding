@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timedelta
 from uuid import uuid4
 
 from django.contrib.auth.hashers import check_password
@@ -24,6 +24,7 @@ def _to_account(document: AccountDocument) -> Account:
         role=document.role,
         preferred_language=document.preferred_language,
         is_active=document.is_active,
+        email_verified=getattr(document, "email_verified", True),
         created_at=document.created_at,
         updated_at=document.updated_at,
     )
@@ -50,6 +51,7 @@ class MongoAccountRepository:
             role=payload.role,
             preferred_language=payload.preferred_language,
             is_active=payload.is_active,
+            email_verified=payload.email_verified,
         )
         return _to_account(document)
 
@@ -84,10 +86,18 @@ class MongoAccountRepository:
         document.role = account.role
         document.preferred_language = account.preferred_language
         document.is_active = account.is_active
+        document.email_verified = account.email_verified
         if password_hash:
             document.password_hash = password_hash
         document.save()
         return _to_account(document)
+
+    def delete(self, account_id: str) -> None:
+        document = AccountDocument.objects.filter(id=account_id).first()
+        if document is None:
+            raise NotFoundError("Khong tim thay tai khoan.")
+        AccountSessionDocument.objects.filter(account_id=account_id).delete()
+        document.delete()
 
     def verify_password(self, account_id: str, raw_password: str) -> bool:
         document = AccountDocument.objects.filter(id=account_id).first()
@@ -118,3 +128,62 @@ class MongoAccountRepository:
             return None
         return self.get_by_id(session.account_id)
 
+    def set_email_verification_token(
+        self,
+        *,
+        account_id: str,
+        token: str,
+        sent_at: datetime,
+        poll_token: str | None = None,
+        poll_expires_at: datetime | None = None,
+    ) -> None:
+        document = AccountDocument.objects.filter(id=account_id).first()
+        if document is None:
+            raise NotFoundError("Khong tim thay tai khoan.")
+
+        document.email_verified = False
+        document.email_verified_at = None
+        document.email_verification_token = token
+        document.email_verification_sent_at = sent_at
+        document.email_login_poll_token = poll_token
+        document.email_login_poll_expires_at = poll_expires_at
+        document.email_login_poll_verified_at = None
+        document.save()
+
+    def verify_email_by_token(self, token: str, *, expires_after: timedelta) -> Account | None:
+        document = AccountDocument.objects.filter(
+            email_verification_token=token,
+            email_verified=False,
+            is_active=True,
+        ).first()
+        if document is None or document.email_verification_sent_at is None:
+            return None
+
+        if document.email_verification_sent_at < timezone.now() - expires_after:
+            return None
+
+        document.email_verified = True
+        document.email_verified_at = timezone.now()
+        document.email_login_poll_verified_at = timezone.now() if document.email_login_poll_token else None
+        document.email_verification_token = None
+        document.email_verification_sent_at = None
+        document.save()
+        return _to_account(document)
+
+    def get_verified_email_poll_account(self, poll_token: str) -> Account | None:
+        document = AccountDocument.objects.filter(
+            email_login_poll_token=poll_token,
+            email_login_poll_verified_at__isnull=False,
+            email_login_poll_expires_at__gt=timezone.now(),
+            is_active=True,
+        ).first()
+        return _to_account(document) if document else None
+
+    def clear_email_poll_token(self, poll_token: str) -> None:
+        document = AccountDocument.objects.filter(email_login_poll_token=poll_token).first()
+        if document is None:
+            return
+        document.email_login_poll_token = None
+        document.email_login_poll_expires_at = None
+        document.email_login_poll_verified_at = None
+        document.save(update_fields=["email_login_poll_token", "email_login_poll_expires_at", "email_login_poll_verified_at", "updated_at"])

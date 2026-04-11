@@ -220,6 +220,7 @@ export const BookingCalendar = ({
     : null;
   const fallbackDay = activeWeek.find((day) => day.day)?.day ?? sortedDays[0] ?? null;
   const weatherSource: AvailabilitySlot | AvailabilityDay | null = previewSlot ?? selectedWeatherSlot ?? fallbackDay;
+  const hasRealWeather = Boolean(weatherSource?.weather_available);
   const previewDate = hoveredCell?.date ?? selectedSlot?.date ?? fallbackDay?.date ?? null;
   const previewTime = previewSlot ? hoveredCell?.time ?? null : selectedWeatherSlot ? selectedSlot?.time ?? null : null;
   const weekRangeLabel = formatWeekRange(activeWeek);
@@ -448,7 +449,7 @@ export const BookingCalendar = ({
               </div>
             </div>
 
-            {weatherSource ? (
+            {weatherSource && hasRealWeather ? (
               <div className="calendar-weather-inline__body">
                 <div className="calendar-weather-hero">
                   <strong>{weatherSource.temperature_c} deg C</strong>
@@ -469,13 +470,17 @@ export const BookingCalendar = ({
                     <strong>{weatherSource.uv_index}</strong>
                   </article>
                   <article>
-                    <span>Dieu kien</span>
+                    <span>Tam nhin</span>
+                    <strong>{weatherSource.visibility_km} km</strong>
+                  </article>
+                  <article>
+                    <span>Danh gia thoi tiet</span>
                     <strong>{weatherSource.flight_condition}</strong>
                   </article>
                 </div>
               </div>
             ) : (
-              <p className="calendar-selection-note">Chua co du lieu weather cho lich bay nay.</p>
+              <p className="calendar-selection-note">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
             )}
           </section>
         </Panel>

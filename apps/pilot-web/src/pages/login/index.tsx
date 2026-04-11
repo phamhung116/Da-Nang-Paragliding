@@ -1,26 +1,51 @@
-import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
-import { Badge, Button, Card, Field, Input, Panel } from "@paragliding/ui";
-import type { LoginPayload } from "@paragliding/api-client";
-import { usePilotAuth } from "@/app/providers/auth-provider";
+import type { AuthResult } from "@paragliding/api-client";
+import { usePilotAuth } from "@/shared/providers/auth-provider";
+import { ADMIN_APP_URL } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
+import { pilotAuthStorage } from "@/shared/lib/storage";
+
+const HANDOFF_PREFIX = "#session=";
+
+const readHandoffSession = (): AuthResult | null => {
+  if (!window.location.hash.startsWith(HANDOFF_PREFIX)) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(decodeURIComponent(window.location.hash.slice(HANDOFF_PREFIX.length))) as AuthResult;
+  } catch {
+    return null;
+  }
+};
 
 export const LoginPage = () => {
+  const { completeHandoff, isAuthenticated, loading } = usePilotAuth();
   const navigate = useNavigate();
-  const { login, isAuthenticated } = usePilotAuth();
-  const form = useForm<LoginPayload>({
-    defaultValues: {
-      email: "",
-      password: ""
-    },
-    mode: "onChange"
-  });
+  const [configError, setConfigError] = useState("");
 
-  const mutation = useMutation({
-    mutationFn: (payload: LoginPayload) => login(payload),
-    onSuccess: () => navigate(routes.home, { replace: true })
-  });
+  useEffect(() => {
+    const handoff = readHandoffSession();
+    if (handoff?.account.role === "PILOT") {
+      completeHandoff(handoff);
+      navigate(routes.home, { replace: true });
+      return;
+    }
+
+    if (pilotAuthStorage.getToken()) {
+      navigate(routes.home, { replace: true });
+      return;
+    }
+
+    if (!loading && !isAuthenticated) {
+      if (!ADMIN_APP_URL) {
+        setConfigError("Thieu bien VITE_ADMIN_APP_URL tren Vercel pilot-web.");
+        return;
+      }
+      window.location.replace(`${ADMIN_APP_URL.replace(/\/$/, "")}/login`);
+    }
+  }, [completeHandoff, isAuthenticated, loading, navigate]);
 
   if (isAuthenticated) {
     return <Navigate to={routes.home} replace />;
@@ -28,24 +53,7 @@ export const LoginPage = () => {
 
   return (
     <div className="pilot-login-shell">
-      <Card>
-        <Panel className="pilot-stack">
-          <Badge tone="success">PILOT</Badge>
-          <h1>Pilot sign in</h1>
-          <p>Access assigned flights, update progress and read operational posts from this workspace.</p>
-
-          <form className="pilot-stack" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-            <Field label="Email">
-              <Input type="email" {...form.register("email", { required: true })} />
-            </Field>
-            <Field label="Password">
-              <Input type="password" {...form.register("password", { required: true })} />
-            </Field>
-            {mutation.error instanceof Error ? <p className="pilot-error">{mutation.error.message}</p> : null}
-            <Button>{mutation.isPending ? "Signing in..." : "Sign in"}</Button>
-          </form>
-        </Panel>
-      </Card>
+      <p>{configError || "Dang chuyen den trang dang nhap van hanh..."}</p>
     </div>
   );
 };

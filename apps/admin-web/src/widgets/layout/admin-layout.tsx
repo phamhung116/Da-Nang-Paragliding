@@ -1,15 +1,13 @@
 import type { PropsWithChildren } from "react";
 import { NavLink } from "react-router-dom";
 import { Badge, Button, Container } from "@paragliding/ui";
-import { useAdminAuth } from "@/app/providers/auth-provider";
+import { useAdminAuth } from "@/shared/providers/auth-provider";
 import { routes } from "@/shared/config/routes";
 
 const navItems = [
-  { to: routes.bookingRequests, label: "Requests" },
-  { to: routes.bookings, label: "Flights" },
+  { to: routes.bookings, label: "Bookings" },
   { to: routes.accounts, label: "Accounts" },
-  { to: routes.posts, label: "Posts" },
-  { to: routes.services, label: "Services" }
+  { to: routes.posts, label: "Posts" }
 ];
 
 export const AdminLayout = ({ children }: PropsWithChildren) => {
@@ -34,7 +32,7 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
 
         <div className="portal-sidebar__meta">
           <Badge>ADMIN</Badge>
-          <p>Booking review, pilot coordination, service control and content publishing.</p>
+          <p>Review bookings, assign available pilots and manage publishing from one workspace.</p>
         </div>
 
         <nav className="portal-sidebar__nav">
@@ -51,7 +49,7 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
           <Container className="portal-topbar__inner">
             <div>
               <strong>SkyNest Control Room</strong>
-              <p>One place to manage bookings, operations, services and publishing.</p>
+              <p>Bookings are approval records. Flight progress is updated from the pilot workspace.</p>
             </div>
             <div className="admin-topbar-actions">
               <div className="portal-topbar__profile">

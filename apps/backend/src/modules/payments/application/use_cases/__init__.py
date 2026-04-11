@@ -1,16 +1,17 @@
 from __future__ import annotations
 
-from django.utils import timezone
+from datetime import UTC, datetime
 
 from modules.bookings.domain.repositories import BookingRepository
 from modules.bookings.domain.value_objects import (
     BOOKING_APPROVAL_CONFIRMED,
+    FLIGHT_STATUS_WAITING,
     PAYMENT_METHOD_CASH,
     PAYMENT_STATUS_EXPIRED,
     PAYMENT_STATUS_PAID,
 )
+from modules.payments.application.interfaces import PaymentGateway
 from modules.payments.domain.repositories import PaymentTransactionRepository
-from modules.payments.infrastructure.gateways import MockPaymentGateway
 from shared.exceptions import NotFoundError, ValidationError
 
 
@@ -20,7 +21,7 @@ class CompleteOnlinePaymentUseCase:
         *,
         booking_repository: BookingRepository,
         payment_transaction_repository: PaymentTransactionRepository,
-        payment_gateway: MockPaymentGateway,
+        payment_gateway: PaymentGateway,
     ) -> None:
         self.booking_repository = booking_repository
         self.payment_transaction_repository = payment_transaction_repository
@@ -40,7 +41,7 @@ class CompleteOnlinePaymentUseCase:
         if transaction is None:
             raise NotFoundError("Khong tim thay giao dich thanh toan.")
 
-        if timezone.now() > transaction.expires_at:
+        if datetime.now(UTC) > transaction.expires_at:
             transaction = self.payment_transaction_repository.mark_expired(booking_code)
             booking.payment_status = PAYMENT_STATUS_EXPIRED
             booking = self.booking_repository.update(booking)
@@ -50,5 +51,6 @@ class CompleteOnlinePaymentUseCase:
         transaction = self.payment_transaction_repository.mark_paid(booking_code)
         booking.payment_status = PAYMENT_STATUS_PAID
         booking.approval_status = BOOKING_APPROVAL_CONFIRMED
+        booking.flight_status = FLIGHT_STATUS_WAITING
         booking = self.booking_repository.update(booking)
         return {"booking": booking, "transaction": transaction}
