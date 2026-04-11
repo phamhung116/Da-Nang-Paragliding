@@ -312,8 +312,8 @@ class Command(BaseCommand):
     def _account_payloads(self) -> list[dict[str, str]]:
         return [
             {
-                "full_name": "SkyNest Admin",
-                "email": "admin@skynest.vn",
+                "full_name": "Da Nang Paragliding Admin",
+                "email": "admin@danangparagliding.vn",
                 "phone": "+84909000001",
                 "password": "Admin12345!",
                 "role": "ADMIN",
@@ -321,7 +321,7 @@ class Command(BaseCommand):
             },
             {
                 "full_name": "Nguyen Minh Anh",
-                "email": "customer@skynest.vn",
+                "email": "customer@danangparagliding.vn",
                 "phone": "+84909000111",
                 "password": "Customer123!",
                 "role": "CUSTOMER",
@@ -329,7 +329,7 @@ class Command(BaseCommand):
             },
             {
                 "full_name": "Pilot Son Tra 01",
-                "email": "pilot01@skynest.vn",
+                "email": "pilot01@danangparagliding.vn",
                 "phone": "+84908000111",
                 "password": "Pilot12345!",
                 "role": "PILOT",
@@ -337,7 +337,7 @@ class Command(BaseCommand):
             },
             {
                 "full_name": "Pilot Son Tra 02",
-                "email": "pilot02@skynest.vn",
+                "email": "pilot02@danangparagliding.vn",
                 "phone": "+84908000222",
                 "password": "Pilot12345!",
                 "role": "PILOT",

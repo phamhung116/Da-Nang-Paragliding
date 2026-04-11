@@ -90,6 +90,55 @@ WEATHERAPI_BAD_CODES = {
     1282,
 }
 
+WEATHERAPI_BLOCKING_CODES = {
+    1087,
+    1114,
+    1117,
+    1135,
+    1147,
+    1171,
+    1186,
+    1189,
+    1192,
+    1195,
+    1198,
+    1201,
+    1204,
+    1207,
+    1210,
+    1213,
+    1216,
+    1219,
+    1222,
+    1225,
+    1237,
+    1243,
+    1246,
+    1249,
+    1252,
+    1255,
+    1258,
+    1261,
+    1264,
+    1273,
+    1276,
+    1279,
+    1282,
+}
+
+OPEN_METEO_BLOCKING_CODES = {
+    45,
+    48,
+    63,
+    65,
+    80,
+    81,
+    82,
+    95,
+    96,
+    99,
+}
+
 
 def flight_condition_for(
     *,
@@ -102,18 +151,22 @@ def flight_condition_for(
     precip_mm: float = 0,
     chance_of_rain: int = 0,
 ) -> str:
-    bad_weather_code = weather_code in WEATHERAPI_BAD_CODES if weather_code is not None else False
-    bad_temperature = temperature_c is not None and (temperature_c < 16 or temperature_c > 35)
-    bad_gust = wind_gust_kph is not None and wind_gust_kph > 28
+    blocking_weather_code = (
+        weather_code in WEATHERAPI_BLOCKING_CODES or weather_code in OPEN_METEO_BLOCKING_CODES
+        if weather_code is not None
+        else False
+    )
+    bad_temperature = temperature_c is not None and (temperature_c < 15 or temperature_c > 38)
+    bad_gust = wind_gust_kph is not None and wind_gust_kph > 36
     if (
-        bad_weather_code
+        blocking_weather_code
         or bad_temperature
         or bad_gust
-        or precip_mm > 0.2
-        or chance_of_rain >= 40
-        or wind_kph > 20
-        or uv_index > 9
-        or visibility_km < 8
+        or precip_mm > 2
+        or chance_of_rain >= 70
+        or wind_kph > 28
+        or uv_index > 11
+        or visibility_km < 6
     ):
         return BAD_FLIGHT_CONDITION
     return IDEAL_FLIGHT_CONDITION
@@ -197,7 +250,7 @@ def _fetch_open_meteo_forecast(
     try:
         request = Request(
             f"https://api.open-meteo.com/v1/forecast?{query}",
-            headers={"User-Agent": "SkyNest/1.0 forecast integration"},
+            headers={"User-Agent": "DaNangParagliding/1.0 forecast integration"},
         )
         with urlopen(request, timeout=5) as response:
             payload = json.loads(response.read().decode("utf-8"))
@@ -442,7 +495,7 @@ def geocode_address(address: str) -> dict[str, float]:
     try:
         request = Request(
             f"https://nominatim.openstreetmap.org/search?{query}",
-            headers={"User-Agent": "SkyNest/1.0 booking pickup geocoder"},
+            headers={"User-Agent": "DaNangParagliding/1.0 booking pickup geocoder"},
         )
         with urlopen(request, timeout=4) as response:
             payload = json.loads(response.read().decode("utf-8"))

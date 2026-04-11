@@ -23,13 +23,13 @@ class ConsoleNotificationGateway:
         )
         if booking.email:
             send_mail(
-                subject=f"Cap nhat booking SkyNest {booking.code}",
+                subject=f"Cap nhat booking Da Nang Paragliding {booking.code}",
                 message=(
                     f"Xin chao {booking.customer_name},\n\n"
                     f"{message}\n\n"
                     f"Ma booking: {booking.code}\n"
                     f"Lich bay: {booking.flight_date} luc {booking.flight_time}\n\n"
-                    "SkyNest Da Nang Paragliding"
+                    "Da Nang Paragliding"
                 ),
                 from_email=settings.DEFAULT_FROM_EMAIL,
                 recipient_list=[booking.email],

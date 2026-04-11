@@ -59,7 +59,7 @@ export const GalleryPage = () => {
     <SiteLayout>
       <section className="page-banner page-banner--gallery">
         <div className="page-banner__image">
-          <img src={images[0]?.src ?? staticGalleryImages[0].src} alt="SkyNest gallery" />
+          <img src={images[0]?.src ?? staticGalleryImages[0].src} alt="Da Nang Paragliding gallery" />
           <div className="page-banner__overlay" />
         </div>
         <Container className="page-banner__content">

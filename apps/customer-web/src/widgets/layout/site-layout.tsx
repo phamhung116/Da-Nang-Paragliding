@@ -104,7 +104,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
   const avatarLabel = useMemo(() => {
     const fullName = account?.full_name?.trim();
     if (!fullName) {
-      return "SN";
+      return "DP";
     }
 
     return fullName
@@ -215,7 +215,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
           <aside className={`mobile-menu ${mobileMenuOpen ? "is-open" : ""}`}>
             <div className="mobile-menu__header">
               <div className="site-brand">
-                <span className="site-brand__icon">SN</span>
+                <span className="site-brand__icon">DP</span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
                   <small>Đà Nẵng Paragliding</small>

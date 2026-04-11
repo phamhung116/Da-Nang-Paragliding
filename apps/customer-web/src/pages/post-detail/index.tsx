@@ -95,7 +95,7 @@ export const PostDetailPage = () => {
                   </div>
                   <div className="post-gallery-strip">
                     {galleryImages.map((image) => (
-                      <img key={image} src={image} alt="SkyNest gallery" referrerPolicy="no-referrer" />
+                      <img key={image} src={image} alt="Da Nang Paragliding gallery" referrerPolicy="no-referrer" />
                     ))}
                   </div>
                 </Panel>

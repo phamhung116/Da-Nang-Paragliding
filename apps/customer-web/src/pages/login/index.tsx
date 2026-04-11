@@ -75,7 +75,7 @@ export const LoginPage = () => {
           <Link to={routes.home} className="auth-screen__brand">
             <span className="auth-screen__brand-icon">SN</span>
             <span className="auth-screen__brand-copy">
-              <strong>SkyNest</strong>
+              <strong>Da Nang Paragliding</strong>
               <small>Da Nang Paragliding</small>
             </span>
           </Link>
@@ -98,14 +98,14 @@ export const LoginPage = () => {
               <div className="auth-email-sent auth-email-sent--compact">
                 <span className="auth-email-sent__icon">SN</span>
                 <h1>Dang nhap bang email</h1>
-                <p>Nhap email, SkyNest se gui link xac thuc. Khong can mat khau va khong can dang ky rieng.</p>
+                <p>Nhap email, Da Nang Paragliding se gui link xac thuc. Khong can mat khau va khong can dang ky rieng.</p>
               </div>
 
               <Field label="Email">
                 <Input
                   type="email"
                   autoComplete="email"
-                  placeholder="customer@skynest.vn"
+                  placeholder="customer@danangparagliding.vn"
                   {...loginForm.register("email", {
                     required: "Email la bat buoc.",
                     pattern: {

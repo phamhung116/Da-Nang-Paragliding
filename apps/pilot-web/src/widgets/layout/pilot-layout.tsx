@@ -23,9 +23,9 @@ export const PilotLayout = ({ children }: PropsWithChildren) => {
     <div className="pilot-shell">
       <aside className="pilot-sidebar">
         <div className="pilot-sidebar__brandmark">
-          <span className="pilot-sidebar__icon">SN</span>
+          <span className="pilot-sidebar__icon">DP</span>
           <div className="pilot-sidebar__brand">
-            <span>SkyNest</span>
+            <span>Da Nang Paragliding</span>
             <small>Pilot workspace</small>
           </div>
         </div>

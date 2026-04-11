@@ -185,7 +185,7 @@ class StartCustomerEmailAuthUseCase:
         if account is None:
             account = self.account_repository.create(
                 AccountPayload(
-                    full_name=email.split("@")[0].replace(".", " ").title() or "SkyNest Customer",
+                    full_name=email.split("@")[0].replace(".", " ").title() or "Da Nang Paragliding Customer",
                     email=email,
                     phone=self._placeholder_phone(email),
                     role=ROLE_CUSTOMER,
@@ -361,6 +361,8 @@ class CreateManagedAccountUseCase:
     def execute(self, request: ManagedAccountRequest) -> Account:
         if request.role not in MANAGEABLE_ROLES:
             raise ValidationError("Admin chi duoc tao Pilot hoac Admin.")
+        if not request.password:
+            raise ValidationError("Mat khau la bat buoc khi tao tai khoan admin hoac pilot.")
         email = _normalize_email(request.email)
         phone = normalize_phone(request.phone)
         _ensure_unique_account(self.account_repository, email=email, phone=phone)
@@ -375,7 +377,7 @@ class CreateManagedAccountUseCase:
                 is_active=True,
                 email_verified=True,
             ),
-            password_hash=self.password_hasher.hash(request.password or "ChangeMe123!"),
+            password_hash=self.password_hasher.hash(request.password),
         )
 
 

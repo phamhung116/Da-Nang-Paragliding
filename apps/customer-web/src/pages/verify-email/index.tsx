@@ -41,7 +41,7 @@ export const VerifyEmailPage = () => {
           <Link to={routes.home} className="auth-screen__brand">
             <span className="auth-screen__brand-icon">SN</span>
             <span className="auth-screen__brand-copy">
-              <strong>SkyNest</strong>
+              <strong>Da Nang Paragliding</strong>
               <small>Da Nang Paragliding</small>
             </span>
           </Link>
@@ -53,7 +53,7 @@ export const VerifyEmailPage = () => {
               <span className="auth-email-sent__icon">{mutation.isSuccess ? "OK" : "SN"}</span>
               <h1>{title}</h1>
               {!token ? (
-                <p>Token xac thuc bi thieu. Hay mo dung link moi nhat trong email SkyNest.</p>
+                <p>Token xac thuc bi thieu. Hay mo dung link moi nhat trong email Da Nang Paragliding.</p>
               ) : mutation.isSuccess ? (
                 <p>Tai khoan cua ban da san sang. He thong se chuyen ve trang chu trong giay lat.</p>
               ) : mutation.isError ? (

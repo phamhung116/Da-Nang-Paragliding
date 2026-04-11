@@ -10,7 +10,7 @@ from modules.accounts.application.interfaces import VerificationEmailContext
 
 class CustomerEmailGateway:
     def send_verification_email(self, context: VerificationEmailContext) -> None:
-        subject = "Xac thuc email dat lich SkyNest"
+        subject = "Xac thuc email dat lich Da Nang Paragliding"
         text_body = self._build_text_body(context)
         html_body = self._build_html_body(context)
 
@@ -26,7 +26,7 @@ class CustomerEmailGateway:
     def _build_text_body(self, context: VerificationEmailContext) -> str:
         return (
             f"Xin chao {context.account.full_name},\n\n"
-            "Vui long mo link duoi day de xac thuc email va dang nhap SkyNest:\n\n"
+            "Vui long mo link duoi day de xac thuc email va dang nhap Da Nang Paragliding:\n\n"
             f"{context.verification_url}\n\n"
             f"Link co hieu luc trong {context.expires_hours} gio. Neu ban khong tao tai khoan, "
             "co the bo qua email nay."
@@ -46,7 +46,7 @@ class CustomerEmailGateway:
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Xac thuc email SkyNest</title>
+    <title>Xac thuc email Da Nang Paragliding</title>
   </head>
   <body style="margin:0;background:#fff7f9;color:#25171c;font-family:Arial,Helvetica,sans-serif;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#fff7f9;padding:32px 12px;">
@@ -55,7 +55,7 @@ class CustomerEmailGateway:
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border:1px solid #f2d6de;border-radius:28px;overflow:hidden;box-shadow:0 18px 46px rgba(110,26,48,.12);">
             <tr>
               <td style="padding:28px 28px 18px;background:linear-gradient(135deg,#c91842 0%,#8f102b 100%);color:#ffffff;">
-                <div style="display:inline-block;width:52px;height:52px;line-height:52px;text-align:center;border-radius:16px;background:rgba(255,255,255,.16);font-weight:900;letter-spacing:.08em;">SN</div>
+                <div style="display:inline-block;width:52px;height:52px;line-height:52px;text-align:center;border-radius:16px;background:rgba(255,255,255,.16);font-weight:900;letter-spacing:.08em;">DP</div>
                 <h1 style="margin:22px 0 8px;font-size:34px;line-height:1.08;letter-spacing:-.04em;">Xac thuc email cua ban</h1>
                 <p style="margin:0;font-size:15px;line-height:1.7;color:#ffe7ed;">Hoan tat buoc bao mat de bat dau dat lich bay du luon tai Da Nang.</p>
               </td>
@@ -80,7 +80,7 @@ class CustomerEmailGateway:
                     </td>
                   </tr>
                 </table>
-                <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#9b8d93;">Neu ban khong tao tai khoan SkyNest, vui long bo qua email nay.</p>
+                <p style="margin:18px 0 0;font-size:12px;line-height:1.6;color:#9b8d93;">Neu ban khong tao tai khoan Da Nang Paragliding, vui long bo qua email nay.</p>
               </td>
             </tr>
           </table>

@@ -3,6 +3,7 @@ from __future__ import annotations
 from rest_framework import serializers
 
 from modules.posts.application.dto import PostPayload
+from shared.html import sanitize_post_html
 
 
 class PostReadSerializer(serializers.Serializer):
@@ -10,12 +11,17 @@ class PostReadSerializer(serializers.Serializer):
     slug = serializers.CharField()
     title = serializers.CharField()
     excerpt = serializers.CharField()
-    content = serializers.CharField()
+    content = serializers.SerializerMethodField()
     cover_image = serializers.URLField()
     published = serializers.BooleanField()
     published_at = serializers.DateTimeField(allow_null=True)
     created_at = serializers.DateTimeField(allow_null=True)
     updated_at = serializers.DateTimeField(allow_null=True)
+
+    def get_content(self, obj) -> str:
+        if isinstance(obj, dict):
+            return sanitize_post_html(str(obj.get("content", "")))
+        return sanitize_post_html(str(getattr(obj, "content", "")))
 
 
 class PostWriteSerializer(serializers.Serializer):
@@ -25,6 +31,9 @@ class PostWriteSerializer(serializers.Serializer):
     content = serializers.CharField()
     cover_image = serializers.URLField()
     published = serializers.BooleanField(default=True)
+
+    def validate_content(self, value: str) -> str:
+        return sanitize_post_html(value)
 
     def to_payload(self) -> PostPayload:
         data = self.validated_data

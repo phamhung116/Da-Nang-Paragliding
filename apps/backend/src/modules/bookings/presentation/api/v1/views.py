@@ -32,6 +32,7 @@ from shared.auth import (
 )
 from shared.exceptions import DomainError
 from shared.responses import error, success
+from shared.throttling import AccountScopedRateThrottle
 from shared.utils import normalize_phone, serialize_entity
 
 
@@ -76,6 +77,8 @@ class PublicBookingCreateApi(APIView):
 class PublicBookingLookupApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "lookup"
 
     def get(self, request):
         identifier = (

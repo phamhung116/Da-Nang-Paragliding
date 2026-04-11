@@ -1,9 +1,9 @@
 export const businessInfo = {
-  name: "SkyNest Da Nang Paragliding",
-  shortName: "SkyNest",
+  name: "Da Nang Paragliding",
+  shortName: "Da Nang Paragliding",
   phone: "+84 909 000 123",
   secondaryPhone: "+84 236 000 123",
-  email: "hello@skynest.vn",
+  email: "info@danangparagliding.vn",
   address: "Cong vien Bien Dong, duong Vo Nguyen Giap, phuong Phuoc My, Son Tra, Da Nang",
   intro:
     "Khám phá vẻ đẹp tuyệt mỹ của bán đảo Sơn Trà từ góc nhìn của loài chim. An toàn, chuyên nghiệp và đầy cảm xúc.",

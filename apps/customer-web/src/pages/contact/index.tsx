@@ -16,9 +16,6 @@ import {
 } from "lucide-react"
 
 const normalizedPhone = businessInfo.phone.replace(/\s+/g, "");
-const mapEmbedUrl =
-  "https://www.openstreetmap.org/export/embed.html?bbox=108.2400%2C16.0637%2C108.2500%2C16.0737&layer=mapnik&marker=16.0687%2C108.2450";
-
 const contactMethods = [
   {
     label: "Hotline",
@@ -81,14 +78,16 @@ export const ContactPage = () => (
           </div>
 
           <div className="h-[400px] md:h-[500px] rounded-[32px] overflow-hidden shadow-xl border border-stone-200">
-            <iframe 
+            <iframe
+              title="Da Nang Paragliding contact map"
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15334.46083321591!2d108.261895!3d16.110555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142179635634967%3A0x584460af3013973d!2zQsOhbiDEkeG6o28gU8ahbiBUcsOg!5e0!3m2!1svi!2svn!4v1710670000000!5m2!1svi!2svn" 
               width="100%" 
               height="100%" 
               style={{ border: 0 }} 
               allowFullScreen 
               loading="lazy" 
-              referrerPolicy="no-referrer-when-downgrade"
+              referrerPolicy="strict-origin-when-cross-origin"
+              sandbox="allow-popups allow-same-origin allow-scripts"
             ></iframe>
           </div>
         </Container>

@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from uuid import uuid4
+from hashlib import sha256
+from secrets import token_urlsafe
 
 from django.contrib.auth.hashers import check_password
 from django.utils import timezone
@@ -30,11 +31,19 @@ def _to_account(document: AccountDocument) -> Account:
     )
 
 
-def _to_session(document: AccountSessionDocument) -> AuthSession:
+def _hash_token(token: str) -> str:
+    return sha256(token.encode("utf-8")).hexdigest()
+
+
+def _token_lookup_values(token: str) -> list[str]:
+    return [_hash_token(token), token]
+
+
+def _to_session(document: AccountSessionDocument, *, token: str | None = None) -> AuthSession:
     return AuthSession(
         id=str(document.id),
         account_id=document.account_id,
-        token=document.token,
+        token=token or document.token,
         expires_at=document.expires_at,
         created_at=document.created_at,
         updated_at=document.updated_at,
@@ -104,15 +113,19 @@ class MongoAccountRepository:
         return bool(document and check_password(raw_password, document.password_hash))
 
     def create_session(self, *, account_id: str, expires_at: datetime) -> AuthSession:
+        token = token_urlsafe(32)
         document = AccountSessionDocument.objects.create(
             account_id=account_id,
-            token=uuid4().hex,
+            token=_hash_token(token),
             expires_at=expires_at,
         )
-        return _to_session(document)
+        return _to_session(document, token=token)
 
     def revoke_session(self, token: str) -> None:
-        document = AccountSessionDocument.objects.filter(token=token, revoked_at__isnull=True).first()
+        document = AccountSessionDocument.objects.filter(
+            token__in=_token_lookup_values(token),
+            revoked_at__isnull=True,
+        ).first()
         if document is None:
             return
         document.revoked_at = timezone.now()
@@ -120,7 +133,7 @@ class MongoAccountRepository:
 
     def get_by_token(self, token: str) -> Account | None:
         session = AccountSessionDocument.objects.filter(
-            token=token,
+            token__in=_token_lookup_values(token),
             revoked_at__isnull=True,
             expires_at__gt=timezone.now(),
         ).first()
@@ -143,16 +156,16 @@ class MongoAccountRepository:
 
         document.email_verified = False
         document.email_verified_at = None
-        document.email_verification_token = token
+        document.email_verification_token = _hash_token(token)
         document.email_verification_sent_at = sent_at
-        document.email_login_poll_token = poll_token
+        document.email_login_poll_token = _hash_token(poll_token) if poll_token else None
         document.email_login_poll_expires_at = poll_expires_at
         document.email_login_poll_verified_at = None
         document.save()
 
     def verify_email_by_token(self, token: str, *, expires_after: timedelta) -> Account | None:
         document = AccountDocument.objects.filter(
-            email_verification_token=token,
+            email_verification_token__in=_token_lookup_values(token),
             email_verified=False,
             is_active=True,
         ).first()
@@ -172,7 +185,7 @@ class MongoAccountRepository:
 
     def get_verified_email_poll_account(self, poll_token: str) -> Account | None:
         document = AccountDocument.objects.filter(
-            email_login_poll_token=poll_token,
+            email_login_poll_token__in=_token_lookup_values(poll_token),
             email_login_poll_verified_at__isnull=False,
             email_login_poll_expires_at__gt=timezone.now(),
             is_active=True,
@@ -180,7 +193,7 @@ class MongoAccountRepository:
         return _to_account(document) if document else None
 
     def clear_email_poll_token(self, poll_token: str) -> None:
-        document = AccountDocument.objects.filter(email_login_poll_token=poll_token).first()
+        document = AccountDocument.objects.filter(email_login_poll_token__in=_token_lookup_values(poll_token)).first()
         if document is None:
             return
         document.email_login_poll_token = None
