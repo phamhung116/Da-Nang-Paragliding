@@ -8,5 +8,6 @@ export const routes = {
   services: "/services",
   booking: "/booking",
   checkout: "/checkout",
-  tracking: "/tracking"
+  tracking: "/tracking",
+  contact: "/contact",
 };

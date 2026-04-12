@@ -8,6 +8,14 @@ import { useI18n } from "@/app/providers/i18n-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
 
+import {
+  FaFacebook,
+  FaPhone,
+  FaLocationDot,
+  FaEnvelope,
+  FaRegUser,
+} from "react-icons/fa6";
+
 import { 
   Wind, 
   UserRound,
@@ -30,6 +38,9 @@ import {
   User
 } from 'lucide-react';
 
+
+
+
 type SiteLayoutProps = PropsWithChildren<{
   hideHeader?: boolean;
   hideFooter?: boolean;
@@ -48,7 +59,8 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     { to: routes.services, label: t("nav_services") },
     { to: routes.posts, label: t("nav_posts") },
     { to: routes.tracking, label: t("nav_tracking") },
-    { to: routes.about, label: t("nav_about") }
+    { to: routes.about, label: t("nav_about") },
+    { to: routes.contact, label: t("nav_contact")},
   ];
 
   useEffect(() => {
@@ -109,14 +121,20 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                     <Wind size={24} />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold tracking-tight text-brand">DA NANG</h1>
+                    <h1 className="text-xl font-bold tracking-tight text-brand">ĐÀ NẴNG</h1>
                     <p className="text-[10px] font-bold tracking-[0.2em] text-stone-500 uppercase -mt-1">Paragliding</p>
                   </div>
                 </Link>
 
                 <nav className="hidden md:flex items-center gap-6 ml-auto">
                   {navItems.map((item) => (
-                    <NavLink key={item.to} to={item.to} className={`text-sm font-medium transition-colors ? 'text-brand' : 'text-stone-600 hover:text-brand'}`}>
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `customer-nav-link ${isActive ? "is-active" : ""}`
+                      }
+                    >
                       {item.label}
                     </NavLink>
                   ))}
@@ -191,7 +209,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 <span className="site-brand__icon">SN</span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
-                  <small>Da Nang Paragliding</small>
+                  <small>Đà Nẵng Paragliding</small>
                 </span>
               </div>
               <button
@@ -200,7 +218,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 className="site-burger is-close"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Close
+                Đóng
               </button>
             </div>
 
@@ -261,7 +279,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
       <main>{children}</main>
 
       {!hideFooter ? (
-        <footer className="bg-stone-900 text-white py-16">
+        <footer className="bg-stone-900 text-white p-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
               <div className="space-y-4">
@@ -269,21 +287,32 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   <span className="text-xl font-bold">Da Nang Paragliding</span>
                 </div>
                 <p className="text-stone-400 text-sm leading-relaxed">
-                  Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp hùng vĩ của bán đảo Sơn Trà từ độ cao 600m.
+                  Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp của bán đảo Sơn Trà từ trên cao.
                 </p>
               </div>
               <div>
                 <h3 className="font-bold mb-6">Liên kết</h3>
+                <ul className="space-y-3 text-stone-400 text-sm">
+                  {navItems.map((item) => (
+                    <NavLink key={item.to} to={item.to} style={{display: "block"}}>
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </ul>
               </div>
               <div>
                 <h3 className="font-bold mb-6">Liên hệ</h3>
+                <ul className="space-y-3 text-stone-400 text-sm">
+                  <li className="flex items-center gap-2"><FaLocationDot size={16} /> Bán đảo Sơn Trà, Đà Nẵng</li>
+                  <li className="flex items-center gap-2"><FaPhone size={16} /> +84 123 456 789</li>
+                  <li className="flex items-center gap-2"><FaEnvelope size={16} /> info@danangparagliding.vn</li>
+              </ul>
               </div>
               <div>
                 <h3 className="font-bold mb-6">Theo dõi</h3>
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">FB</div>
-                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">IG</div>
-                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer">YT</div>
+                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://www.facebook.com/profile.php?id=100064087207931"><FaFacebook /></a></div>
+                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://zalo.me/0935101188" className="flex items-center justify-center w-full h-full"><img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{width: "50%"}}/></a></div>
                 </div>
               </div>
             </div>
