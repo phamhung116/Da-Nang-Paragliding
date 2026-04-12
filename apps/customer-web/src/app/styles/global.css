@@ -4876,14 +4876,15 @@
 }
 
 /* PHNG */
-.site-header .customer-nav-link {
+.nav-header .nav-header-item {
   color: var(--color-stone-600);
   font-size: 0.875rem;
+  line-height: calc(1.25/0.875);
   font-weight: 500;
   transition: color 160ms ease;
 }
 
-.site-header .customer-nav-link:hover,
-.site-header .customer-nav-link.is-active {
+.nav-header .nav-header-item:hover,
+.nav-header .nav-header-item.is-active {
   color: var(--color-brand);
 }

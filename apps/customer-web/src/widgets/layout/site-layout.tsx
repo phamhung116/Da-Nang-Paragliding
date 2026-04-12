@@ -104,19 +104,16 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     <div className="site-shell">
       {!hideHeader ? (
         <>
-          <header className="site-header">
-            <Container className="site-header__inner">
-              <div className="site-header__main">
-                <button
-                  type="button"
-                  aria-label="Open navigation menu"
-                  className="site-burger"
-                  onClick={() => setMobileMenuOpen(true)}
+          <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-stone-200 nav-header">
+            <Container className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex h-20 items-center gap-4">
+                <button className="md:hidden text-stone-600"
+                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
                 >
-                  Menu
+                  {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
 
-                <Link className="site-brand" to={routes.home}>
+                <Link className="flex items-center gap-2 cursor-pointer" to={routes.home}>
                   <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white">
                     <Wind size={24} />
                   </div>
@@ -132,17 +129,15 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                       key={item.to}
                       to={item.to}
                       className={({ isActive }) =>
-                        `customer-nav-link ${isActive ? "is-active" : ""}`
+                        `nav-header-item ${isActive ? "is-active" : ""}`
                       }
                     >
                       {item.label}
                     </NavLink>
                   ))}
                 </nav>
-              </div>
 
-              <div className="flex items-center gap-2 ml-4 border-l border-stone-200 pl-4">
-                <div className="locale-switcher">
+                <div className="flex shrink-0 items-center gap-2 ml-4 border-l border-stone-200 pl-4">
                   <button
                     type="button"
                     className={`transition-opacity ${locale === 'vi' ? 'opacity-100': 'opacity-40 hover:opacity-100'}`}
@@ -157,44 +152,44 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   >
                     <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="w-6 h-4 object-cover rounded-sm shadow-sm" />
                   </button>
-                </div>
 
-                {isAuthenticated ? (
-                  <div className="site-profile" ref={profileMenuRef}>
-                    <button
-                      type="button"
-                      className={`site-avatar-button ${profileMenuOpen ? "is-open" : ""}`}
-                      aria-haspopup="menu"
-                      aria-expanded={profileMenuOpen}
-                      onClick={() => setProfileMenuOpen((value) => !value)}
-                    >
-                      <span className="site-avatar">{avatarLabel}</span>
-                      <span className="site-avatar-caret" aria-hidden="true" />
-                    </button>
-
-                    <div className={`site-profile-menu ${profileMenuOpen ? "is-open" : ""}`} role="menu">
-                      <div className="site-profile-menu__header">
-                        <strong>{account?.full_name}</strong>
-                        <small>{account?.email}</small>
-                      </div>
-                      <Link to={routes.account} className="site-profile-menu__item" role="menuitem">
-                        {t("nav_account")}
-                      </Link>
+                  {isAuthenticated ? (
+                    <div className="site-profile" ref={profileMenuRef}>
                       <button
                         type="button"
-                        className="site-profile-menu__item"
-                        role="menuitem"
-                        onClick={() => void logout()}
+                        className={`site-avatar-button ${profileMenuOpen ? "is-open" : ""}`}
+                        aria-haspopup="menu"
+                        aria-expanded={profileMenuOpen}
+                        onClick={() => setProfileMenuOpen((value) => !value)}
                       >
-                        {t("nav_logout")}
+                        <span className="site-avatar">{avatarLabel}</span>
+                        <span className="site-avatar-caret" aria-hidden="true" />
                       </button>
+
+                      <div className={`site-profile-menu ${profileMenuOpen ? "is-open" : ""}`} role="menu">
+                        <div className="site-profile-menu__header">
+                          <strong>{account?.full_name}</strong>
+                          <small>{account?.email}</small>
+                        </div>
+                        <Link to={routes.account} className="site-profile-menu__item" role="menuitem">
+                          {t("nav_account")}
+                        </Link>
+                        <button
+                          type="button"
+                          className="site-profile-menu__item"
+                          role="menuitem"
+                          onClick={() => void logout()}
+                        >
+                          {t("nav_logout")}
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <Link to={routes.login}>
-                    <UserRound color="#57534d"></UserRound>
-                  </Link>
-                )}
+                  ) : (
+                    <Link to={routes.login}>
+                      <UserRound color="#57534d"></UserRound>
+                    </Link>
+                  )}
+                </div>
               </div>
             </Container>
           </header>
