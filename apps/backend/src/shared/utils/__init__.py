@@ -44,7 +44,7 @@ def deterministic_weather(seed_key: str) -> dict[str, Any]:
     uv_index = seeded_random.randint(3, 10)
 
     if wind <= 15 and uv_index <= 8:
-        condition = "Good"
+        condition = "Lý Tưởng"
     elif wind <= 20:
         condition = "Moderate"
     else:
