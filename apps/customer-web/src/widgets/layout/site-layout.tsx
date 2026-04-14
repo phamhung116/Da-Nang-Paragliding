@@ -12,29 +12,13 @@ import {
   FaPhone,
   FaLocationDot,
   FaEnvelope,
-  FaRegUser,
 } from "react-icons/fa6";
 
 import { 
   Wind, 
   UserRound,
-  Calendar, 
-  MapPin, 
-  Phone, 
-  Mail, 
-  ChevronRight, 
-  ChevronDown,
   Menu, 
   X, 
-  ShieldCheck, 
-  Camera, 
-  Clock,
-  Navigation,
-  CheckCircle2,
-  AlertCircle,
-  Sun,
-  Eye,
-  User
 } from 'lucide-react';
 
 
