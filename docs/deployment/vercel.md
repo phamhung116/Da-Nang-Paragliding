@@ -54,6 +54,7 @@ File config da co san:
 - Root Directory: `apps/backend`
 - Framework Preset: `Other`
 - Python runtime: doc `api/index.py`
+- Install Command: khong can nhap tay neu doc file `apps/backend/vercel.json`, vi da duoc set thanh `pip3 install -r requirements.txt`
 - Env bat buoc:
   - `DJANGO_SECRET_KEY=<strong-secret>`
   - `DJANGO_DEBUG=false`
