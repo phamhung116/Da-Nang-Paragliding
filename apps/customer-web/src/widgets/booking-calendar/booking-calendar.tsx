@@ -1,10 +1,12 @@
-import { Fragment, type CSSProperties, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AvailabilityDay, AvailabilitySlot } from "@paragliding/api-client";
-import { Badge, Button, Card, Panel } from "@paragliding/ui";
+import { Button } from "@paragliding/ui";
 
 import {
   ChevronRight,
   ChevronDown,
+  Sun,
+  X,
 } from "lucide-react"
 
 type SelectedSlot = {
@@ -67,44 +69,10 @@ const endOfWeek = (date: Date) => addDays(startOfWeek(date), 6);
 const getAvailableCount = (day: AvailabilityDay) =>
   day.slots.filter((slot) => !slot.is_locked && !slot.is_full).length;
 
-const getDayAvailabilityLabel = (count: number) => {
-  if (count === 0) {
-    return "Closed";
-  }
-
-  if (count <= 2) {
-    return "Limited";
-  }
-
-  return "Open";
-};
-
 const sortTime = (left: string, right: string) => {
   const [leftHour, leftMinute] = left.split(":").map(Number);
   const [rightHour, rightMinute] = right.split(":").map(Number);
   return leftHour * 60 + leftMinute - (rightHour * 60 + rightMinute);
-};
-
-const formatDayLabel = (date: Date) =>
-  date.toLocaleDateString("vi-VN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "2-digit"
-  });
-
-const formatWeekRange = (week: CalendarWeekDay[]) => {
-  const firstDay = week[0];
-  const lastDay = week[week.length - 1];
-
-  if (!firstDay || !lastDay) {
-    return "";
-  }
-
-  if (firstDay.date.getMonth() === lastDay.date.getMonth()) {
-    return `${firstDay.date.getDate()} - ${lastDay.date.getDate()} ${monthNames[lastDay.date.getMonth()]}, ${lastDay.date.getFullYear()}`;
-  }
-
-  return `${firstDay.date.getDate()}/${firstDay.date.getMonth() + 1} - ${lastDay.date.getDate()}/${lastDay.date.getMonth() + 1}, ${lastDay.date.getFullYear()}`;
 };
 
 export const BookingCalendar = ({
@@ -228,14 +196,17 @@ export const BookingCalendar = ({
   const hasRealWeather = Boolean(weatherSource?.weather_available);
   const previewDate = hoveredCell?.date ?? selectedSlot?.date ?? fallbackDay?.date ?? null;
   const previewTime = previewSlot ? hoveredCell?.time ?? null : selectedWeatherSlot ? selectedSlot?.time ?? null : null;
-  const weekRangeLabel = formatWeekRange(activeWeek);
-  const weekBoardStyle = useMemo(
-    () =>
-      ({
-        gridTemplateColumns: "64px repeat(7, minmax(0, 1fr))"
-      }) satisfies CSSProperties,
-    []
-  );
+  const activeDate = previewDate ?? fallbackDay?.date ?? toDateKey(new Date());
+  const activeSlot = previewTime;
+  const weather = weatherSource && hasRealWeather
+    ? {
+        temp: weatherSource.temperature_c,
+        condition: weatherSource.weather_condition || "Thoi tiet",
+        flight: weatherSource.flight_condition || "Dang cap nhat",
+        wind: weatherSource.wind_kph,
+        uv: weatherSource.uv_index
+      }
+    : null;
 
   const changeMonth = (nextYear: number, nextMonth: number, edge: "start" | "end" = "start") => {
     setPendingWeekEdge(edge);
@@ -334,175 +305,148 @@ export const BookingCalendar = ({
       <div className="overflow-x-auto">
         <div className="min-w-[300px] max-w-2xl mx-auto">
           {activeWeek.length > 0 ? (
-            <table className="w-full border-collapse table-fixed">
-              <thead>
-                <tr>
-                  {activeWeek.map((day) => {
-                    const availableCount = day.day ? getAvailableCount(day.day) : 0;
-                    const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
-                    return (
-                      <th
-                        key={day.key}
-                        className="p-1 text-center"
-                      >
-                        <div className="flex flex-col">
-                          <span className={`text-[8px] uppercase font-bold ${isSelectedDay ? 'text-brand' : 'text-stone-400'}`}>
-                            {weekdayShort[day.date.getDay()]}
-                          </span>
-                          <span className={`text-[10px] font-bold ${isSelectedDay ? 'text-brand' : 'text-stone-500'}`}>
-                            {day.date.getDate()}
-                          </span>
-                        </div>
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-            <tbody>
-              
-            </tbody>
-              <div className="calendar-week-board-wrap" onMouseLeave={() => setHoveredCell(selectedSlot)}>
-                <div className="calendar-week-board" style={weekBoardStyle}>
+            <div className="overflow-x-auto pb-1" onMouseLeave={() => setHoveredCell(selectedSlot)}>
+              <table className="w-full min-w-[300px] table-fixed border-collapse">
+                <thead>
+                  <tr>
+                    <th className="w-14 p-1" aria-label="Khung gio" />
+                    {activeWeek.map((day) => {
+                      const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
 
-                  {activeWeek.map((day) => {
-                    const availableCount = day.day ? getAvailableCount(day.day) : 0;
-                    const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
-
-                    return (
-                      <div
-                        key={day.key}
-                        className={`calendar-week-board__day ${day.outsideMonth ? "is-outside" : ""} ${
-                          isSelectedDay ? "is-selected" : ""
-                        }`}
-                      >
-                        <small>{weekdayShort[day.date.getDay()]}</small>
-                        <strong>{day.date.getDate()}</strong>
-                        <span>{getDayAvailabilityLabel(availableCount)}</span>
-                      </div>
-                    );
-                  })}
-
+                      return (
+                        <th key={day.key} className="p-1 text-center">
+                          <div className="flex flex-col">
+                            <span
+                              className={`text-[8px] uppercase font-bold ${
+                                isSelectedDay ? "text-brand" : "text-stone-400"
+                              }`}
+                            >
+                              {weekdayShort[day.date.getDay()]}
+                            </span>
+                            <span
+                              className={`text-[10px] font-bold ${
+                                isSelectedDay ? "text-brand" : day.outsideMonth ? "text-stone-300" : "text-stone-500"
+                              }`}
+                            >
+                              {day.date.getDate()}
+                            </span>
+                          </div>
+                        </th>
+                      );
+                    })}
+                  </tr>
+                </thead>
+                <tbody>
                   {timeSlots.map((time) => (
-                    <Fragment key={time}>
-                      <div className="calendar-week-board__time">{time}</div>
-
+                    <tr key={time}>
+                      <td className="p-1 pr-2 align-middle text-[10px] font-bold leading-none text-stone-400 whitespace-nowrap">
+                        {time}
+                      </td>
                       {activeWeek.map((day) => {
                         const slot = day.day?.slots.find((item) => item.time === time) ?? null;
                         const isBlocked = Boolean(slot?.is_locked || slot?.is_full);
                         const isSelected = Boolean(
                           slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time
                         );
-                        return (
-                          <button
-                            key={`${day.key}-${time}`}
-                            type="button"
-                            className={`calendar-week-slot ${!slot ? "is-muted" : ""} ${day.outsideMonth ? "is-outside" : ""} ${
-                              isBlocked ? "is-blocked" : ""
-                            } ${isSelected ? "is-selected" : ""}`}
-                            onMouseEnter={() => {
-                              if (slot) {
-                                setHoveredCell({ date: day.isoDate, time });
-                              }
-                            }}
-                            onFocus={() => {
-                              if (slot) {
-                                setHoveredCell({ date: day.isoDate, time });
-                              }
-                            }}
-                            onClick={() => {
-                              if (!slot || isBlocked) {
-                                return;
-                              }
 
-                              onSelectSlot({ date: day.isoDate, time });
-                              setHoveredCell({ date: day.isoDate, time });
-                            }}
-                          >
-                            {!slot || isBlocked ? (
-                              <span className="calendar-week-slot__cross">X</span>
-                            ) : (
-                              <span className="calendar-week-slot__empty" aria-hidden="true" />
-                            )}
-                          </button>
+                        return (
+                          <td key={`${day.key}-${time}`} className="p-0.5">
+                            <button
+                              type="button"
+                              className={`aspect-square w-full rounded-md flex items-center justify-center transition-all border ${
+                                !slot || isBlocked
+                                  ? "bg-stone-100 border-stone-200 text-stone-400 cursor-default"
+                                  : isSelected
+                                    ? "bg-brand border-brand text-white font-black shadow-inner cursor-pointer"
+                                    : "bg-white border-stone-100 hover:border-brand/50 cursor-pointer"
+                              }`}
+                              onMouseEnter={() => {
+                                if (slot) {
+                                  setHoveredCell({ date: day.isoDate, time });
+                                }
+                              }}
+                              onFocus={() => {
+                                if (slot) {
+                                  setHoveredCell({ date: day.isoDate, time });
+                                }
+                              }}
+                              onClick={() => {
+                                if (!slot || isBlocked) {
+                                  return;
+                                }
+
+                                onSelectSlot({ date: day.isoDate, time });
+                                setHoveredCell({ date: day.isoDate, time });
+                              }}
+                            >
+                              {!slot || isBlocked ? (
+                                <X size={12} aria-hidden="true" />
+                              ) : isSelected ? (
+                                <span className="w-1.5 h-1.5 bg-white rounded-full" aria-hidden="true" />
+                              ) : null}
+                            </button>
+                          </td>
                         );
                       })}
-                    </Fragment>
+                    </tr>
                   ))}
-                </div>
-              </div>
-            </table>
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="calendar-empty">Chua co du lieu kha dung cho thang nay.</div>
           )}
 
-          <div className="calendar-legend">
-            <span>
-              <i className="calendar-legend__swatch" />
-              Con trong
-            </span>
-            <span>
-              <i className="calendar-legend__swatch is-full" />
-              Day / khoa
-            </span>
-            <span>
-              <i className="calendar-legend__swatch is-selected" />
-              Da chon
-            </span>
-          </div>
-
-          <section className="calendar-weather-inline">
-            <div className="calendar-weather-inline__top">
-              <div className="stack-sm">
-                <Badge tone="success">Weather theo gio</Badge>
-                <h3 className="calendar-weather-card__title">
-                  {previewDate ? formatDayLabel(fromDateKey(previewDate)) : "Chon mot ngay"}
-                  {previewTime ? ` - ${previewTime}` : ""}
-                </h3>
+          <div className="flex justify-between items-center text-[10px] text-stone-400 pt-2 border-t border-stone-100">
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-white border border-stone-200 rounded-sm"></div>
+              <span>Trống</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-stone-100 border border-stone-200 rounded-sm flex items-center justify-center">
+                <X size={8} />
               </div>
-
-              <div className="calendar-week-summary__chip">
-                {selectedSlot
-                  ? `${selectedSlot.time}, ${fromDateKey(selectedSlot.date).toLocaleDateString("vi-VN")}`
-                  : "Hover vao slot de xem weather"}
-              </div>
+              <span>Đã đầy</span>
             </div>
 
-            {weatherSource && hasRealWeather ? (
-              <div className="calendar-weather-inline__body">
-                <div className="calendar-weather-hero">
-                  <strong>{weatherSource.temperature_c} deg C</strong>
-                  <span>{weatherSource.flight_condition}</span>
-                </div>
+          </div>
 
-                <div className="weather-metrics calendar-weather-inline__metrics">
-                  <article>
-                    <span>Nhiet do</span>
-                    <strong>{weatherSource.temperature_c} deg C</strong>
-                  </article>
-                  <article>
-                    <span>Gio</span>
-                    <strong>{weatherSource.wind_kph} km/h</strong>
-                  </article>
-                  <article>
-                    <span>UV</span>
-                    <strong>{weatherSource.uv_index}</strong>
-                  </article>
-                  <article>
-                    <span>Tam nhin</span>
-                    <strong>{weatherSource.visibility_km} km</strong>
-                  </article>
-                  <article>
-                    <span>Danh gia thoi tiet</span>
-                    <strong>{weatherSource.flight_condition}</strong>
-                  </article>
+          {weather ? (
+            <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold text-stone-400 uppercase">
+                  Dự báo {activeSlot ? activeSlot + ' - ' : ''}Ngày {new Date(activeDate).getDate()}/{new Date(activeDate).getMonth() + 1}
+                </span>
+                <Sun size={16} className="text-yellow-500" />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-end gap-2">
+                  <span className="text-2xl font-bold">{weather.temp}°C</span>
+                  <span className="text-[10px] font-medium text-stone-600 pb-1">{weather.condition}</span>
+                </div>
+                <div className="flex flex-col justify-center">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Điều kiện bay</span>
+                  <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
                 </div>
               </div>
-            ) : (
+
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-stone-200/50">
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Sức gió</span>
+                  <span className="text-xs font-bold">{weather.wind} km/h</span>
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-[10px] font-bold text-stone-400 uppercase">Chỉ số UV</span>
+                  <span className="text-xs font-bold">{weather.uv} (Trung bình)</span>
+                </div>
+              </div>
+            </div>
+          ) : (
               <p className="calendar-selection-note">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
             )}
-          </section>
+          </div>
         </div>
-      </div>
     </div>
   );
 };

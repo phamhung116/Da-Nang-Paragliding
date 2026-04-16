@@ -97,7 +97,7 @@ export const ServiceDetailPage = () => {
                     to={`/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`}
                   >
                     <Button className="btn-primary px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand/20">
-                      Tiep tuc dat lich
+                      Đặt ngay
                     </Button>
                   </Link>
                     ) : (
@@ -125,8 +125,8 @@ export const ServiceDetailPage = () => {
                 </Card>
               )}
             </div>
-          </div>
-          <div>
+          </div >
+          <div className="lg:col-span-2 space-y-6 lg:space-y-12">
             <div>
               <div>
                 <h2 className="detail-title">Tong quan goi bay</h2>
@@ -151,34 +151,6 @@ export const ServiceDetailPage = () => {
                 </div>
               </div>
             </div>
-
-            <section className="detail-booking-section">
-              <div className="detail-booking-section__head">
-                <div className="stack-sm">
-                  <Badge>Dat lich bay</Badge>
-                  <h2 className="detail-title">Chon ngay va khung gio</h2>
-                </div>
-              </div>
-
-              {availability.length > 0 ? (
-                <BookingCalendar
-                  year={calendarState.year}
-                  month={calendarState.month}
-                  days={availability}
-                  selectedSlot={selectedSlot}
-                  onMonthChange={(year, month) => setCalendarState({ year, month })}
-                  onSelectSlot={setSelectedSlot}
-                />
-              ) : (
-                <Card className="empty-state-card">
-                  <Panel className="stack-sm">
-                    <Badge tone="danger">Chua mo lich</Badge>
-                    <strong>Thang nay chua co slot kha dung cho goi bay nay.</strong>
-                    <p>Ban co the doi sang thang khac hoac lien he doanh nghiep de duoc ho tro.</p>
-                  </Panel>
-                </Card>
-              )}
-            </section>
 
             <div className="detail-section-grid">
               <Card className="detail-section-card">
@@ -235,50 +207,6 @@ export const ServiceDetailPage = () => {
               ))}
             </div>
           </div>
-
-          <aside className="detail-booking-column">
-            <Card className="detail-booking-sticky">
-              <Panel className="stack">
-                <div className="detail-price-card">
-                  <div className="detail-price-card__copy">
-                    <span>Gia dich vu</span>
-                    <strong>{formatCurrency(servicePackage.price)}</strong>
-                  </div>
-                </div>
-
-                <div className="detail-fact-list">
-                  <article>
-                    <span>Diem cat canh</span>
-                    <strong>{servicePackage.launch_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Diem ha canh</span>
-                    <strong>{servicePackage.landing_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Tre em toi thieu</span>
-                    <strong>{servicePackage.min_child_age}+ tuoi</strong>
-                  </article>
-                </div>
-
-                <div className="detail-booking-selection">
-                  <span>Khung gio da chon</span>
-                  <strong>{formatSelectedSlotLabel(selectedSlot)}</strong>
-                  <small>Chon mot o con trong tren lich de tiep tuc dat lich.</small>
-                </div>
-
-                {selectedSlot ? (
-                  <Link
-                    to={`/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`}
-                  >
-                    <Button>Tiep tuc dat lich</Button>
-                  </Link>
-                ) : (
-                  <p className="calendar-selection-note">Lich dat se duoc giu sau khi ban chon mot slot hop le.</p>
-                )}
-              </Panel>
-            </Card>
-          </aside>
         </Container>
       </section>
     </SiteLayout>
