@@ -24,5 +24,4 @@ urlpatterns = [
     path("api/v1/admin/", include("modules.accounts.presentation.api.v1.admin_urls")),
     path("api/v1/admin/", include("modules.posts.presentation.api.v1.admin_urls")),
     path("api/v1/admin/", include("modules.bookings.presentation.api.v1.admin_urls")),
-    path("api/v1/admin/", include("modules.tracking.presentation.api.v1.admin_urls")),
 ]

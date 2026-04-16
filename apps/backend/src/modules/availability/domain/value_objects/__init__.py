@@ -12,7 +12,10 @@ class AvailabilitySlot:
     temperature_c: float
     wind_kph: float
     uv_index: int
+    visibility_km: float
+    weather_condition: str
     flight_condition: str
+    weather_available: bool
 
     @property
     def is_full(self) -> bool:

@@ -1,16 +1,23 @@
 from __future__ import annotations
 
-from datetime import timedelta
-
-from django.contrib.auth.hashers import make_password
-from django.utils import timezone
+from datetime import UTC, datetime, timedelta
+from hashlib import sha1
+from secrets import token_urlsafe
 
 from modules.accounts.application.dto import (
     AccountPayload,
+    ChangePasswordRequest,
+    EmailAuthClaimRequest,
+    EmailAuthStartRequest,
     LoginRequest,
     ManagedAccountRequest,
     RegisterAccountRequest,
     UpdateProfileRequest,
+)
+from modules.accounts.application.interfaces import (
+    CustomerVerificationEmailGateway,
+    PasswordHasher,
+    VerificationEmailContext,
 )
 from modules.accounts.domain.entities import Account
 from modules.accounts.domain.repositories import AccountRepository
@@ -39,10 +46,25 @@ def _ensure_unique_account(account_repository, *, email: str, phone: str, exclud
         raise ValidationError("So dien thoai da ton tai trong he thong.")
 
 
+def _now_utc():
+    return datetime.now(UTC)
+
+
 class RegisterCustomerUseCase:
-    def __init__(self, account_repository: AccountRepository, session_ttl_hours: int) -> None:
+    def __init__(
+        self,
+        account_repository: AccountRepository,
+        email_gateway: CustomerVerificationEmailGateway,
+        password_hasher: PasswordHasher,
+        *,
+        customer_app_url: str,
+        verification_token_ttl_hours: int,
+    ) -> None:
         self.account_repository = account_repository
-        self.session_ttl_hours = session_ttl_hours
+        self.email_gateway = email_gateway
+        self.password_hasher = password_hasher
+        self.customer_app_url = customer_app_url.rstrip("/")
+        self.verification_token_ttl_hours = verification_token_ttl_hours
 
     def execute(self, request: RegisterAccountRequest) -> dict[str, object]:
         email = _normalize_email(request.email)
@@ -57,13 +79,165 @@ class RegisterCustomerUseCase:
                 role=ROLE_CUSTOMER,
                 preferred_language=request.preferred_language,
                 is_active=True,
+                email_verified=False,
             ),
-            password_hash=make_password(request.password),
+            password_hash=self.password_hasher.hash(request.password),
         )
+
+        token = token_urlsafe(36)
+        self.account_repository.set_email_verification_token(
+            account_id=account.id or "",
+            token=token,
+            sent_at=_now_utc(),
+        )
+        self.email_gateway.send_verification_email(
+            VerificationEmailContext(
+                account=account,
+                verification_url=f"{self.customer_app_url}/verify-email?token={token}",
+                expires_hours=self.verification_token_ttl_hours,
+            )
+        )
+
+        return {"account": account, "email_verification_required": True}
+
+
+class VerifyCustomerEmailUseCase:
+    def __init__(
+        self,
+        account_repository: AccountRepository,
+        *,
+        session_ttl_hours: int,
+        verification_token_ttl_hours: int,
+    ) -> None:
+        self.account_repository = account_repository
+        self.session_ttl_hours = session_ttl_hours
+        self.verification_token_ttl_hours = verification_token_ttl_hours
+
+    def execute(self, token: str) -> dict[str, object]:
+        account = self.account_repository.verify_email_by_token(
+            token.strip(),
+            expires_after=timedelta(hours=self.verification_token_ttl_hours),
+        )
+        if account is None:
+            raise ValidationError("Link xac thuc email khong hop le hoac da het han.")
+
         session = self.account_repository.create_session(
             account_id=account.id or "",
-            expires_at=timezone.now() + timedelta(hours=self.session_ttl_hours),
+            expires_at=_now_utc() + timedelta(hours=self.session_ttl_hours),
         )
+        return {"account": account, "session": session}
+
+
+class ResendCustomerVerificationEmailUseCase:
+    def __init__(
+        self,
+        account_repository: AccountRepository,
+        email_gateway: CustomerVerificationEmailGateway,
+        *,
+        customer_app_url: str,
+        verification_token_ttl_hours: int,
+    ) -> None:
+        self.account_repository = account_repository
+        self.email_gateway = email_gateway
+        self.customer_app_url = customer_app_url.rstrip("/")
+        self.verification_token_ttl_hours = verification_token_ttl_hours
+
+    def execute(self, email: str) -> dict[str, bool]:
+        account = self.account_repository.get_by_email(_normalize_email(email))
+        if account is None or account.role != ROLE_CUSTOMER:
+            return {"resent": True}
+
+        token = token_urlsafe(36)
+        self.account_repository.set_email_verification_token(
+            account_id=account.id or "",
+            token=token,
+            sent_at=_now_utc(),
+        )
+        self.email_gateway.send_verification_email(
+            VerificationEmailContext(
+                account=account,
+                verification_url=f"{self.customer_app_url}/verify-email?token={token}",
+                expires_hours=self.verification_token_ttl_hours,
+            )
+        )
+        return {"resent": True}
+
+
+class StartCustomerEmailAuthUseCase:
+    def __init__(
+        self,
+        account_repository: AccountRepository,
+        email_gateway: CustomerVerificationEmailGateway,
+        password_hasher: PasswordHasher,
+        *,
+        customer_app_url: str,
+        verification_token_ttl_hours: int,
+    ) -> None:
+        self.account_repository = account_repository
+        self.email_gateway = email_gateway
+        self.password_hasher = password_hasher
+        self.customer_app_url = customer_app_url.rstrip("/")
+        self.verification_token_ttl_hours = verification_token_ttl_hours
+
+    def execute(self, request: EmailAuthStartRequest) -> dict[str, object]:
+        email = _normalize_email(request.email)
+        account = self.account_repository.get_by_email(email)
+        if account is None:
+            account = self.account_repository.create(
+                AccountPayload(
+                    full_name=email.split("@")[0].replace(".", " ").title() or "SkyNest Customer",
+                    email=email,
+                    phone=self._placeholder_phone(email),
+                    role=ROLE_CUSTOMER,
+                    preferred_language="vi",
+                    is_active=True,
+                    email_verified=False,
+                ),
+                password_hash=self.password_hasher.hash(token_urlsafe(24)),
+            )
+        elif account.role != ROLE_CUSTOMER or not account.is_active:
+            return {"sent": True}
+
+        token = token_urlsafe(36)
+        poll_token = token_urlsafe(36)
+        sent_at = _now_utc()
+        self.account_repository.set_email_verification_token(
+            account_id=account.id or "",
+            token=token,
+            sent_at=sent_at,
+            poll_token=poll_token,
+            poll_expires_at=sent_at + timedelta(hours=self.verification_token_ttl_hours),
+        )
+        self.email_gateway.send_verification_email(
+            VerificationEmailContext(
+                account=account,
+                verification_url=f"{self.customer_app_url}/verify-email?token={token}",
+                expires_hours=self.verification_token_ttl_hours,
+            )
+        )
+        return {"sent": True, "poll_token": poll_token}
+
+    def _placeholder_phone(self, email: str) -> str:
+        return f"EMAIL{sha1(email.encode('utf-8')).hexdigest()[:12].upper()}"
+
+
+class ClaimCustomerEmailAuthSessionUseCase:
+    def __init__(self, account_repository: AccountRepository, *, session_ttl_hours: int) -> None:
+        self.account_repository = account_repository
+        self.session_ttl_hours = session_ttl_hours
+
+    def execute(self, request: EmailAuthClaimRequest) -> dict[str, object] | None:
+        poll_token = request.poll_token.strip()
+        if not poll_token:
+            return None
+        account = self.account_repository.get_verified_email_poll_account(poll_token)
+        if account is None or account.role != ROLE_CUSTOMER or not account.is_active:
+            return None
+        session = self.account_repository.create_session(
+            account_id=account.id or "",
+            expires_at=_now_utc() + timedelta(hours=self.session_ttl_hours),
+        )
+        self.account_repository.clear_email_poll_token(poll_token)
         return {"account": account, "session": session}
 
 
@@ -78,10 +252,12 @@ class LoginUseCase:
             raise ValidationError("Thong tin dang nhap khong hop le.")
         if not account.is_active:
             raise ValidationError("Tai khoan da bi vo hieu hoa.")
+        if account.role == ROLE_CUSTOMER and not account.email_verified:
+            raise ValidationError("Email chua duoc xac thuc. Vui long kiem tra hop thu va bam link xac thuc.")
 
         session = self.account_repository.create_session(
             account_id=account.id or "",
-            expires_at=timezone.now() + timedelta(hours=self.session_ttl_hours),
+            expires_at=_now_utc() + timedelta(hours=self.session_ttl_hours),
         )
         return {"account": account, "session": session}
 
@@ -131,6 +307,23 @@ class UpdateMyProfileUseCase:
         return self.account_repository.update(account)
 
 
+class ChangeMyPasswordUseCase:
+    def __init__(self, account_repository: AccountRepository, password_hasher: PasswordHasher) -> None:
+        self.account_repository = account_repository
+        self.password_hasher = password_hasher
+
+    def execute(self, account_id: str, request: ChangePasswordRequest) -> Account:
+        account = self.account_repository.get_by_id(account_id)
+        if account is None:
+            raise NotFoundError("Khong tim thay tai khoan.")
+        if not self.account_repository.verify_password(account.id or "", request.current_password):
+            raise ValidationError("Mat khau hien tai khong dung.")
+        return self.account_repository.update(
+            account,
+            password_hash=self.password_hasher.hash(request.new_password),
+        )
+
+
 class ListMyBookingsUseCase:
     def __init__(self, booking_repository: BookingRepository) -> None:
         self.booking_repository = booking_repository
@@ -149,9 +342,21 @@ class ListAccountsUseCase:
         return self.account_repository.list(role=role, is_active=is_active)
 
 
-class CreateManagedAccountUseCase:
+class GetManagedAccountUseCase:
     def __init__(self, account_repository: AccountRepository) -> None:
         self.account_repository = account_repository
+
+    def execute(self, account_id: str) -> Account:
+        account = self.account_repository.get_by_id(account_id)
+        if account is None:
+            raise NotFoundError("Khong tim thay tai khoan.")
+        return account
+
+
+class CreateManagedAccountUseCase:
+    def __init__(self, account_repository: AccountRepository, password_hasher: PasswordHasher) -> None:
+        self.account_repository = account_repository
+        self.password_hasher = password_hasher
 
     def execute(self, request: ManagedAccountRequest) -> Account:
         if request.role not in MANAGEABLE_ROLES:
@@ -167,20 +372,26 @@ class CreateManagedAccountUseCase:
                 phone=phone,
                 role=request.role,
                 preferred_language=request.preferred_language,
-                is_active=request.is_active,
+                is_active=True,
+                email_verified=True,
             ),
-            password_hash=make_password(request.password or "ChangeMe123!"),
+            password_hash=self.password_hasher.hash(request.password or "ChangeMe123!"),
         )
 
 
 class UpdateManagedAccountUseCase:
-    def __init__(self, account_repository: AccountRepository) -> None:
+    def __init__(self, account_repository: AccountRepository, password_hasher: PasswordHasher) -> None:
         self.account_repository = account_repository
+        self.password_hasher = password_hasher
 
     def execute(self, account_id: str, request: ManagedAccountRequest) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
             raise NotFoundError("Khong tim thay tai khoan.")
+        if account.role == ROLE_CUSTOMER:
+            raise ValidationError("Khong the sua thong tin account customer tu admin.")
+        if account.role == ROLE_PILOT and request.password:
+            raise ValidationError("Admin khong duoc thay doi mat khau account pilot.")
         if request.role not in ALL_ROLES:
             raise ValidationError("Role khong hop le.")
 
@@ -198,10 +409,9 @@ class UpdateManagedAccountUseCase:
         account.phone = phone
         account.role = request.role
         account.preferred_language = request.preferred_language
-        account.is_active = request.is_active
         return self.account_repository.update(
             account,
-            password_hash=make_password(request.password) if request.password else None,
+            password_hash=self.password_hasher.hash(request.password) if request.password else None,
         )
 
 
@@ -215,3 +425,16 @@ class DisableAccountUseCase:
             raise NotFoundError("Khong tim thay tai khoan.")
         account.is_active = False
         return self.account_repository.update(account)
+
+
+class DeleteManagedAccountUseCase:
+    def __init__(self, account_repository: AccountRepository) -> None:
+        self.account_repository = account_repository
+
+    def execute(self, account_id: str) -> None:
+        account = self.account_repository.get_by_id(account_id)
+        if account is None:
+            raise NotFoundError("Khong tim thay tai khoan.")
+        if account.role == ROLE_CUSTOMER:
+            raise ValidationError("Khong the xoa account customer tu admin.")
+        self.account_repository.delete(account_id)

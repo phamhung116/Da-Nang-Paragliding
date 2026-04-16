@@ -4,23 +4,35 @@ from rest_framework import status
 from rest_framework.views import APIView
 
 from config.containers import (
+    change_my_password_use_case,
+    claim_customer_email_auth_session_use_case,
     create_managed_account_use_case,
+    delete_managed_account_use_case,
     disable_account_use_case,
+    get_managed_account_use_case,
     list_accounts_use_case,
     list_my_bookings_use_case,
     login_use_case,
     logout_use_case,
     register_customer_use_case,
+    resend_customer_verification_email_use_case,
+    start_customer_email_auth_use_case,
     update_managed_account_use_case,
     update_my_profile_use_case,
+    verify_customer_email_use_case,
 )
 from modules.accounts.presentation.api.v1.serializers import (
     AccountReadSerializer,
     AuthSessionSerializer,
+    EmailAuthClaimSerializer,
+    ChangePasswordSerializer,
+    EmailAuthStartSerializer,
     LoginSerializer,
     ManagedAccountSerializer,
     RegisterAccountSerializer,
+    ResendVerificationEmailSerializer,
     UpdateProfileSerializer,
+    VerifyEmailSerializer,
 )
 from modules.bookings.presentation.api.v1.serializers import BookingReadSerializer
 from shared.auth import BearerTokenAuthentication, IsAdminAccount, IsAuthenticatedAccount
@@ -41,9 +53,90 @@ class RegisterAccountApi(APIView):
             return success(
                 {
                     "account": AccountReadSerializer(serialize_entity(result["account"])).data,
-                    "session": AuthSessionSerializer(serialize_entity(result["session"])).data,
+                    "email_verification_required": result["email_verification_required"],
+                    "message": "Tai khoan da duoc tao. Vui long kiem tra email de xac thuc truoc khi dang nhap.",
                 },
                 status.HTTP_201_CREATED,
+            )
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmailApi(APIView):
+    authentication_classes: list = []
+    permission_classes: list = []
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = verify_customer_email_use_case().execute(serializer.validated_data["token"])
+            return success(
+                {
+                    "account": AccountReadSerializer(serialize_entity(result["account"])).data,
+                    "session": AuthSessionSerializer(serialize_entity(result["session"])).data,
+                }
+            )
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
+class ResendVerificationEmailApi(APIView):
+    authentication_classes: list = []
+    permission_classes: list = []
+
+    def post(self, request):
+        serializer = ResendVerificationEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = resend_customer_verification_email_use_case().execute(serializer.validated_data["email"])
+            return success(
+                {
+                    "resent": result["resent"],
+                    "message": "Neu email nay can xac thuc, he thong da gui lai link moi.",
+                }
+            )
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
+class StartEmailAuthApi(APIView):
+    authentication_classes: list = []
+    permission_classes: list = []
+
+    def post(self, request):
+        serializer = EmailAuthStartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = start_customer_email_auth_use_case().execute(serializer.to_request())
+            return success(
+                {
+                    "sent": result["sent"],
+                    "poll_token": result.get("poll_token"),
+                    "message": "Neu email hop le, he thong da gui link xac thuc dang nhap.",
+                }
+            )
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
+class ClaimEmailAuthApi(APIView):
+    authentication_classes: list = []
+    permission_classes: list = []
+
+    def post(self, request):
+        serializer = EmailAuthClaimSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            result = claim_customer_email_auth_session_use_case().execute(serializer.to_request())
+            if result is None:
+                return success({"ready": False})
+            return success(
+                {
+                    "ready": True,
+                    "account": AccountReadSerializer(serialize_entity(result["account"])).data,
+                    "session": AuthSessionSerializer(serialize_entity(result["session"])).data,
+                }
             )
         except DomainError as exc:
             return error(str(exc), status.HTTP_400_BAD_REQUEST)
@@ -94,6 +187,20 @@ class MeApi(APIView):
             return error(str(exc), status.HTTP_400_BAD_REQUEST)
 
 
+class MyPasswordApi(APIView):
+    authentication_classes = [BearerTokenAuthentication]
+    permission_classes = [IsAuthenticatedAccount]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            account = change_my_password_use_case().execute(request.user.id, serializer.to_request())
+            return success(AccountReadSerializer(serialize_entity(account)).data)
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
 class MyBookingHistoryApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
     permission_classes = [IsAuthenticatedAccount]
@@ -131,12 +238,28 @@ class AdminAccountDetailApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
     permission_classes = [IsAdminAccount]
 
+    def get(self, request, account_id: str):
+        try:
+            account = get_managed_account_use_case().execute(account_id)
+            return success(AccountReadSerializer(serialize_entity(account)).data)
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_404_NOT_FOUND)
+
     def patch(self, request, account_id: str):
         serializer = ManagedAccountSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         try:
             account = update_managed_account_use_case().execute(account_id, serializer.to_request())
             return success(AccountReadSerializer(serialize_entity(account)).data)
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, account_id: str):
+        if account_id == request.user.id:
+            return error("Khong the xoa tai khoan dang dang nhap.", status.HTTP_400_BAD_REQUEST)
+        try:
+            delete_managed_account_use_case().execute(account_id)
+            return success({"id": account_id})
         except DomainError as exc:
             return error(str(exc), status.HTTP_400_BAD_REQUEST)
 

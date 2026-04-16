@@ -13,6 +13,7 @@ class Account:
     role: str
     preferred_language: str
     is_active: bool
+    email_verified: bool
     created_at: datetime | None = None
     updated_at: datetime | None = None
 
@@ -29,4 +30,3 @@ class AuthSession:
     expires_at: datetime
     created_at: datetime | None = None
     updated_at: datetime | None = None
-

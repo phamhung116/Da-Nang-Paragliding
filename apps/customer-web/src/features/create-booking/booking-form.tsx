@@ -1,11 +1,12 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { BookingCreatePayload } from "@paragliding/api-client";
 import { Button, Card, Field, Input, Panel, Textarea } from "@paragliding/ui";
-import { useAuth } from "@/app/providers/auth-provider";
+import { useAuth } from "@/shared/providers/auth-provider";
 import { customerApi } from "@/shared/config/api";
+import { formatCurrency } from "@/shared/lib/format";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
 
 type BookingFormProps = {
@@ -19,11 +20,6 @@ type BookingSubmitForm = BookingCreatePayload & {
 };
 
 const paymentOptions = [
-  {
-    value: "cash",
-    title: "Tien mat tai diem bay",
-    description: "Giu cho truoc, admin se review va thanh toan khi check-in."
-  },
   {
     value: "wallet",
     title: "QR vi dien tu",
@@ -44,6 +40,9 @@ const paymentOptions = [
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
   const { account } = useAuth();
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const accountNeedsContactDetails = !account?.phone || account.phone.startsWith("EMAIL");
+  const accountPhone = accountNeedsContactDetails ? "" : account?.phone ?? "";
   const { data: servicePackage } = useQuery({
     queryKey: ["service", serviceSlug],
     queryFn: () => customerApi.getService(serviceSlug)
@@ -55,35 +54,46 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
       flight_date: selectedDate,
       flight_time: selectedTime,
       customer_name: account?.full_name ?? "",
-      phone: account?.phone ?? "",
+      phone: accountPhone,
       email: account?.email ?? "",
       adults: 1,
       children: 0,
       notes: "",
-      payment_method: "cash",
+      payment_method: "bank_transfer",
       agree_terms: false
     }),
-    [account?.email, account?.full_name, account?.phone, selectedDate, selectedTime, serviceSlug]
+    [account?.email, account?.full_name, accountPhone, selectedDate, selectedTime, serviceSlug]
   );
 
-  const { register, handleSubmit, watch, formState } = useForm<BookingSubmitForm>({
+  const { register, handleSubmit, watch, formState, reset } = useForm<BookingSubmitForm>({
     defaultValues,
     mode: "onChange"
   });
 
+  useEffect(() => {
+    reset(defaultValues);
+  }, [defaultValues, reset]);
+
   const paymentMethod = watch("payment_method");
+  const adults = Number(watch("adults") ?? 0);
+  const children = Number(watch("children") ?? 0);
+  const totalGuests = Math.max(0, adults + children);
+  const tourTotal = Number(servicePackage?.price ?? 0) * totalGuests;
+  const depositAmount = tourTotal * 0.3;
 
   const mutation = useMutation({
     mutationFn: ({ agree_terms: _, ...payload }: BookingSubmitForm) => customerApi.createBooking(payload),
     onSuccess: (result) => {
+      setSuccessMessage(`Dat lich thanh cong. Ma booking ${result.booking.code}. Dang chuyen sang buoc thanh toan dat coc...`);
       checkoutStorage.set(result);
       trackingLookupStorage.set(account?.email ?? account?.phone ?? "");
-      navigate("/checkout");
+      window.setTimeout(() => navigate("/checkout"), 900);
     }
   });
 
   return (
     <div className="booking-form-layout">
+      {successMessage ? <div className="booking-toast">{successMessage}</div> : null}
       <Card>
         <Panel className="booking-summary-card">
           <h3>Booking summary</h3>
@@ -103,9 +113,16 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
             <span>Tre em toi thieu</span>
             <strong>{servicePackage?.min_child_age ?? 6}+ tuoi</strong>
           </div>
+          <div className="booking-summary-card__fact">
+            <span>Gia tri tour</span>
+            <strong>{formatCurrency(tourTotal)}</strong>
+          </div>
+          <div className="booking-summary-card__fact">
+            <span>Can dat coc 30%</span>
+            <strong>{formatCurrency(depositAmount)}</strong>
+          </div>
           <p className="booking-summary-card__note">
-            Khung gio da chon se duoc giu sau khi gui booking. Neu chon thanh toan online, he thong se tao
-            QR dat coc va timeout sau 30 phut.
+            Khung gio da chon se duoc giu sau khi gui booking. He thong se tao QR dat coc 30% va timeout sau 30 phut.
           </p>
         </Panel>
       </Card>
@@ -115,10 +132,18 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
           <form className="booking-form-grid" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
             <div className="booking-form-grid__cols">
               <Field label="Ho va ten">
-                <Input value={account?.full_name ?? ""} disabled readOnly />
+                {accountNeedsContactDetails ? (
+                  <Input {...register("customer_name", { required: true })} />
+                ) : (
+                  <Input value={account?.full_name ?? ""} disabled readOnly />
+                )}
               </Field>
               <Field label="So dien thoai">
-                <Input value={account?.phone ?? ""} disabled readOnly />
+                {accountNeedsContactDetails ? (
+                  <Input {...register("phone", { required: true })} />
+                ) : (
+                  <Input value={accountPhone} disabled readOnly />
+                )}
               </Field>
             </div>
 

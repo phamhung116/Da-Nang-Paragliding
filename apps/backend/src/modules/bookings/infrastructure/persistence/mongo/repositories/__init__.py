@@ -5,6 +5,7 @@ from collections import defaultdict
 from modules.bookings.application.dto import BookingPayload
 from modules.bookings.domain.entities import Booking
 from modules.bookings.domain.value_objects import (
+    BOOKING_APPROVAL_CANCELLED,
     BOOKING_APPROVAL_CONFIRMED,
     BOOKING_APPROVAL_PENDING,
     BOOKING_APPROVAL_REJECTED,
@@ -81,6 +82,15 @@ class MongoBookingRepository:
     def list_by_email(self, email: str) -> list[Booking]:
         return [_to_domain(document) for document in BookingDocument.objects.filter(email=email)]
 
+    def list_all(self) -> list[Booking]:
+        return [_to_domain(document) for document in BookingDocument.objects.all().order_by("-created_at")]
+
+    def list_cancelled(self) -> list[Booking]:
+        return [
+            _to_domain(document)
+            for document in BookingDocument.objects.filter(approval_status__in=[BOOKING_APPROVAL_CANCELLED, BOOKING_APPROVAL_REJECTED])
+        ]
+
     def list_pending_review(self) -> list[Booking]:
         return [
             _to_domain(document)
@@ -110,6 +120,7 @@ class MongoBookingRepository:
                 flight_time=flight_time,
             )
             .exclude(approval_status=BOOKING_APPROVAL_REJECTED)
+            .exclude(approval_status=BOOKING_APPROVAL_CANCELLED)
             .count()
         )
 
@@ -122,6 +133,7 @@ class MongoBookingRepository:
                 flight_date__month=month,
             )
             .exclude(approval_status=BOOKING_APPROVAL_REJECTED)
+            .exclude(approval_status=BOOKING_APPROVAL_CANCELLED)
         )
         for document in queryset:
             date_key = document.flight_date.isoformat()

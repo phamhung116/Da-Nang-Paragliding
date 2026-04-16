@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from modules.posts.application.dto import PostPayload
 from modules.posts.domain.entities import Post
+from modules.posts.domain.payloads import PostPayload
 
 
 class PostRepository(Protocol):

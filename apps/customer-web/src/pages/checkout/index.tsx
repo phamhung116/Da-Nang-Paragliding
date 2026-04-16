@@ -119,16 +119,7 @@ export const CheckoutPage = () => {
 
             <Card className="checkout-action-card">
               <Panel className="stack">
-                <Badge tone={booking.payment_method === "cash" ? "success" : "default"}>
-                  {booking.payment_method === "cash" ? "Thanh toan tai diem bay" : "Dat coc bang QR"}
-                </Badge>
-                {booking.payment_method === "cash" ? (
-                  <p className="detail-copy">
-                    Booking da duoc giu cho. Admin se review truoc khi chuyen sang van hanh va thong bao cho
-                    khach neu can dieu chinh slot.
-                  </p>
-                ) : (
-                  <>
+                <Badge>Dat coc bang QR</Badge>
                     <p className="detail-copy">
                       Dat coc {paymentSession?.deposit_percentage}% de xac nhan booking. Sau khi thanh toan
                       thanh cong, booking se duoc confirm va email xac nhan se duoc gui cho khach.
@@ -166,12 +157,10 @@ export const CheckoutPage = () => {
                         ? "Da thanh toan"
                         : isExpired
                           ? "QR da het han"
-                          : paymentMutation.isPending
+                        : paymentMutation.isPending
                             ? "Dang xu ly..."
                             : "Gia lap thanh toan thanh cong"}
                     </Button>
-                  </>
-                )}
                 <Link to="/tracking">
                   <Button variant="secondary">Theo doi hanh trinh bay</Button>
                 </Link>

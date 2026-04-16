@@ -4,7 +4,12 @@ from datetime import date
 
 from rest_framework import serializers
 
-from modules.bookings.application.dto import AssignPilotRequest, BookingCreateRequest, ReviewBookingRequest
+from modules.bookings.application.dto import (
+    AssignPilotRequest,
+    BookingCreateRequest,
+    CancelBookingRequest,
+    ReviewBookingRequest,
+)
 from shared.utils import normalize_phone
 
 
@@ -46,7 +51,7 @@ class BookingCreateSerializer(serializers.Serializer):
     adults = serializers.IntegerField(min_value=0)
     children = serializers.IntegerField(min_value=0)
     notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    payment_method = serializers.ChoiceField(choices=["cash", "wallet", "gateway", "bank_transfer"])
+    payment_method = serializers.ChoiceField(choices=["wallet", "gateway", "bank_transfer"])
 
     def validate_flight_date(self, value: date) -> date:
         if value < date.today():
@@ -98,4 +103,19 @@ class AssignPilotSerializer(serializers.Serializer):
         return AssignPilotRequest(
             pilot_name=self.validated_data["pilot_name"],
             pilot_phone=normalize_phone(self.validated_data["pilot_phone"]),
+        )
+
+
+class CancelBookingSerializer(serializers.Serializer):
+    reason = serializers.CharField(max_length=800)
+    refund_bank = serializers.CharField(max_length=120, required=False, allow_blank=True, allow_null=True)
+    refund_account_number = serializers.CharField(max_length=64, required=False, allow_blank=True, allow_null=True)
+    refund_account_name = serializers.CharField(max_length=120, required=False, allow_blank=True, allow_null=True)
+
+    def to_request(self) -> CancelBookingRequest:
+        return CancelBookingRequest(
+            reason=self.validated_data["reason"],
+            refund_bank=self.validated_data.get("refund_bank") or None,
+            refund_account_number=self.validated_data.get("refund_account_number") or None,
+            refund_account_name=self.validated_data.get("refund_account_name") or None,
         )

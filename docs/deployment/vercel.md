@@ -69,6 +69,16 @@ File config da co san:
   - `BUSINESS_PHONE=+84 909 000 123`
   - `BUSINESS_EMAIL=hello@skynest.vn`
   - `BUSINESS_ADDRESS=Doi bay Son Tra, Da Nang`
+  - `CUSTOMER_WEB_URL=https://<customer-domain>`
+  - `EMAIL_VERIFICATION_TOKEN_TTL_HOURS=24`
+  - `EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`
+  - `EMAIL_HOST=smtp.gmail.com`
+  - `EMAIL_PORT=587`
+  - `EMAIL_HOST_USER=<smtp-email>`
+  - `EMAIL_HOST_PASSWORD=<smtp-app-password>`
+  - `EMAIL_USE_TLS=true`
+  - `EMAIL_USE_SSL=false`
+  - `DEFAULT_FROM_EMAIL=SkyNest <hello@skynest.vn>`
   - `NOTIFICATION_PROVIDER=console`
   - `PAYMENT_PROVIDER=mockpay`
 

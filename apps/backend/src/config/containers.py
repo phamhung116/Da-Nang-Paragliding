@@ -3,25 +3,36 @@ from __future__ import annotations
 from django.conf import settings
 
 from modules.accounts.application.use_cases import (
+    ChangeMyPasswordUseCase,
+    ClaimCustomerEmailAuthSessionUseCase,
     CreateManagedAccountUseCase,
+    DeleteManagedAccountUseCase,
     DisableAccountUseCase,
+    GetManagedAccountUseCase,
     GetAccountByTokenUseCase,
     ListAccountsUseCase,
     ListMyBookingsUseCase,
     LoginUseCase,
     LogoutUseCase,
     RegisterCustomerUseCase,
+    ResendCustomerVerificationEmailUseCase,
+    StartCustomerEmailAuthUseCase,
     UpdateManagedAccountUseCase,
     UpdateMyProfileUseCase,
+    VerifyCustomerEmailUseCase,
 )
+from modules.accounts.infrastructure.email.gateways import CustomerEmailGateway
 from modules.accounts.infrastructure.persistence.mongo.repositories import MongoAccountRepository
+from modules.accounts.infrastructure.security import DjangoPasswordHasher
 from modules.availability.application.use_cases import GetMonthlyAvailabilityUseCase
 from modules.availability.infrastructure.persistence.mongo.repositories import (
     MongoAvailabilityRepository,
 )
 from modules.bookings.application.use_cases import (
     AssignPilotUseCase,
+    CancelBookingUseCase,
     CreateBookingUseCase,
+    GetBookingUseCase,
     ListBookingRequestsUseCase,
     ListConfirmedBookingsUseCase,
     ListPilotFlightsUseCase,
@@ -115,6 +126,14 @@ def notification_gateway() -> ConsoleNotificationGateway:
     )
 
 
+def customer_email_gateway() -> CustomerEmailGateway:
+    return CustomerEmailGateway()
+
+
+def password_hasher() -> DjangoPasswordHasher:
+    return DjangoPasswordHasher()
+
+
 def list_service_packages_use_case() -> ListServicePackagesUseCase:
     return ListServicePackagesUseCase(service_package_repository())
 
@@ -165,7 +184,47 @@ def get_monthly_availability_use_case() -> GetMonthlyAvailabilityUseCase:
 
 
 def register_customer_use_case() -> RegisterCustomerUseCase:
-    return RegisterCustomerUseCase(account_repository(), settings.ACCESS_TOKEN_TTL_HOURS)
+    return RegisterCustomerUseCase(
+        account_repository(),
+        customer_email_gateway(),
+        password_hasher(),
+        customer_app_url=settings.CUSTOMER_WEB_URL,
+        verification_token_ttl_hours=settings.EMAIL_VERIFICATION_TOKEN_TTL_HOURS,
+    )
+
+
+def verify_customer_email_use_case() -> VerifyCustomerEmailUseCase:
+    return VerifyCustomerEmailUseCase(
+        account_repository(),
+        session_ttl_hours=settings.ACCESS_TOKEN_TTL_HOURS,
+        verification_token_ttl_hours=settings.EMAIL_VERIFICATION_TOKEN_TTL_HOURS,
+    )
+
+
+def resend_customer_verification_email_use_case() -> ResendCustomerVerificationEmailUseCase:
+    return ResendCustomerVerificationEmailUseCase(
+        account_repository(),
+        customer_email_gateway(),
+        customer_app_url=settings.CUSTOMER_WEB_URL,
+        verification_token_ttl_hours=settings.EMAIL_VERIFICATION_TOKEN_TTL_HOURS,
+    )
+
+
+def start_customer_email_auth_use_case() -> StartCustomerEmailAuthUseCase:
+    return StartCustomerEmailAuthUseCase(
+        account_repository(),
+        customer_email_gateway(),
+        password_hasher(),
+        customer_app_url=settings.CUSTOMER_WEB_URL,
+        verification_token_ttl_hours=settings.EMAIL_VERIFICATION_TOKEN_TTL_HOURS,
+    )
+
+
+def claim_customer_email_auth_session_use_case() -> ClaimCustomerEmailAuthSessionUseCase:
+    return ClaimCustomerEmailAuthSessionUseCase(
+        account_repository(),
+        session_ttl_hours=settings.ACCESS_TOKEN_TTL_HOURS,
+    )
 
 
 def login_use_case() -> LoginUseCase:
@@ -184,6 +243,10 @@ def update_my_profile_use_case() -> UpdateMyProfileUseCase:
     return UpdateMyProfileUseCase(account_repository())
 
 
+def change_my_password_use_case() -> ChangeMyPasswordUseCase:
+    return ChangeMyPasswordUseCase(account_repository(), password_hasher())
+
+
 def list_my_bookings_use_case() -> ListMyBookingsUseCase:
     return ListMyBookingsUseCase(booking_repository())
 
@@ -192,16 +255,24 @@ def list_accounts_use_case() -> ListAccountsUseCase:
     return ListAccountsUseCase(account_repository())
 
 
+def get_managed_account_use_case() -> GetManagedAccountUseCase:
+    return GetManagedAccountUseCase(account_repository())
+
+
 def create_managed_account_use_case() -> CreateManagedAccountUseCase:
-    return CreateManagedAccountUseCase(account_repository())
+    return CreateManagedAccountUseCase(account_repository(), password_hasher())
 
 
 def update_managed_account_use_case() -> UpdateManagedAccountUseCase:
-    return UpdateManagedAccountUseCase(account_repository())
+    return UpdateManagedAccountUseCase(account_repository(), password_hasher())
 
 
 def disable_account_use_case() -> DisableAccountUseCase:
     return DisableAccountUseCase(account_repository())
+
+
+def delete_managed_account_use_case() -> DeleteManagedAccountUseCase:
+    return DeleteManagedAccountUseCase(account_repository())
 
 
 def create_booking_use_case() -> CreateBookingUseCase:
@@ -226,6 +297,10 @@ def list_booking_requests_use_case() -> ListBookingRequestsUseCase:
     return ListBookingRequestsUseCase(booking_repository())
 
 
+def get_booking_use_case() -> GetBookingUseCase:
+    return GetBookingUseCase(booking_repository())
+
+
 def review_booking_use_case() -> ReviewBookingUseCase:
     return ReviewBookingUseCase(
         booking_repository=booking_repository(),
@@ -238,6 +313,15 @@ def review_booking_use_case() -> ReviewBookingUseCase:
 
 def list_confirmed_bookings_use_case() -> ListConfirmedBookingsUseCase:
     return ListConfirmedBookingsUseCase(booking_repository())
+
+
+def cancel_booking_use_case() -> CancelBookingUseCase:
+    return CancelBookingUseCase(
+        booking_repository=booking_repository(),
+        availability_repository=availability_repository(),
+        notification_gateway=notification_gateway(),
+        account_repository=account_repository(),
+    )
 
 
 def assign_pilot_use_case() -> AssignPilotUseCase:

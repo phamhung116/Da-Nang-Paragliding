@@ -13,6 +13,13 @@ class AccountDocument(models.Model):
     role = models.CharField(max_length=40, db_index=True)
     preferred_language = models.CharField(max_length=5, default="vi")
     is_active = models.BooleanField(default=True, db_index=True)
+    email_verified = models.BooleanField(default=True, db_index=True)
+    email_verified_at = models.DateTimeField(blank=True, null=True)
+    email_verification_token = models.CharField(max_length=120, blank=True, null=True, db_index=True)
+    email_verification_sent_at = models.DateTimeField(blank=True, null=True)
+    email_login_poll_token = models.CharField(max_length=120, blank=True, null=True, db_index=True)
+    email_login_poll_expires_at = models.DateTimeField(blank=True, null=True)
+    email_login_poll_verified_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -33,4 +40,3 @@ class AccountSessionDocument(models.Model):
     class Meta:
         db_table = "account_sessions"
         ordering = ["-created_at"]
-

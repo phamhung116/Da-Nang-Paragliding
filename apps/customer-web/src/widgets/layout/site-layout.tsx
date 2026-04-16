@@ -2,8 +2,8 @@ import type { PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button, Container } from "@paragliding/ui";
-import { useAuth } from "@/app/providers/auth-provider";
-import { useI18n } from "@/app/providers/i18n-provider";
+import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
 
@@ -43,7 +43,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     { to: routes.posts, label: t("nav_posts") },
     { to: routes.tracking, label: t("nav_tracking") },
     { to: routes.about, label: t("nav_about") },
-    { to: routes.contact, label: t("nav_contact")},
+    { to: routes.contact, label: t("nav_contact") }
   ];
 
   useEffect(() => {
@@ -294,8 +294,17 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 </div>
               </div>
             </div>
+<<<<<<< HEAD
             <div className="border-t border-stone-800 mt-16 pt-8 text-center text-stone-500 text-xs">
               © 2024 Da Nang Paragliding. All rights reserved.
+=======
+            <div className="stack-sm">
+              <strong className="site-footer__title">Lien he</strong>
+              <p>{businessInfo.phone}</p>
+              <p>{businessInfo.email}</p>
+              <p>{businessInfo.address}</p>
+              <Link to={routes.contact}>Xem ban do lien he</Link>
+>>>>>>> origin/main
             </div>
           </div>
         </footer>

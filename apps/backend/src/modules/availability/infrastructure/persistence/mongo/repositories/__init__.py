@@ -9,27 +9,39 @@ from shared.exceptions import NotFoundError, ValidationError
 
 
 def _to_domain(document: AvailabilityDayDocument) -> AvailabilityDay:
+    stored_weather_available = bool(getattr(document, "weather_available", False))
     return AvailabilityDay(
         id=str(document.id),
         service_slug=document.service_slug,
         date=document.date,
-        temperature_c=document.temperature_c,
-        wind_kph=document.wind_kph,
-        uv_index=document.uv_index,
-        flight_condition=document.flight_condition,
+        temperature_c=document.temperature_c if stored_weather_available else 0,
+        wind_kph=document.wind_kph if stored_weather_available else 0,
+        uv_index=document.uv_index if stored_weather_available else 0,
+        visibility_km=getattr(document, "visibility_km", 0) if stored_weather_available else 0,
+        weather_condition=getattr(document, "weather_condition", "") if stored_weather_available else "",
+        flight_condition=document.flight_condition if stored_weather_available else "",
+        weather_available=stored_weather_available,
         slots=[
-            AvailabilitySlot(
-                time=slot["time"],
-                capacity=slot["capacity"],
-                booked=slot["booked"],
-                is_locked=slot["is_locked"],
-                temperature_c=slot.get("temperature_c", document.temperature_c),
-                wind_kph=slot.get("wind_kph", document.wind_kph),
-                uv_index=slot.get("uv_index", document.uv_index),
-                flight_condition=slot.get("flight_condition", document.flight_condition),
-            )
+            _slot_to_domain(slot)
             for slot in document.slots
         ],
+    )
+
+
+def _slot_to_domain(slot: dict[str, object]) -> AvailabilitySlot:
+    weather_available = bool(slot.get("weather_available", False))
+    return AvailabilitySlot(
+        time=str(slot["time"]),
+        capacity=int(slot["capacity"]),
+        booked=int(slot["booked"]),
+        is_locked=bool(slot["is_locked"]),
+        temperature_c=float(slot.get("temperature_c", 0)) if weather_available else 0,
+        wind_kph=float(slot.get("wind_kph", 0)) if weather_available else 0,
+        uv_index=int(slot.get("uv_index", 0)) if weather_available else 0,
+        visibility_km=float(slot.get("visibility_km", 0)) if weather_available else 0,
+        weather_condition=str(slot.get("weather_condition", "")) if weather_available else "",
+        flight_condition=str(slot.get("flight_condition", "")) if weather_available else "",
+        weather_available=weather_available,
     )
 
 
@@ -42,7 +54,10 @@ def _slot_payload(slot: AvailabilitySlot) -> dict[str, object]:
         "temperature_c": slot.temperature_c,
         "wind_kph": slot.wind_kph,
         "uv_index": slot.uv_index,
+        "visibility_km": slot.visibility_km,
+        "weather_condition": slot.weather_condition,
         "flight_condition": slot.flight_condition,
+        "weather_available": slot.weather_available,
     }
 
 
@@ -64,6 +79,8 @@ class MongoAvailabilityRepository:
                 temperature_c=day.temperature_c,
                 wind_kph=day.wind_kph,
                 uv_index=day.uv_index,
+                visibility_km=day.visibility_km,
+                weather_condition=day.weather_condition,
                 flight_condition=day.flight_condition,
                 slots=[_slot_payload(slot) for slot in day.slots],
             )

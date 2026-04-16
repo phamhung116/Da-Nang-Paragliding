@@ -60,6 +60,13 @@ DATABASES = {
     )
 }
 
+CACHES = {
+    "default": {
+        "BACKEND": os.getenv("DJANGO_CACHE_BACKEND", "django.core.cache.backends.locmem.LocMemCache"),
+        "LOCATION": os.getenv("DJANGO_CACHE_LOCATION", "skynest-runtime-cache"),
+    }
+}
+
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = "vi-vn"
@@ -103,3 +110,18 @@ BUSINESS_INFO = {
 NOTIFICATION_PROVIDER = os.getenv("NOTIFICATION_PROVIDER", "console")
 PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "mockpay")
 ACCESS_TOKEN_TTL_HOURS = int(os.getenv("ACCESS_TOKEN_TTL_HOURS", "168"))
+EMAIL_VERIFICATION_TOKEN_TTL_HOURS = int(os.getenv("EMAIL_VERIFICATION_TOKEN_TTL_HOURS", "24"))
+CUSTOMER_WEB_URL = os.getenv("CUSTOMER_WEB_URL", "http://localhost:5173")
+WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY", "")
+WEATHERAPI_LANG = os.getenv("WEATHERAPI_LANG", "vi")
+WEATHERAPI_FORECAST_DAYS = int(os.getenv("WEATHERAPI_FORECAST_DAYS", "3"))
+WEATHER_API_CACHE_SECONDS = int(os.getenv("WEATHER_API_CACHE_SECONDS", "900"))
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "true").lower() == "true"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "false").lower() == "true"
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", BUSINESS_INFO["email"])

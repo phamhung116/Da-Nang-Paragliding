@@ -4,12 +4,17 @@ import type {
   AuthResult,
   AvailabilityDay,
   Booking,
+  BookingCancelPayload,
   BookingCreatePayload,
+  ChangePasswordPayload,
+  EmailAuthStartPayload,
+  EmailAuthStartResult,
+  EmailAuthClaimResult,
   LoginPayload,
   PaymentSession,
   PaymentTransaction,
   Post,
-  RegisterPayload,
+  ResendVerificationResult,
   ServicePackage,
   Tracking,
   UpdateProfilePayload
@@ -19,10 +24,25 @@ export const createCustomerApi = (baseUrl: string, getAccessToken?: () => string
   const http = createHttpClient(baseUrl, { getAccessToken });
 
   return {
-    register: (payload: RegisterPayload) =>
-      http.request<AuthResult>("/auth/register/", {
+    verifyEmail: (token: string) =>
+      http.request<AuthResult>("/auth/verify-email/", {
+        method: "POST",
+        body: JSON.stringify({ token })
+      }),
+    resendVerificationEmail: (email: string) =>
+      http.request<ResendVerificationResult>("/auth/resend-verification/", {
+        method: "POST",
+        body: JSON.stringify({ email })
+      }),
+    startEmailAuth: (payload: EmailAuthStartPayload) =>
+      http.request<EmailAuthStartResult>("/auth/email/start/", {
         method: "POST",
         body: JSON.stringify(payload)
+      }),
+    claimEmailAuth: (pollToken: string) =>
+      http.request<EmailAuthClaimResult>("/auth/email/claim/", {
+        method: "POST",
+        body: JSON.stringify({ poll_token: pollToken })
       }),
     login: (payload: LoginPayload) =>
       http.request<AuthResult>("/auth/login/", {
@@ -39,7 +59,17 @@ export const createCustomerApi = (baseUrl: string, getAccessToken?: () => string
         method: "PATCH",
         body: JSON.stringify(payload)
       }),
+    changePassword: (payload: ChangePasswordPayload) =>
+      http.request<Account>("/auth/me/password/", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }),
     getMyBookings: () => http.request<Booking[]>("/auth/bookings/"),
+    cancelMyBooking: (code: string, payload: BookingCancelPayload) =>
+      http.request<Booking>(`/auth/bookings/${code}/cancel/`, {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }),
     listServices: (featured = false) =>
       http.request<ServicePackage[]>(`/services/${featured ? "?featured=true" : ""}`),
     getService: (slug: string) => http.request<ServicePackage>(`/services/${slug}/`),

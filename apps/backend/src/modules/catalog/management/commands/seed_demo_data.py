@@ -175,6 +175,7 @@ class Command(BaseCommand):
                         role=payload["role"],
                         preferred_language=payload["preferred_language"],
                         is_active=True,
+                        email_verified=True,
                     ),
                     password_hash=make_password(payload["password"]),
                 )

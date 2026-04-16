@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Card, Panel } from "@paragliding/ui";
 import type { PilotFlight, Tracking } from "@paragliding/api-client";
-import { usePilotAuth } from "@/app/providers/auth-provider";
+import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { pilotApi } from "@/shared/config/api";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";

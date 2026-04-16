@@ -50,7 +50,7 @@ class MongoTrackingRepository:
             timeline=[
                 {
                     "status": flight_status,
-                    "label": "Dang cho",
+                    "label": "Cho xac nhan" if flight_status == "WAITING_CONFIRMATION" else "Dang cho",
                     "recorded_at": datetime.utcnow().isoformat(),
                     "type": "STATUS",
                 }

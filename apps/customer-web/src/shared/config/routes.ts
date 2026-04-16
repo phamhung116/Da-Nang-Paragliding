@@ -1,9 +1,11 @@
 export const routes = {
   home: "/",
   about: "/about",
+  contact: "/contact",
   login: "/login",
-  register: "/register",
+  verifyEmail: "/verify-email",
   account: "/account",
+  accountBookingDetail: "/account/bookings/:code",
   posts: "/posts",
   services: "/services",
   booking: "/booking",

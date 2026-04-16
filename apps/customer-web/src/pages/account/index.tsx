@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Badge, Button, Card, Container, Field, Input, Panel, Select } from "@paragliding/ui";
 import type { UpdateProfilePayload } from "@paragliding/api-client";
-import { useAuth } from "@/app/providers/auth-provider";
-import { useI18n } from "@/app/providers/i18n-provider";
+import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { customerApi } from "@/shared/config/api";
 import { accountSupportNotes } from "@/shared/constants/customer-content";
 import { routes } from "@/shared/config/routes";
@@ -179,6 +179,9 @@ export const AccountPage = () => {
                           {booking.payment_status} / {booking.flight_status}
                         </span>
                         <span>Ma booking: {booking.code}</span>
+                        <Link to={`/account/bookings/${booking.code}`}>
+                          <Button variant="secondary">Xem chi tiet booking</Button>
+                        </Link>
                       </article>
                     ))}
                   </div>

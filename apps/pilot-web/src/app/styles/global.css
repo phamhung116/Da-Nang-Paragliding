@@ -203,6 +203,35 @@ body {
   letter-spacing: -0.04em;
 }
 
+.pilot-account-grid,
+.pilot-password-form {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.pilot-account-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pilot-account-grid > div {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.95rem;
+  border: 1px solid rgba(21, 184, 135, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.94);
+}
+
+.pilot-account-grid span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.pilot-success {
+  color: #087f5b;
+  font-weight: 800;
+}
+
 .pilot-quick-stats {
   display: flex;
   gap: 0.75rem;
@@ -412,6 +441,76 @@ body {
   white-space: pre-line;
 }
 
+.pilot-post-detail__content a {
+  color: var(--accent);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+}
+
+.pilot-post-detail__content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+.pilot-post-detail__content figure.post-image {
+  margin: 1.35rem 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.pilot-post-detail__content figure.post-image--left {
+  justify-items: start;
+  text-align: left;
+}
+
+.pilot-post-detail__content figure.post-image--center {
+  justify-items: center;
+  text-align: center;
+}
+
+.pilot-post-detail__content figure.post-image--right {
+  justify-items: end;
+  text-align: right;
+}
+
+.pilot-post-detail__content figure.post-image img {
+  display: block;
+}
+
+.pilot-post-detail__content figure.post-image figcaption {
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.pilot-post-detail__content blockquote {
+  margin: 1.2rem 0;
+  padding: 0.95rem 1rem;
+  border-left: 4px solid var(--accent);
+  border-radius: 8px;
+  background: rgba(255, 248, 250, 0.9);
+  color: var(--ink);
+}
+
+.pilot-post-detail__content pre {
+  overflow-x: auto;
+  margin: 1.2rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background: #211f22;
+  color: #fff7f9;
+  white-space: pre-wrap;
+}
+
+.pilot-post-detail__content hr {
+  height: 1px;
+  margin: 1.35rem 0;
+  border: 0;
+  background: rgba(126, 17, 43, 0.18);
+}
+
 .pilot-empty {
   padding: 1.1rem 1.2rem;
   border: 1px dashed rgba(126, 17, 43, 0.18);
@@ -462,6 +561,10 @@ body {
   }
 
   .pilot-heading {
+    grid-template-columns: 1fr;
+  }
+
+  .pilot-account-grid {
     grid-template-columns: 1fr;
   }
 }

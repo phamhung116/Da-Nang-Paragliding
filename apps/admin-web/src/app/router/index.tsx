@@ -1,13 +1,17 @@
+import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAdminAuth } from "@/app/providers/auth-provider";
-import { AccountsPage } from "@/pages/accounts";
-import { BookingRequestsPage } from "@/pages/booking-requests";
-import { BookingsPage } from "@/pages/bookings";
-import { LoginPage } from "@/pages/login";
-import { PostsPage } from "@/pages/posts";
-import { ServiceDetailPage } from "@/pages/service-detail";
-import { ServicesPage } from "@/pages/services";
 import { routes } from "@/shared/config/routes";
+
+const AccountDetailPage = lazy(() => import("@/pages/accounts/detail").then((module) => ({ default: module.AccountDetailPage })));
+const AccountsPage = lazy(() => import("@/pages/accounts").then((module) => ({ default: module.AccountsPage })));
+const BookingDetailPage = lazy(() => import("@/pages/bookings/detail").then((module) => ({ default: module.BookingDetailPage })));
+const BookingsPage = lazy(() => import("@/pages/bookings").then((module) => ({ default: module.BookingsPage })));
+const LoginPage = lazy(() => import("@/pages/login").then((module) => ({ default: module.LoginPage })));
+const PostDetailPage = lazy(() => import("@/pages/posts/detail").then((module) => ({ default: module.PostDetailPage })));
+const PostsPage = lazy(() => import("@/pages/posts").then((module) => ({ default: module.PostsPage })));
+
+const page = (element: JSX.Element) => <Suspense fallback={null}>{element}</Suspense>;
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { isAuthenticated, loading } = useAdminAuth();
@@ -19,20 +23,12 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 export const AppRouter = () => (
   <Routes>
-    <Route path={routes.login} element={<LoginPage />} />
+    <Route path={routes.login} element={page(<LoginPage />)} />
     <Route
       path="/"
       element={
         <ProtectedRoute>
-          <Navigate to={routes.bookingRequests} replace />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path={routes.bookingRequests}
-      element={
-        <ProtectedRoute>
-          <BookingRequestsPage />
+          <Navigate to={routes.bookings} replace />
         </ProtectedRoute>
       }
     />
@@ -40,7 +36,15 @@ export const AppRouter = () => (
       path={routes.bookings}
       element={
         <ProtectedRoute>
-          <BookingsPage />
+          {page(<BookingsPage />)}
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={routes.bookingDetail}
+      element={
+        <ProtectedRoute>
+          {page(<BookingDetailPage />)}
         </ProtectedRoute>
       }
     />
@@ -48,7 +52,15 @@ export const AppRouter = () => (
       path={routes.accounts}
       element={
         <ProtectedRoute>
-          <AccountsPage />
+          {page(<AccountsPage />)}
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={routes.accountDetail}
+      element={
+        <ProtectedRoute>
+          {page(<AccountDetailPage />)}
         </ProtectedRoute>
       }
     />
@@ -56,23 +68,15 @@ export const AppRouter = () => (
       path={routes.posts}
       element={
         <ProtectedRoute>
-          <PostsPage />
+          {page(<PostsPage />)}
         </ProtectedRoute>
       }
     />
     <Route
-      path={routes.services}
+      path="/posts/:slug"
       element={
         <ProtectedRoute>
-          <ServicesPage />
-        </ProtectedRoute>
-      }
-    />
-    <Route
-      path="/services/:slug"
-      element={
-        <ProtectedRoute>
-          <ServiceDetailPage />
+          {page(<PostDetailPage />)}
         </ProtectedRoute>
       }
     />

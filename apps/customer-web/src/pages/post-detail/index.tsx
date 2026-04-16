@@ -40,7 +40,7 @@ export const PostDetailPage = () => {
         <Container className="stack">
           <Card>
             <Panel className="stack">
-              <div className="post-detail__content">{data.content}</div>
+              <div className="post-detail__content" dangerouslySetInnerHTML={{ __html: data.content }} />
             </Panel>
           </Card>
 

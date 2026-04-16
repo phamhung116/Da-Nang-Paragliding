@@ -18,11 +18,11 @@ type WeatherShowcaseProps = {
 };
 
 const getWeatherTone = (condition: string): "default" | "success" | "danger" => {
-  if (condition === "Good") {
+  if (condition === "Thoi tiet tot") {
     return "success";
   }
 
-  if (condition === "No Fly") {
+  if (condition === "Thoi tiet xau") {
     return "danger";
   }
 
@@ -30,7 +30,7 @@ const getWeatherTone = (condition: string): "default" | "success" | "danger" => 
 };
 
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
-  const forecast = days.slice(0, 7);
+  const forecast = days.filter((day) => day.weather_available).slice(0, 7);
   const today = forecast[0];
   const [isForecastOpen, setIsForecastOpen] = useState(false);
 
@@ -46,10 +46,16 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           <div className="flex flex-col md:flex-row justify-between items-start mb-6 md:mb-10 gap-4">
             <div>
               <h2 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">Thời tiết hôm nay</h2>
-              <p className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-sm md:text-base hidden md:block`}>Bán đảo Sơn Trà, Đà Nẵng</p>
+              <p className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-sm md:text-base hidden md:block`}>
+                {new Date(today.date).toLocaleDateString("vi-VN", {
+                  weekday: "long",
+                  day: "2-digit",
+                  month: "2-digit"
+                })}
+              </p>
             </div>
             <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-sm font-bold border border-emerald-500/30">
-              Điều kiện bay: Lý tưởng
+              <Badge tone={getWeatherTone(today.flight_condition)}>Điều kiện bay: {today.flight_condition}</Badge>
             </div>
           </div>
 
@@ -60,7 +66,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               </div>
               <div>
                 <p className={`text-[10px] md:text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'} uppercase tracking-wider`}>Sức gió</p>
-                <p className="text-base md:text-xl font-bold">12-15 km/h</p>
+                <p className="text-base md:text-xl font-bold">{today.wind_kph} km/h</p>
               </div>
             </div>
             <div className="flex items-center gap-3 md:gap-4">
@@ -69,7 +75,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               </div>
               <div>
                 <p className={`text-[10px] md:text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'} uppercase tracking-wider`}>Chỉ số UV</p>
-                <p className="text-base md:text-xl font-bold">4.2 (Vừa)</p>
+                <p className="text-base md:text-xl font-bold">{today.uv_index}</p>
               </div>
             </div>
             <div className="flex items-center gap-3 md:gap-4">
@@ -78,7 +84,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               </div>
               <div>
                 <p className={`text-[10px] md:text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'} uppercase tracking-wider`}>Nhiệt độ</p>
-                <p className="text-base md:text-xl font-bold">26°C - 28°C</p>
+                <p className="text-base md:text-xl font-bold">{today.temperature_c}°C</p>
               </div>
             </div>
             <div className="flex items-center gap-3 md:gap-4">
@@ -87,13 +93,13 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               </div>
               <div>
                 <p className={`text-[10px] md:text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'} uppercase tracking-wider`}>Tầm nhìn</p>
-                <p className="text-base md:text-xl font-bold">&gt; 10 km</p>
+                <p className="text-base md:text-xl font-bold">&gt;{today.visibility_km} km</p>
               </div>
             </div>
           </div>
 
           <div className={`mt-6 md:mt-10 p-3 md:p-6 ${isDark ? 'bg-white/5 border-white/5' : 'bg-stone-50 border-stone-100'} rounded-2xl border flex items-center gap-4 md:gap-6`}>
-             <div className="text-2xl md:text-5xl font-bold">27°C</div>
+             <div className="text-2xl md:text-5xl font-bold">{today.temperature_c}°C</div>
              <div className="flex flex-col">
                <span className="text-sm md:text-lg font-medium">Trời nắng nhẹ</span>
                <span className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-[10px] md:text-sm`}>Độ ẩm: 65%</span>
@@ -116,40 +122,33 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           </div>
           
           <div className={`${isForecastOpen ? 'max-h-[1000px] opacity-100 mt-0' : 'max-h-0 opacity-0 -mt-4'} md:max-h-none md:opacity-100 md:mt-0 overflow-hidden transition-all duration-500 space-y-3 md:space-y-4`}>
-            {[
-              { day: "Thứ 5", temp: "27°C", icon: <Sun size={18} className="text-yellow-400" />, cond: "Nắng", wind: "12", uv: "4", vis: "10" },
-              { day: "Thứ 6", temp: "26°C", icon: <Sun size={18} className="text-yellow-400" />, cond: "Nắng", wind: "10", uv: "3", vis: "12" },
-              { day: "Thứ 7", temp: "25°C", icon: <Wind size={18} className="text-blue-300" />, cond: "Gió mạnh", wind: "22", uv: "2", vis: "8" },
-              { day: "Chủ Nhật", temp: "24°C", icon: <Clock size={18} className="text-stone-400" />, cond: "Mây", wind: "15", uv: "1", vis: "10" },
-              { day: "Thứ 2", temp: "26°C", icon: <Sun size={18} className="text-yellow-400" />, cond: "Nắng", wind: "11", uv: "4", vis: "15" },
-              { day: "Thứ 3", temp: "28°C", icon: <Sun size={18} className="text-yellow-400" />, cond: "Nóng", wind: "8", uv: "6", vis: "12" },
-              { day: "Thứ 4", temp: "27°C", icon: <Sun size={18} className="text-yellow-400" />, cond: "Nắng", wind: "12", uv: "5", vis: "10" },
-            ].map((item, i) => (
-              <div key={i} className={`flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-xl ${isDark ? 'hover:bg-white/5' : 'hover:bg-stone-100'} transition-colors`}>
-                <span className="w-14 md:w-16 font-medium text-[10px] md:text-sm">{item.day}</span>
-                
-                <div className="flex items-center gap-1.5 md:gap-2 w-16 md:w-24">
-                  {item.icon}
-                  <span className={`text-[10px] md:text-xs ${isDark ? 'text-stone-400' : 'text-stone-500'} truncate`}>{item.cond}</span>
-                </div>
-
+            {forecast.map((item) => (
+              <article key={item.date} className={`flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-xl ${isDark ? 'hover:bg-white/5' : 'hover:bg-stone-100'} transition-colors`}>
+                <span className="w-14 md:w-16 font-medium text-[10px] md:text-sm">
+                  {new Date(item.date).toLocaleDateString("vi-VN", {
+                      weekday: "short",
+                      day: "2-digit",
+                      month: "2-digit"
+                    })}
+                </span>
+                <Badge tone={getWeatherTone(item.flight_condition)}>{item.flight_condition}</Badge>
                 <div className="flex-1 grid grid-cols-3 gap-1 md:gap-2">
                   <div className="flex items-center gap-1">
                     <Wind size={10} className="text-stone-400" />
-                    <span className="text-[9px] md:text-[11px] font-bold">{item.wind}</span>
+                    <span className="text-[9px] md:text-[11px] font-bold">{item.wind_kph} km/h</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Sun size={10} className="text-stone-400" />
-                    <span className="text-[9px] md:text-[11px] font-bold">{item.uv}</span>
+                    <span className="text-[9px] md:text-[11px] font-bold">{item.uv_index}</span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Eye size={10} className="text-stone-400" />
-                    <span className="text-[9px] md:text-[11px] font-bold">{item.vis}</span>
+                    <span className="text-[9px] md:text-[11px] font-bold">{item.visibility_km} km</span>
                   </div>
                 </div>
 
-                <span className="font-bold text-[10px] md:text-sm">{item.temp}</span>
-              </div>
+                <span className="font-bold text-[10px] md:text-sm">{item.temperature_c}°C</span>
+              </article>
             ))}
           </div>
         </div>

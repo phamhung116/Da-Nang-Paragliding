@@ -1,8 +1,8 @@
 export const routes = {
   login: "/login",
-  bookingRequests: "/booking-requests",
   bookings: "/bookings",
+  bookingDetail: "/bookings/:code",
   accounts: "/accounts",
-  posts: "/posts",
-  services: "/services"
+  accountDetail: "/accounts/:accountId",
+  posts: "/posts"
 };
