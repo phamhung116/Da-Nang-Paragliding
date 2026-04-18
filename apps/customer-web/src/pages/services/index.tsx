@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Badge, Card, Container, Panel } from "@paragliding/ui";
+import { Badge, Card, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
-import { businessInfo } from "@/shared/constants/business";
-import { servicePageNotes } from "@/shared/constants/customer-content";
-import { SiteLayout } from "@/widgets/layout/site-layout";
+import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
 
 export const ServicesPage = () => {
@@ -14,64 +12,33 @@ export const ServicesPage = () => {
 
   return (
     <SiteLayout>
-      <section className="page-banner">
-        <div className="page-banner__image">
-          <img
-            src="https://images.unsplash.com/photo-1596263576925-d90d63691097?auto=format&fit=crop&w=1800&q=80"
-            alt="Services banner"
-          />
-          <div className="page-banner__overlay" />
+      <Banner 
+        title="Dịch Vụ Bay Dù Lượn" 
+        subtitle="Khám phá các gói tour đa dạng, phù hợp với mọi nhu cầu và ngân sách của bạn."
+        image="https://images.unsplash.com/photo-1596263576925-d90d63691097?auto=format&fit=crop&q=80&w=1920"
+      />
+
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold mb-4 text-stone-900">Các Gói Tour Có Sẵn</h2>
+          <p className="text-stone-500 max-w-2xl mx-auto">Chọn trải nghiệm dù lượn hoàn hảo cho chuyến phiêu lưu của bạn</p>
         </div>
-        <Container className="page-banner__content">
-          <Badge>Dich vu</Badge>
-          <h1>Chon goi bay phu hop voi muc trai nghiem ban muon.</h1>
-          <p>
-            Trang nay giup customer xem nhanh gia, thoi luong, muc do phu hop va click vao lich dat cua tung
-            goi.
-          </p>
-        </Container>
-      </section>
 
-      <section className="section">
-        <Container className="stack">
-          <div className="services-intro">
-            <div>
-              <Badge tone="success">Active packages</Badge>
-              <h2>Moi card duoc chuan hoa de khach so sanh de hon va khong bi vo bo cuc.</h2>
-            </div>
-            <p>
-              Cac goi inactive chi dung noi bo va se khong hien thi tai customer side. Neu can tu van nhanh,
-              hay lien he {businessInfo.phone}.
-            </p>
-          </div>
-
-          <div className="info-grid">
-            {servicePageNotes.map((item) => (
-              <Card key={item} className="info-card">
-                <Panel className="stack-sm">
-                  <strong>Thong tin cho khach hang</strong>
-                  <p>{item}</p>
-                </Panel>
-              </Card>
+        {services.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 mb-24">
+            {services.map((item) => (
+              <ServiceCard key={item.id} item={item} />
             ))}
           </div>
-
-          {services.length > 0 ? (
-            <div className="package-grid">
-              {services.map((item) => (
-                <ServiceCard key={item.id} item={item} />
-              ))}
-            </div>
-          ) : (
-            <Card className="empty-state-card">
-              <Panel className="stack-sm">
-                <Badge tone="danger">Chua co goi active</Badge>
-                <strong>Danh sach dich vu dang duoc cap nhat.</strong>
-                <p>Khach van co the lien he hotline de dat lich thu cong trong khi doi he thong mo lich.</p>
-              </Panel>
-            </Card>
-          )}
-        </Container>
+        ) : (
+          <Card className="empty-state-card">
+            <Panel className="stack-sm">
+              <Badge tone="danger">Chua co goi active</Badge>
+              <strong>Danh sach dich vu dang duoc cap nhat.</strong>
+              <p>Khach van co the lien he hotline de dat lich thu cong trong khi doi he thong mo lich.</p>
+            </Panel>
+          </Card>
+        )}
       </section>
     </SiteLayout>
   );

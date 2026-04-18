@@ -21,6 +21,7 @@ const dictionaries = {
     hero_title_line_1: "Bay luon giua",
     hero_title_line_2: "may troi Son Tra",
     hero_services: "Xem goi dich vu",
+    hero_about: "Tim hieu them",
     hero_tracking: "Tra cuu booking"
   },
   en: {
@@ -40,6 +41,7 @@ const dictionaries = {
     hero_title_line_1: "Fly above",
     hero_title_line_2: "the Son Tra skyline",
     hero_services: "View packages",
+    hero_about: "About us",
     hero_tracking: "Track booking"
   }
 } as const;

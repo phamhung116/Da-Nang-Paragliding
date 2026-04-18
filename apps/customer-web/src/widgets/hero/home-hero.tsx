@@ -1,74 +1,55 @@
 import { Link } from "react-router-dom";
-import { Button, Container } from "@paragliding/ui";
+import { Button } from "@paragliding/ui";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
-
-const heroMetrics = [
-  { value: "1,200+", label: "Safe flights" },
-  { value: "7 days", label: "Weather preview" },
-  { value: "GPS Live", label: "Flight tracking" }
-];
-
-const heroHighlights = [
-  "Lich theo tung khung gio va weather theo gio",
-  "QR dat coc va noi dung chuyen khoan ro rang",
-  "Theo doi hanh trinh bay sau khi booking"
-];
+import { motion } from 'motion/react';
 
 export const HomeHero = () => {
   const { t } = useI18n();
 
   return (
-    <section className="hero-shell">
-      <div className="hero-shell__backdrop">
+    <section className="relative h-[90vh] flex items-center overflow-hidden">
+      <div className="absolute inset-0 z-0">
         <img
-          src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1800&q=80"
+          src="https://picsum.photos/seed/paragliding-hero/1920/1080"
           alt="Paragliding in Da Nang"
+          className="w-full h-full object-cover"
+          referrerPolicy="no-referrer"
         />
-        <div className="hero-shell__overlay" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
-      <Container className="hero-shell__content">
-        <div className="hero-copy-card">
-          <span className="hero-kicker">{t("hero_kicker")}</span>
-          <h1 className="hero-title">
+      <div className="relative z-10 w-full px-6 md:px-16 text-white">
+        <motion.div
+          initial={{ y: 50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="max-w-2xl"
+        >
+          <span className="inline-block px-3 py-1 md:px-4 md:py-1 bg-brand/80 backdrop-blur-sm rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-4 md:mb-6">
+            {t("hero_kicker")}
+          </span>
+          <h1 className="text-4xl md:text-7xl font-bold leading-[1.3] md:leading-[1.2] mb-6 md:mb-8 tracking-tight">
             {t("hero_title_line_1")}
             <br />
-            {t("hero_title_line_2")}
+            <span className="text-brand-light">{t("hero_title_line_2")}</span>
           </h1>
-          <p className="hero-copy">
-            {businessInfo.intro} Lich booking, QR dat coc va tracking duoc trinh bay gon, de theo doi va
-            phu hop cho khach hang dat lich tren web.
+          <p className="text-sm md:text-lg text-stone-200 mb-8 md:mb-10 leading-relaxed max-w-md md:max-w-none">
+            {businessInfo.intro}
           </p>
-          <div className="hero-proof-list">
-            {heroHighlights.map((item) => (
-              <span key={item}>{item}</span>
-            ))}
-          </div>
-          <div className="hero-actions">
+          <div className="flex flex-wrap gap-3 md:gap-4">
             <Link to={routes.services}>
-              <Button>{t("hero_services")}</Button>
+              <Button className="btn-primary text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">
+                {t("hero_services")}
+              </Button>
             </Link>
-            <Link to={routes.tracking}>
-              <Button variant="secondary">{t("hero_tracking")}</Button>
+            <Link to={routes.about}>
+              <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("hero_about")}</Button>
             </Link>
           </div>
-        </div>
-        <div className="hero-info-card">
-          <div className="hero-info-card__top">
-            <span>Meeting point</span>
-            <strong>{businessInfo.meetingPoint}</strong>
-          </div>
-          <div className="hero-metrics">
-            {heroMetrics.map((metric) => (
-              <article key={metric.label} className="hero-metric">
-                <strong>{metric.value}</strong>
-                <span>{metric.label}</span>
-              </article>
-            ))}
-          </div>
-        </div>
-      </Container>
+        </motion.div>
+        
+      </div>
     </section>
   );
 };

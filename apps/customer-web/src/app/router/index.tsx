@@ -26,13 +26,13 @@ export const AppRouter = () => (
     <Route path="/" element={page(<HomePage />)} />
     <Route path="/about" element={page(<AboutPage />)} />
     <Route path="/contact" element={page(<ContactPage />)} />
-    <Route path="/gallery" element={page(<GalleryPage />)} />
     <Route path="/login" element={page(<LoginPage />)} />
     <Route path="/verify-email" element={page(<VerifyEmailPage />)} />
     <Route path="/account" element={page(<AccountPage />)} />
     <Route path="/account/bookings/:code" element={page(<AccountBookingDetailPage />)} />
     <Route path="/posts" element={page(<PostsPage />)} />
     <Route path="/posts/:slug" element={page(<PostDetailPage />)} />
+    <Route path="/gallery" element={page(<GalleryPage />)} />
     <Route path="/services" element={page(<ServicesPage />)} />
     <Route path="/services/:slug" element={page(<ServiceDetailPage />)} />
     <Route path="/booking" element={page(<BookingPage />)} />
