@@ -66,9 +66,14 @@ export type Booking = {
   adults: number;
   children: number;
   notes: string | null;
+  pickup_option: string;
+  pickup_address: string | null;
+  pickup_fee: string;
   unit_price: string;
   original_total: string;
   final_total: string;
+  deposit_amount: string;
+  deposit_percentage: number;
   payment_method: string;
   payment_status: string;
   approval_status: string;
@@ -193,6 +198,8 @@ export type BookingCreatePayload = {
   children: number;
   notes?: string;
   payment_method: string;
+  pickup_option?: string;
+  pickup_address?: string;
 };
 
 export type BookingCancelPayload = {

@@ -18,6 +18,8 @@ class BookingCreateRequest:
     children: int
     notes: str | None
     payment_method: str
+    pickup_option: str = "self"
+    pickup_address: str | None = None
 
 
 @dataclass(slots=True)

@@ -110,6 +110,16 @@ export const CheckoutPage = () => {
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
+                    <span>Di chuyen</span>
+                    <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Tu den"}</strong>
+                  </div>
+                  {booking.pickup_option === "pickup" ? (
+                    <div className="booking-summary-card__fact">
+                      <span>Dia chi don</span>
+                      <strong>{booking.pickup_address ?? "Dang cap nhat"}</strong>
+                    </div>
+                  ) : null}
+                  <div className="booking-summary-card__fact">
                     <span>Trang thai</span>
                     <strong>{booking.approval_status}</strong>
                   </div>
@@ -121,8 +131,8 @@ export const CheckoutPage = () => {
               <Panel className="stack">
                 <Badge>Dat coc bang QR</Badge>
                     <p className="detail-copy">
-                      Dat coc {paymentSession?.deposit_percentage}% de xac nhan booking. Sau khi thanh toan
-                      thanh cong, booking se duoc confirm va email xac nhan se duoc gui cho khach.
+                      Thanh toan so tien tra truoc qua cong thanh toan. Sau khi nha cung cap tra ve trang thai
+                      PAID, booking se duoc confirm va email xac nhan se duoc gui cho khach.
                     </p>
                     <div className="checkout-qr">
                       <img src={paymentSession?.qr_code_url} alt={`QR ${booking.code}`} />
@@ -147,6 +157,11 @@ export const CheckoutPage = () => {
                         <strong>{transaction.provider_reference}</strong>
                       </div>
                     ) : null}
+                    {paymentSession?.payment_url ? (
+                      <a href={paymentSession.payment_url} target="_blank" rel="noreferrer">
+                        <Button>Mo cong thanh toan</Button>
+                      </a>
+                    ) : null}
                     <Button
                       onClick={() => paymentMutation.mutate(booking.code)}
                       disabled={
@@ -159,8 +174,14 @@ export const CheckoutPage = () => {
                           ? "QR da het han"
                         : paymentMutation.isPending
                             ? "Dang xu ly..."
-                            : "Gia lap thanh toan thanh cong"}
+                            : "Kiem tra trang thai thanh toan"}
                     </Button>
+                    {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
+                      <p className="calendar-selection-note">
+                        He thong chua nhan duoc trang thai PAID tu cong thanh toan. Hay kiem tra lai sau khi
+                        thanh toan xong.
+                      </p>
+                    ) : null}
                 <Link to="/tracking">
                   <Button variant="secondary">Theo doi hanh trinh bay</Button>
                 </Link>

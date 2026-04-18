@@ -92,18 +92,23 @@ export const ServiceDetailPage = () => {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-3xl font-bold text-red-600">{formatCurrency(servicePackage.price)}</h2>
-                  {selectedSlot ? (
                   <Link
-                    to={`/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`}
+                    to={
+                      selectedSlot
+                        ? `/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`
+                        : `/booking?service=${servicePackage.slug}`
+                    }
                   >
                     <Button className="btn-primary px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand/20">
                       Đặt ngay
                     </Button>
                   </Link>
-                    ) : (
-                  <p className="calendar-selection-note">Lich dat se duoc giu sau khi ban chon mot slot hop le.</p>
-                  )}
                 </div>
+                <p className="calendar-selection-note">
+                  {selectedSlot
+                    ? "Lich da chon se duoc giu san khi sang trang dien thong tin."
+                    : "Co the dat ngay va chon lich o buoc tiep theo."}
+                </p>
               </div>
               
               {availability.length > 0 ? (

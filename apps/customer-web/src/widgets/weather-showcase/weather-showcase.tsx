@@ -1,7 +1,6 @@
-import { Badge, Card, Panel } from "@paragliding/ui";
+import { Badge } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
-import { section } from "motion/react-client";
-import React, { useState, useEffect } from 'react';
+import { useState } from "react";
 
 import { 
   Wind, 
@@ -17,12 +16,20 @@ type WeatherShowcaseProps = {
   isDark?: boolean;
 };
 
+const normalizeCondition = (condition: string) =>
+  condition
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
 const getWeatherTone = (condition: string): "default" | "success" | "danger" => {
-  if (condition === "Thoi tiet tot") {
+  const normalized = normalizeCondition(condition);
+
+  if (normalized === "ly tuong" || normalized === "thoi tiet tot") {
     return "success";
   }
 
-  if (condition === "Thoi tiet xau") {
+  if (normalized === "khong ly tuong" || normalized === "thoi tiet xau") {
     return "danger";
   }
 
@@ -101,8 +108,10 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           <div className={`mt-6 md:mt-10 p-3 md:p-6 ${isDark ? 'bg-white/5 border-white/5' : 'bg-stone-50 border-stone-100'} rounded-2xl border flex items-center gap-4 md:gap-6`}>
              <div className="text-2xl md:text-5xl font-bold">{today.temperature_c}°C</div>
              <div className="flex flex-col">
-               <span className="text-sm md:text-lg font-medium">Trời nắng nhẹ</span>
-               <span className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-[10px] md:text-sm`}>Độ ẩm: 65%</span>
+               <span className="text-sm md:text-lg font-medium">{today.weather_condition || "Dang cap nhat"}</span>
+               <span className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-[10px] md:text-sm`}>
+                 Tam nhin: {today.visibility_km} km
+               </span>
              </div>
              <Sun size={24} className="ml-auto text-yellow-400 md:w-12 md:h-12" />
           </div>

@@ -56,7 +56,7 @@ from modules.notifications.infrastructure.persistence.mongo.repositories import 
     MongoNotificationLogRepository,
 )
 from modules.payments.application.use_cases import CompleteOnlinePaymentUseCase
-from modules.payments.infrastructure.gateways import MockPaymentGateway
+from modules.payments.infrastructure.gateways import MockPaymentGateway, PayOsPaymentGateway
 from modules.payments.infrastructure.persistence.mongo.repositories import (
     MongoPaymentTransactionRepository,
 )
@@ -116,6 +116,8 @@ def pricing_policy() -> PricingPolicy:
 
 
 def payment_gateway() -> MockPaymentGateway:
+    if str(settings.PAYMENT_PROVIDER).lower() == "payos":
+        return PayOsPaymentGateway()
     return MockPaymentGateway(provider_name=settings.PAYMENT_PROVIDER)
 
 

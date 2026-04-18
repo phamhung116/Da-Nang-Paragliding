@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from modules.bookings.domain.value_objects import (
     PAYMENT_STATUS_EXPIRED,
+    PAYMENT_STATUS_FAILED,
     PAYMENT_STATUS_PAID,
     PAYMENT_STATUS_PENDING,
 )
@@ -83,5 +84,13 @@ class MongoPaymentTransactionRepository:
         if document is None:
             raise NotFoundError("Khong tim thay giao dich.")
         document.status = PAYMENT_STATUS_EXPIRED
+        document.save(update_fields=["status", "updated_at"])
+        return _to_domain(document)
+
+    def mark_failed(self, booking_code: str) -> PaymentTransaction:
+        document = PaymentTransactionDocument.objects.filter(booking_code=booking_code).first()
+        if document is None:
+            raise NotFoundError("Khong tim thay giao dich.")
+        document.status = PAYMENT_STATUS_FAILED
         document.save(update_fields=["status", "updated_at"])
         return _to_domain(document)

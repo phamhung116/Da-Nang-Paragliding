@@ -14,6 +14,7 @@ class AvailabilityDayDocument(models.Model):
     visibility_km = models.FloatField(default=10)
     weather_condition = models.CharField(max_length=80, default="Dang cap nhat")
     flight_condition = models.CharField(max_length=80)
+    weather_available = models.BooleanField(default=False)
     slots = models.JSONField(default=list)
     updated_at = models.DateTimeField(auto_now=True)
 

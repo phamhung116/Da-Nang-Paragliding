@@ -5289,6 +5289,119 @@
   padding-top: 0.2rem;
 }
 
+.package-card__actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.package-card__actions .ui-button {
+  min-width: 116px;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.gallery-card {
+  overflow: hidden;
+}
+
+.gallery-card--wide {
+  grid-column: span 2;
+}
+
+.gallery-card img {
+  width: 100%;
+  height: 320px;
+  object-fit: cover;
+}
+
+.gallery-card__caption {
+  padding: 0.8rem;
+}
+
+.post-detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.36fr);
+  gap: 1.2rem;
+  align-items: start;
+}
+
+.post-detail-sidebar {
+  position: sticky;
+  top: 6rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.post-sidebar-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.post-sidebar-head a {
+  color: var(--accent-strong);
+  font-weight: 800;
+}
+
+.post-gallery-strip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.post-gallery-strip img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: 14px;
+}
+
+.post-weather-aside {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.post-weather-aside .weather-showcase {
+  grid-template-columns: 1fr;
+}
+
+.post-weather-aside .weather-showcase__today,
+.post-weather-aside .weather-showcase__forecast {
+  border-radius: 24px;
+}
+
+.post-weather-aside .weather-showcase__stats,
+.post-weather-aside .weather-showcase__item {
+  grid-template-columns: 1fr;
+}
+
+.payment-options--pickup {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 980px) {
+  .gallery-grid,
+  .post-detail-layout,
+  .payment-options--pickup {
+    grid-template-columns: 1fr;
+  }
+
+  .gallery-card--wide {
+    grid-column: auto;
+  }
+
+  .post-detail-sidebar {
+    position: static;
+  }
+}
+
 @media (max-width: 1180px) {
   .detail-layout {
     grid-template-columns: minmax(0, 1fr) 340px;
@@ -5302,5 +5415,505 @@
 
   .calendar-week-board-wrap {
     overflow-x: auto;
+  }
+}
+
+/* iOS-like weather cards */
+
+.ios-weather-showcase {
+  align-items: start;
+}
+
+.ios-weather-card {
+  position: relative;
+  overflow: hidden;
+  border: 0 !important;
+  border-radius: 8px !important;
+  color: #ffffff;
+  box-shadow: 0 24px 54px rgba(22, 93, 121, 0.18);
+}
+
+.ios-weather-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 82% 14%, rgba(255, 255, 255, 0.42), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.ios-weather-card--clear {
+  background: linear-gradient(145deg, #37bdf0 0%, #25c0d7 52%, #f6c34f 100%) !important;
+}
+
+.ios-weather-card--partly-cloudy {
+  background: linear-gradient(145deg, #4fb7ef 0%, #8bd6e8 56%, #f8c95a 100%) !important;
+}
+
+.ios-weather-card--cloudy {
+  background: linear-gradient(145deg, #6f9eb1 0%, #b8c9d1 54%, #f3f7f8 100%) !important;
+  color: #14232b;
+}
+
+.ios-weather-card--rain {
+  background: linear-gradient(145deg, #3c91b8 0%, #50bfd1 58%, #98e7e4 100%) !important;
+}
+
+.ios-weather-card--storm {
+  background: linear-gradient(145deg, #4b7584 0%, #668e99 58%, #f2bf4b 100%) !important;
+}
+
+.ios-weather-card--fog {
+  background: linear-gradient(145deg, #8fd4c9 0%, #d8ecea 56%, #f4cf6c 100%) !important;
+  color: #173036;
+}
+
+.ios-weather-card--wind {
+  background: linear-gradient(145deg, #42c79b 0%, #74d5e9 58%, #f2a0a0 100%) !important;
+}
+
+.ios-weather-card__panel,
+.ios-weather-forecast__panel {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 1.05rem;
+  padding: 1.2rem;
+}
+
+.ios-weather-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: start;
+}
+
+.ios-weather-card__top h3,
+.ios-weather-forecast__head h3 {
+  margin: 0.2rem 0 0;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.ios-weather-card__top p {
+  margin: 0.3rem 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.45;
+}
+
+.ios-weather-card--cloudy .ios-weather-card__top p,
+.ios-weather-card--fog .ios-weather-card__top p {
+  color: rgba(20, 35, 43, 0.66);
+}
+
+.ios-weather-card__eyebrow {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.ios-weather-card--cloudy .ios-weather-card__eyebrow,
+.ios-weather-card--fog .ios-weather-card__eyebrow {
+  color: rgba(20, 35, 43, 0.66);
+}
+
+.ios-weather-card__current {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  align-items: end;
+}
+
+.ios-weather-card__current strong {
+  display: block;
+  font-size: clamp(4.2rem, 8vw, 6.4rem);
+  line-height: 0.9;
+  letter-spacing: 0;
+}
+
+.ios-weather-card__current span {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 1.08rem;
+  font-weight: 800;
+}
+
+.ios-weather-card__flight {
+  display: grid;
+  justify-items: end;
+  gap: 0.45rem;
+}
+
+.ios-weather-card__flight small,
+.ios-weather-metrics span,
+.ios-weather-hourly span,
+.ios-weather-day-row small {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.ios-weather-card__flight small,
+.ios-weather-metrics span,
+.ios-weather-hourly span {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.ios-weather-card--cloudy .ios-weather-card__flight small,
+.ios-weather-card--cloudy .ios-weather-metrics span,
+.ios-weather-card--cloudy .ios-weather-hourly span,
+.ios-weather-card--fog .ios-weather-card__flight small,
+.ios-weather-card--fog .ios-weather-metrics span,
+.ios-weather-card--fog .ios-weather-hourly span {
+  color: rgba(20, 35, 43, 0.58);
+}
+
+.ios-weather-card .ui-badge {
+  border-radius: 8px;
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  letter-spacing: 0;
+}
+
+.ios-weather-card--cloudy .ui-badge,
+.ios-weather-card--fog .ui-badge {
+  border-color: rgba(20, 35, 43, 0.12);
+  background: rgba(255, 255, 255, 0.36);
+  color: #173036;
+}
+
+.ios-weather-hourly {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.6rem;
+  padding: 0.65rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ios-weather-card--cloudy .ios-weather-hourly,
+.ios-weather-card--fog .ios-weather-hourly {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.ios-weather-hourly article {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.ios-weather-hourly strong {
+  font-size: 1rem;
+}
+
+.ios-weather-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.ios-weather-metrics article {
+  display: grid;
+  gap: 0.35rem;
+  min-height: 96px;
+  padding: 0.9rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.ios-weather-card--cloudy .ios-weather-metrics article,
+.ios-weather-card--fog .ios-weather-metrics article {
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.ios-weather-metrics strong {
+  align-self: end;
+  font-size: 1.15rem;
+}
+
+.ios-weather-forecast {
+  overflow: hidden;
+  border-radius: 8px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.ios-weather-day-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.ios-weather-day-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.35fr) 38px 82px 82px auto !important;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.8rem 0.9rem !important;
+  border-radius: 8px !important;
+  border-color: rgba(22, 93, 121, 0.1) !important;
+  background: linear-gradient(90deg, rgba(55, 189, 240, 0.1), rgba(246, 195, 79, 0.1)) !important;
+}
+
+.ios-weather-day-row__date {
+  display: grid;
+  gap: 0.12rem;
+  min-width: 0;
+}
+
+.ios-weather-day-row__date small {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ios-weather-day-row > span {
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.weather-symbol {
+  --symbol-size: 74px;
+  position: relative;
+  display: inline-block;
+  width: var(--symbol-size);
+  height: var(--symbol-size);
+  flex: 0 0 var(--symbol-size);
+}
+
+.weather-symbol--sm {
+  --symbol-size: 34px;
+}
+
+.weather-symbol::before,
+.weather-symbol::after,
+.weather-symbol i {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.weather-symbol--clear::before {
+  display: block;
+  inset: 18%;
+  border-radius: 50%;
+  background: #ffd45a;
+  box-shadow:
+    0 0 0 calc(var(--symbol-size) * 0.08) rgba(255, 212, 90, 0.22),
+    0 0 calc(var(--symbol-size) * 0.42) rgba(255, 212, 90, 0.78);
+}
+
+.weather-symbol--partly-cloudy::before {
+  display: block;
+  top: 10%;
+  right: 7%;
+  width: 48%;
+  height: 48%;
+  border-radius: 50%;
+  background: #ffd45a;
+  box-shadow: 0 0 calc(var(--symbol-size) * 0.3) rgba(255, 212, 90, 0.72);
+}
+
+.weather-symbol--partly-cloudy::after,
+.weather-symbol--cloudy::after,
+.weather-symbol--rain::after,
+.weather-symbol--storm::after {
+  display: block;
+  left: 11%;
+  right: 4%;
+  bottom: 20%;
+  height: 34%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow:
+    calc(var(--symbol-size) * 0.18) calc(var(--symbol-size) * -0.13) 0 calc(var(--symbol-size) * 0.02) rgba(255, 255, 255, 0.92),
+    calc(var(--symbol-size) * 0.4) calc(var(--symbol-size) * -0.2) 0 calc(var(--symbol-size) * 0.05) rgba(255, 255, 255, 0.92);
+}
+
+.weather-symbol--cloudy::after {
+  bottom: 26%;
+}
+
+.weather-symbol--rain i,
+.weather-symbol--storm i {
+  display: block;
+  width: 8%;
+  height: 22%;
+  bottom: 0;
+  border-radius: 999px;
+  background: #d8fbff;
+  transform: rotate(18deg);
+}
+
+.weather-symbol--rain i:nth-child(1),
+.weather-symbol--storm i:nth-child(1) {
+  left: 28%;
+}
+
+.weather-symbol--rain i:nth-child(2),
+.weather-symbol--storm i:nth-child(2) {
+  left: 48%;
+}
+
+.weather-symbol--rain i:nth-child(3),
+.weather-symbol--storm i:nth-child(3) {
+  left: 68%;
+}
+
+.weather-symbol--storm i:nth-child(2) {
+  width: 20%;
+  height: 36%;
+  bottom: -2%;
+  border-radius: 2px;
+  background: #ffd45a;
+  clip-path: polygon(45% 0, 100% 0, 62% 44%, 100% 44%, 28% 100%, 45% 54%, 10% 54%);
+  transform: none;
+}
+
+.weather-symbol--fog i,
+.weather-symbol--wind i {
+  display: block;
+  left: 8%;
+  height: 8%;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.weather-symbol--fog i:nth-child(1),
+.weather-symbol--wind i:nth-child(1) {
+  top: 28%;
+  width: 74%;
+}
+
+.weather-symbol--fog i:nth-child(2),
+.weather-symbol--wind i:nth-child(2) {
+  top: 46%;
+  width: 56%;
+}
+
+.weather-symbol--fog i:nth-child(3),
+.weather-symbol--wind i:nth-child(3) {
+  top: 64%;
+  width: 82%;
+}
+
+.weather-symbol--wind i {
+  height: 7%;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.weather-symbol--wind i:nth-child(1) {
+  left: 0;
+  width: 86%;
+}
+
+.weather-symbol--wind i:nth-child(2) {
+  left: 16%;
+  width: 62%;
+}
+
+.weather-symbol--wind i:nth-child(3) {
+  left: 6%;
+  width: 76%;
+}
+
+.ios-calendar-weather .ios-weather-card--compact {
+  width: 100%;
+}
+
+.ios-calendar-weather .ios-weather-card__panel {
+  padding: 1.15rem;
+}
+
+.ios-calendar-weather .ios-weather-card__current strong {
+  font-size: clamp(3.2rem, 6vw, 5rem);
+}
+
+.ios-weather-metrics--compact {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.post-weather-aside .ios-weather-card,
+.post-weather-aside .ios-weather-forecast {
+  border-radius: 8px !important;
+}
+
+.post-weather-aside .ios-weather-card__current {
+  grid-template-columns: 1fr;
+}
+
+.post-weather-aside .ios-weather-card__flight {
+  justify-items: start;
+}
+
+.post-weather-aside .ios-weather-hourly,
+.post-weather-aside .ios-weather-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.post-weather-aside .ios-weather-day-row {
+  grid-template-columns: minmax(0, 1fr) 34px auto !important;
+}
+
+.post-weather-aside .ios-weather-day-row > span:nth-of-type(2),
+.post-weather-aside .ios-weather-day-row .ui-badge {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .ios-weather-card__top {
+    flex-direction: column;
+  }
+
+  .ios-weather-card__current {
+    grid-template-columns: 1fr;
+  }
+
+  .ios-weather-card__flight {
+    justify-items: start;
+  }
+
+  .ios-weather-hourly {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .ios-weather-metrics,
+  .ios-weather-metrics--compact {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ios-weather-day-row {
+    grid-template-columns: minmax(0, 1fr) 34px auto !important;
+  }
+
+  .ios-weather-day-row > span:nth-of-type(2),
+  .ios-weather-day-row .ui-badge {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .ios-weather-card__panel,
+  .ios-weather-forecast__panel {
+    padding: 1rem;
+  }
+
+  .ios-weather-card__current strong {
+    font-size: 3.8rem;
+  }
+
+  .ios-weather-hourly {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ios-weather-metrics,
+  .ios-weather-metrics--compact {
+    grid-template-columns: 1fr;
   }
 }

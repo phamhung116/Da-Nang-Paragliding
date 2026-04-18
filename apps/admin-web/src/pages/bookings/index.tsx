@@ -13,6 +13,7 @@ const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 const flightLabels: Record<string, string> = {
   WAITING_CONFIRMATION: "Cho xac nhan",
   WAITING: "Dang cho",
+  PICKING_UP: "Dang di chuyen den diem don",
   EN_ROUTE: "Dang di chuyen",
   FLYING: "Dang bay",
   LANDED: "Da ha canh"
@@ -106,6 +107,7 @@ export const BookingsPage = () => {
                   <option value="">Tat ca trang thai</option>
                   <option value="WAITING_CONFIRMATION">Cho xac nhan</option>
                   <option value="WAITING">Dang cho</option>
+                  <option value="PICKING_UP">Dang di chuyen den diem don</option>
                   <option value="EN_ROUTE">Dang di chuyen</option>
                   <option value="FLYING">Dang bay</option>
                   <option value="LANDED">Da ha canh</option>

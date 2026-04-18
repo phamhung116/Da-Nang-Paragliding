@@ -13,6 +13,7 @@ const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 const flightLabels: Record<string, string> = {
   WAITING_CONFIRMATION: "Cho xac nhan",
   WAITING: "Dang cho",
+  PICKING_UP: "Dang di chuyen den diem don",
   EN_ROUTE: "Dang di chuyen",
   FLYING: "Dang bay",
   LANDED: "Da ha canh"
@@ -190,6 +191,16 @@ export const BookingDetailPage = () => {
                   <span>Ghi chu</span>
                   <strong>{booking.notes || "Khong co ghi chu"}</strong>
                 </div>
+                <div>
+                  <span>Xe don</span>
+                  <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Khach tu den"}</strong>
+                </div>
+                {booking.pickup_option === "pickup" ? (
+                  <div>
+                    <span>Dia chi don</span>
+                    <strong>{booking.pickup_address}</strong>
+                  </div>
+                ) : null}
               </div>
 
               {!cancelledStatuses.has(booking.approval_status) ? (

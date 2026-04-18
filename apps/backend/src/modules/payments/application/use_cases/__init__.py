@@ -8,6 +8,7 @@ from modules.bookings.domain.value_objects import (
     FLIGHT_STATUS_WAITING,
     PAYMENT_METHOD_CASH,
     PAYMENT_STATUS_EXPIRED,
+    PAYMENT_STATUS_FAILED,
     PAYMENT_STATUS_PAID,
 )
 from modules.payments.application.interfaces import PaymentGateway
@@ -47,7 +48,20 @@ class CompleteOnlinePaymentUseCase:
             booking = self.booking_repository.update(booking)
             raise ValidationError("Phien thanh toan da het han.")
 
-        self.payment_gateway.capture_payment(transaction.provider_reference)
+        provider_status = self.payment_gateway.capture_payment(transaction.provider_reference).get("status", "PENDING").upper()
+        if provider_status in {PAYMENT_STATUS_EXPIRED, "CANCELLED"}:
+            transaction = self.payment_transaction_repository.mark_expired(booking_code)
+            booking.payment_status = PAYMENT_STATUS_EXPIRED
+            booking = self.booking_repository.update(booking)
+            return {"booking": booking, "transaction": transaction}
+        if provider_status in {PAYMENT_STATUS_FAILED, "FAILED"}:
+            transaction = self.payment_transaction_repository.mark_failed(booking_code)
+            booking.payment_status = PAYMENT_STATUS_FAILED
+            booking = self.booking_repository.update(booking)
+            return {"booking": booking, "transaction": transaction}
+        if provider_status != PAYMENT_STATUS_PAID:
+            return {"booking": booking, "transaction": transaction}
+
         transaction = self.payment_transaction_repository.mark_paid(booking_code)
         booking.payment_status = PAYMENT_STATUS_PAID
         booking.approval_status = BOOKING_APPROVAL_CONFIRMED

@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
@@ -14,17 +15,29 @@ export const PostDetailPage = () => {
     enabled: Boolean(slug)
   });
 
-  const weatherServiceSlug = slug;
-    const today = new Date();
-    const { data: forecast = [] } = useQuery({
-      queryKey: ["home-weather", weatherServiceSlug, today.getFullYear(), today.getMonth() + 1],
-      queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", today.getFullYear(), today.getMonth() + 1),
-      enabled: Boolean(weatherServiceSlug)
-    });
-  
-    const upcomingForecast = forecast
-      .filter((item) => item.weather_available && new Date(item.date) >= new Date(new Date().toDateString()))
-      .slice(0, 7);
+  const { data: services = [] } = useQuery({
+    queryKey: ["post-detail-services"],
+    queryFn: () => customerApi.listServices()
+  });
+  const weatherServiceSlug = services[0]?.slug;
+  const today = useMemo(() => new Date(), []);
+  const { data: forecast = [] } = useQuery({
+    queryKey: ["post-detail-weather", weatherServiceSlug, today.getFullYear(), today.getMonth() + 1],
+    queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", today.getFullYear(), today.getMonth() + 1),
+    enabled: Boolean(weatherServiceSlug)
+  });
+
+  const upcomingForecast = forecast
+    .filter((item) => item.weather_available && new Date(item.date) >= new Date(new Date().toDateString()))
+    .slice(0, 7);
+  const galleryImages = useMemo(
+    () =>
+      services
+        .flatMap((service) => [service.hero_image, ...service.gallery_images])
+        .filter(Boolean)
+        .slice(0, 6),
+    [services]
+  );
 
   if (!data) {
     return (
@@ -71,6 +84,23 @@ export const PostDetailPage = () => {
               </div>
             </div>
             <div className="space-y-12">
+              <Card>
+                <Panel className="stack-sm">
+                  <div className="post-sidebar-head">
+                    <div>
+                      <Badge>Bo suu tap</Badge>
+                      <h3>Hinh anh noi bat</h3>
+                    </div>
+                    <Link to="/gallery">Xem tat ca</Link>
+                  </div>
+                  <div className="post-gallery-strip">
+                    {galleryImages.map((image) => (
+                      <img key={image} src={image} alt="SkyNest gallery" referrerPolicy="no-referrer" />
+                    ))}
+                  </div>
+                </Panel>
+              </Card>
+
               {upcomingForecast.length > 0 ? (
                 <WeatherShowcase days={upcomingForecast} />
               ) : (

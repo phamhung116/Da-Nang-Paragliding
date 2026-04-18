@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
+from decimal import Decimal
 
 from modules.availability.domain.repositories import AvailabilityRepository
 from modules.bookings.application.dto import (
@@ -20,6 +21,8 @@ from modules.bookings.domain.value_objects import (
     BOOKING_APPROVAL_PENDING,
     BOOKING_APPROVAL_REJECTED,
     FLIGHT_STATUS_WAITING_CONFIRMATION,
+    PICKUP_OPTION_SELF,
+    PICKUP_OPTION_SHUTTLE,
     FLIGHT_STATUS_WAITING,
     ONLINE_PAYMENT_METHODS,
     PAYMENT_STATUS_AWAITING_CASH,
@@ -31,7 +34,9 @@ from modules.payments.domain.repositories import PaymentTransactionRepository
 from modules.payments.application.interfaces import PaymentGateway
 from modules.tracking.domain.repositories import TrackingRepository
 from shared.exceptions import NotFoundError, ValidationError
-from shared.utils import generate_booking_code, normalize_phone
+from shared.utils import generate_booking_code, normalize_phone, quantize_money
+
+PICKUP_FEE = Decimal("50000")
 
 
 class CreateBookingUseCase:
@@ -64,6 +69,13 @@ class CreateBookingUseCase:
             raise NotFoundError("Khong tim thay goi dich vu.")
         if request.adults + request.children <= 0:
             raise ValidationError("So luong khach phai lon hon 0.")
+        pickup_option = request.pickup_option or PICKUP_OPTION_SELF
+        if pickup_option not in {PICKUP_OPTION_SELF, PICKUP_OPTION_SHUTTLE}:
+            raise ValidationError("Lua chon dua don khong hop le.")
+        pickup_address = request.pickup_address.strip() if request.pickup_address else None
+        if pickup_option == PICKUP_OPTION_SHUTTLE and not pickup_address:
+            raise ValidationError("Vui long nhap dia chi don.")
+        pickup_fee = PICKUP_FEE if pickup_option == PICKUP_OPTION_SHUTTLE else Decimal("0")
 
         active_pilot_count = self._active_pilot_count()
         current_reserved = self.booking_repository.count_reserved_for_slot(
@@ -88,6 +100,8 @@ class CreateBookingUseCase:
             children=request.children,
             payment_method=request.payment_method,
         )
+        final_total = quantize_money(pricing.original_total + pickup_fee)
+        deposit_amount = quantize_money((pricing.original_total * self.online_deposit_percent / 100) + pickup_fee)
         payment_status = (
             PAYMENT_STATUS_PENDING if request.payment_method in ONLINE_PAYMENT_METHODS else PAYMENT_STATUS_AWAITING_CASH
         )
@@ -105,9 +119,14 @@ class CreateBookingUseCase:
                 adults=request.adults,
                 children=request.children,
                 notes=request.notes.strip() if request.notes else None,
+                pickup_option=pickup_option,
+                pickup_address=pickup_address,
+                pickup_fee=pickup_fee,
                 unit_price=service_package.price,
                 original_total=pricing.original_total,
-                final_total=pricing.final_total,
+                final_total=final_total,
+                deposit_amount=deposit_amount,
+                deposit_percentage=self.online_deposit_percent,
                 payment_method=request.payment_method,
                 payment_status=payment_status,
                 approval_status=BOOKING_APPROVAL_PENDING,
@@ -121,7 +140,6 @@ class CreateBookingUseCase:
         payment_session = None
         if request.payment_method in ONLINE_PAYMENT_METHODS:
             expires_at = datetime.now(UTC) + timedelta(minutes=30)
-            deposit_amount = pricing.final_total * self.online_deposit_percent / 100
             payment_session = self.payment_gateway.create_payment_session(
                 booking_code=booking.code,
                 amount=deposit_amount,
@@ -149,9 +167,9 @@ class CreateBookingUseCase:
             flight_status=booking.flight_status,
             pilot_name=None,
             current_location={
-                "name": service_package.launch_site_name,
-                "lat": service_package.launch_lat,
-                "lng": service_package.launch_lng,
+                "name": "Chua Buu Dai Son",
+                "lat": 16.1107,
+                "lng": 108.2554,
             },
         )
 

@@ -22,9 +22,14 @@ export const ServiceCard = ({ item }: ServiceCardProps) => (
           <small>Giá từ</small>
           <strong>{formatCurrency(item.price)}</strong>
         </div>
-        <Link to={`/services/${item.slug}`}>
-          <Button variant="secondary">Xem chi tiết</Button>
-        </Link>
+        <div className="package-card__actions">
+          <Link to={`/booking?service=${item.slug}`}>
+            <Button>Đặt lịch</Button>
+          </Link>
+          <Link to={`/services/${item.slug}`}>
+            <Button variant="secondary">Xem chi tiết</Button>
+          </Link>
+        </div>
       </div>
     </Panel>
   </Card>

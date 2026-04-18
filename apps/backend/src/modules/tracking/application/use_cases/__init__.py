@@ -8,13 +8,33 @@ from modules.bookings.domain.value_objects import (
     FLIGHT_STATUS_EN_ROUTE,
     FLIGHT_STATUS_FLYING,
     FLIGHT_STATUS_LANDED,
+    FLIGHT_STATUS_PICKING_UP,
     FLIGHT_STATUS_WAITING,
     FLIGHT_STATUS_WAITING_CONFIRMATION,
+    PICKUP_OPTION_SHUTTLE,
 )
 from modules.catalog.domain.repositories import ServicePackageRepository
 from modules.tracking.domain.repositories import TrackingRepository
 from shared.exceptions import NotFoundError, ValidationError
-from shared.utils import normalize_phone
+from shared.utils import geocode_address, normalize_phone
+
+BASE_LOCATION = {
+    "name": "Chua Buu Dai Son",
+    "lat": 16.1107,
+    "lng": 108.2554,
+}
+
+LAUNCH_LOCATION = {
+    "name": "Dinh Ban Co",
+    "lat": 16.1372,
+    "lng": 108.281,
+}
+
+LANDING_LOCATION = {
+    "name": "Bai bien truoc Chua Buu Dai Son",
+    "lat": 16.1107,
+    "lng": 108.2554,
+}
 
 
 class GetTrackingByPhoneUseCase:
@@ -61,7 +81,7 @@ class UpdateFlightStatusUseCase:
         if service_package is None:
             raise NotFoundError("Khong tim thay goi dich vu.")
 
-        location = self._build_location(status, service_package)
+        location = self._build_location(status, booking, service_package)
         booking.flight_status = status
         updated_booking = self.booking_repository.update(booking)
         tracking = self.tracking_repository.update_status(
@@ -77,44 +97,35 @@ class UpdateFlightStatusUseCase:
         )
         return {"booking": updated_booking, "tracking": tracking}
 
-    def _build_location(self, status: str, service_package):
+    def _build_location(self, status: str, booking, service_package):
         if status == FLIGHT_STATUS_WAITING_CONFIRMATION:
-            return {
-                "name": "Cho admin xac nhan booking",
-                "lat": service_package.launch_lat,
-                "lng": service_package.launch_lng,
-            }
+            return {**BASE_LOCATION, "name": "Cho admin xac nhan booking"}
         if status == FLIGHT_STATUS_WAITING:
+            return {**BASE_LOCATION, "name": "Dang cho"}
+        if status == FLIGHT_STATUS_PICKING_UP:
+            if booking.pickup_option != PICKUP_OPTION_SHUTTLE:
+                raise ValidationError("Booking nay khong co dich vu xe don.")
+            pickup_address = booking.pickup_address or "Dia chi don"
+            geocoded = geocode_address(pickup_address)
             return {
-                "name": service_package.launch_site_name,
-                "lat": service_package.launch_lat,
-                "lng": service_package.launch_lng,
+                "name": pickup_address,
+                "lat": geocoded.get("lat", BASE_LOCATION["lat"]),
+                "lng": geocoded.get("lng", BASE_LOCATION["lng"]),
             }
         if status == FLIGHT_STATUS_EN_ROUTE:
-            return {
-                "name": "Dang di chuyen den diem bay",
-                "lat": round(service_package.launch_lat - 0.01, 6),
-                "lng": round(service_package.launch_lng - 0.01, 6),
-            }
+            return dict(LAUNCH_LOCATION)
         if status == FLIGHT_STATUS_FLYING:
-            return {
-                "name": "Dang bay",
-                "lat": round((service_package.launch_lat + service_package.landing_lat) / 2, 6),
-                "lng": round((service_package.launch_lng + service_package.landing_lng) / 2, 6),
-            }
+            return dict(LANDING_LOCATION)
         if status == FLIGHT_STATUS_LANDED:
-            return {
-                "name": service_package.landing_site_name,
-                "lat": service_package.landing_lat,
-                "lng": service_package.landing_lng,
-            }
+            return dict(LANDING_LOCATION)
         raise ValidationError("Trang thai chuyen bay khong hop le.")
 
     def _status_label(self, status: str) -> str:
         labels = {
             FLIGHT_STATUS_WAITING_CONFIRMATION: "Cho xac nhan",
             FLIGHT_STATUS_WAITING: "Dang cho",
-            FLIGHT_STATUS_EN_ROUTE: "Dang di chuyen",
+            FLIGHT_STATUS_PICKING_UP: "Dang di chuyen den diem don",
+            FLIGHT_STATUS_EN_ROUTE: "Dang di chuyen den diem bay",
             FLIGHT_STATUS_FLYING: "Dang bay",
             FLIGHT_STATUS_LANDED: "Da ha canh",
         }
@@ -147,7 +158,12 @@ class StartPilotTrackingUseCase:
 
     def execute(self, booking_code: str, pilot_phone: str, location: dict[str, object]):
         booking = self._validate_assigned_booking(booking_code, pilot_phone)
-        booking.flight_status = FLIGHT_STATUS_EN_ROUTE if booking.flight_status == FLIGHT_STATUS_WAITING else booking.flight_status
+        if booking.flight_status == FLIGHT_STATUS_WAITING:
+            booking.flight_status = (
+                FLIGHT_STATUS_PICKING_UP
+                if booking.pickup_option == PICKUP_OPTION_SHUTTLE
+                else FLIGHT_STATUS_EN_ROUTE
+            )
         updated_booking = self.booking_repository.update(booking)
         tracking = self.tracking_repository.update_status(
             booking_code,

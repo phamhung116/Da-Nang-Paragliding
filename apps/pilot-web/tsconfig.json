@@ -1,6 +1,7 @@
 {
   "extends": "../../packages/config/typescript/base.json",
   "compilerOptions": {
+    "ignoreDeprecations": "5.0",
     "baseUrl": ".",
     "types": ["vite/client", "node"],
     "paths": {

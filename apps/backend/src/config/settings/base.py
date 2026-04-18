@@ -91,14 +91,14 @@ CORS_ALLOWED_ORIGINS = [
     origin
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5173,http://localhost:5174",
+        "http://localhost:5173,http://localhost:5174,http://localhost:5175",
     ).split(",")
     if origin
 ]
 CORS_ALLOW_CREDENTIALS = True
 
 ONLINE_PAYMENT_DISCOUNT_PERCENT = int(os.getenv("ONLINE_PAYMENT_DISCOUNT_PERCENT", "10"))
-ONLINE_DEPOSIT_PERCENT = int(os.getenv("ONLINE_DEPOSIT_PERCENT", "30"))
+ONLINE_DEPOSIT_PERCENT = int(os.getenv("ONLINE_DEPOSIT_PERCENT", "40"))
 
 BUSINESS_INFO = {
     "name": os.getenv("BUSINESS_NAME", "SkyNest Paragliding"),
@@ -109,6 +109,11 @@ BUSINESS_INFO = {
 
 NOTIFICATION_PROVIDER = os.getenv("NOTIFICATION_PROVIDER", "console")
 PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "mockpay")
+PAYOS_CLIENT_ID = os.getenv("PAYOS_CLIENT_ID", "")
+PAYOS_API_KEY = os.getenv("PAYOS_API_KEY", "")
+PAYOS_CHECKSUM_KEY = os.getenv("PAYOS_CHECKSUM_KEY", "")
+PAYOS_RETURN_URL = os.getenv("PAYOS_RETURN_URL", "")
+PAYOS_CANCEL_URL = os.getenv("PAYOS_CANCEL_URL", "")
 ACCESS_TOKEN_TTL_HOURS = int(os.getenv("ACCESS_TOKEN_TTL_HOURS", "168"))
 EMAIL_VERIFICATION_TOKEN_TTL_HOURS = int(os.getenv("EMAIL_VERIFICATION_TOKEN_TTL_HOURS", "24"))
 CUSTOMER_WEB_URL = os.getenv("CUSTOMER_WEB_URL", "http://localhost:5173")

@@ -82,6 +82,7 @@ class MongoAvailabilityRepository:
                 visibility_km=day.visibility_km,
                 weather_condition=day.weather_condition,
                 flight_condition=day.flight_condition,
+                weather_available=day.weather_available,
                 slots=[_slot_payload(slot) for slot in day.slots],
             )
             created.append(_to_domain(document))

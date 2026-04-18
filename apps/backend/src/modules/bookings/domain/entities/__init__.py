@@ -20,9 +20,14 @@ class Booking:
     adults: int
     children: int
     notes: str | None
+    pickup_option: str
+    pickup_address: str | None
+    pickup_fee: Decimal
     unit_price: Decimal
     original_total: Decimal
     final_total: Decimal
+    deposit_amount: Decimal
+    deposit_percentage: int
     payment_method: str
     payment_status: str
     approval_status: str

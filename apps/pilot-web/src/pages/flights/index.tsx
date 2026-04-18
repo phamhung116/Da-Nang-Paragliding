@@ -7,7 +7,7 @@ import { pilotApi } from "@/shared/config/api";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
-const statusOptions = ["WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
 
 type LivePosition = {
@@ -28,7 +28,8 @@ type TrackingSession = {
 
 const statusLabels: Record<(typeof statusOptions)[number], string> = {
   WAITING: "Dang cho",
-  EN_ROUTE: "Dang di chuyen",
+  PICKING_UP: "Dang di chuyen den diem don",
+  EN_ROUTE: "Dang di chuyen den diem bay",
   FLYING: "Dang bay",
   LANDED: "Da ha canh"
 };
@@ -333,6 +334,14 @@ export const FlightsPage = () => {
                           <strong>{formatCurrentLocation(flight.tracking)}</strong>
                         </article>
                         <article>
+                          <span>Pickup</span>
+                          <strong>
+                            {flight.booking.pickup_option === "pickup"
+                              ? flight.booking.pickup_address ?? "Dia chi don"
+                              : "Khach tu den"}
+                          </strong>
+                        </article>
+                        <article>
                           <span>Route points</span>
                           <strong>{flight.tracking?.route_points.length ?? 0}</strong>
                         </article>
@@ -365,7 +374,9 @@ export const FlightsPage = () => {
                       </div>
 
                       <div className="pilot-status-actions">
-                        {statusOptions.map((status) => (
+                        {statusOptions
+                          .filter((status) => status !== "PICKING_UP" || flight.booking.pickup_option === "pickup")
+                          .map((status) => (
                           <Button
                             key={status}
                             variant={flight.booking.flight_status === status ? "primary" : "secondary"}

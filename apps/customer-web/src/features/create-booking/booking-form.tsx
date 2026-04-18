@@ -37,6 +37,9 @@ const paymentOptions = [
   }
 ] as const;
 
+const PICKUP_FEE = 50000;
+const DEPOSIT_PERCENT = 40;
+
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
   const { account } = useAuth();
@@ -60,6 +63,8 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
       children: 0,
       notes: "",
       payment_method: "bank_transfer",
+      pickup_option: "self",
+      pickup_address: "",
       agree_terms: false
     }),
     [account?.email, account?.full_name, accountPhone, selectedDate, selectedTime, serviceSlug]
@@ -75,11 +80,14 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   }, [defaultValues, reset]);
 
   const paymentMethod = watch("payment_method");
+  const pickupOption = watch("pickup_option");
   const adults = Number(watch("adults") ?? 0);
   const children = Number(watch("children") ?? 0);
   const totalGuests = Math.max(0, adults + children);
   const tourTotal = Number(servicePackage?.price ?? 0) * totalGuests;
-  const depositAmount = tourTotal * 0.3;
+  const pickupFee = pickupOption === "pickup" ? PICKUP_FEE : 0;
+  const finalTotal = tourTotal + pickupFee;
+  const depositAmount = tourTotal * (DEPOSIT_PERCENT / 100) + pickupFee;
 
   const mutation = useMutation({
     mutationFn: ({ agree_terms: _, ...payload }: BookingSubmitForm) => customerApi.createBooking(payload),
@@ -118,11 +126,19 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
             <strong>{formatCurrency(tourTotal)}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Can dat coc 30%</span>
+            <span>Xe don</span>
+            <strong>{pickupFee ? formatCurrency(pickupFee) : "Tu den"}</strong>
+          </div>
+          <div className="booking-summary-card__fact">
+            <span>Tong gia tri</span>
+            <strong>{formatCurrency(finalTotal)}</strong>
+          </div>
+          <div className="booking-summary-card__fact">
+            <span>Can tra truoc</span>
             <strong>{formatCurrency(depositAmount)}</strong>
           </div>
           <p className="booking-summary-card__note">
-            Khung gio da chon se duoc giu sau khi gui booking. He thong se tao QR dat coc 30% va timeout sau 30 phut.
+            Tien tra truoc gom {DEPOSIT_PERCENT}% gia tri tour va phi xe don neu khach chon xe den don.
           </p>
         </Panel>
       </Card>
@@ -163,6 +179,35 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <Field label="Ghi chu">
                 <Textarea {...register("notes")} />
               </Field>
+            </div>
+
+            <div className="stack-sm">
+              <strong>Di chuyen den diem bay</strong>
+              <div className="payment-options payment-options--pickup">
+                <label className={`payment-option ${pickupOption !== "pickup" ? "is-active" : ""}`}>
+                  <input type="radio" value="self" {...register("pickup_option")} />
+                  <strong>Tu den diem hen</strong>
+                  <span>Khach tu di chuyen den khu vuc Chua Buu Dai Son.</span>
+                </label>
+                <label className={`payment-option ${pickupOption === "pickup" ? "is-active" : ""}`}>
+                  <input type="radio" value="pickup" {...register("pickup_option")} />
+                  <strong>Xe den don</strong>
+                  <span>Cong them 50.000 VND vao tien tra truoc.</span>
+                </label>
+              </div>
+              {pickupOption === "pickup" ? (
+                <Field label="Dia chi don">
+                  <Input
+                    placeholder="Nhap dia chi don tai Da Nang"
+                    {...register("pickup_address", {
+                      required: pickupOption === "pickup" ? "Nhap dia chi don." : false
+                    })}
+                  />
+                </Field>
+              ) : null}
+              {formState.errors.pickup_address ? (
+                <p className="form-error">{formState.errors.pickup_address.message}</p>
+              ) : null}
             </div>
 
             <div className="stack-sm">

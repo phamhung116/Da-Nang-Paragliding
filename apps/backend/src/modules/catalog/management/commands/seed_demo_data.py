@@ -114,11 +114,11 @@ class Command(BaseCommand):
             )
             review_booking_use_case().execute(
                 confirmed_result["booking"].code,
-                ReviewBookingRequest(decision="confirm"),
-            )
-            assign_pilot_use_case().execute(
-                confirmed_result["booking"].code,
-                AssignPilotRequest(pilot_name="Pilot Son Tra 01", pilot_phone="+84908000111"),
+                ReviewBookingRequest(
+                    decision="confirm",
+                    pilot_name="Pilot Son Tra 01",
+                    pilot_phone="+84908000111",
+                ),
             )
 
         if "+84909000333" not in existing_phones:
