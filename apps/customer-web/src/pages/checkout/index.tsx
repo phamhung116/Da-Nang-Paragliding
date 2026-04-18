@@ -110,6 +110,16 @@ export const CheckoutPage = () => {
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
+                    <span>Di chuyen</span>
+                    <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Tu den"}</strong>
+                  </div>
+                  {booking.pickup_option === "pickup" ? (
+                    <div className="booking-summary-card__fact">
+                      <span>Dia chi don</span>
+                      <strong>{booking.pickup_address ?? "Dang cap nhat"}</strong>
+                    </div>
+                  ) : null}
+                  <div className="booking-summary-card__fact">
                     <span>Trang thai</span>
                     <strong>{booking.approval_status}</strong>
                   </div>
@@ -121,15 +131,15 @@ export const CheckoutPage = () => {
               <Panel className="stack">
                 <Badge>Dat coc bang QR</Badge>
                     <p className="detail-copy">
-                      Tra truoc {paymentSession?.deposit_percentage ?? booking.deposit_percentage}% gia tri tour
-                      va phi xe don neu co. Sau khi cong thanh toan bao PAID, booking se duoc xac nhan tren he thong.
+                      Thanh toan so tien tra truoc qua cong thanh toan. Sau khi nha cung cap tra ve trang thai
+                      PAID, booking se duoc confirm va email xac nhan se duoc gui cho khach.
                     </p>
                     <div className="checkout-qr">
-                      {paymentSession?.qr_code_url ? <img src={paymentSession.qr_code_url} alt={`QR ${booking.code}`} /> : null}
+                      <img src={paymentSession?.qr_code_url} alt={`QR ${booking.code}`} />
                       <div className="stack-sm">
                         <div className="booking-summary-card__fact">
-                          <span>So tien tra truoc</span>
-                          <strong>{formatCurrency(paymentSession?.amount ?? booking.deposit_amount ?? "0")}</strong>
+                          <span>So tien dat coc</span>
+                          <strong>{formatCurrency(paymentSession?.amount ?? "0")}</strong>
                         </div>
                         <div className="booking-summary-card__fact">
                           <span>Noi dung chuyen khoan</span>
@@ -139,12 +149,6 @@ export const CheckoutPage = () => {
                           <span>Het han luc</span>
                           <strong>{expiresAt?.toLocaleString("vi-VN")}</strong>
                         </div>
-                        {booking.pickup_option === "pickup" ? (
-                          <div className="booking-summary-card__fact">
-                            <span>Dia chi don</span>
-                            <strong>{booking.pickup_address}</strong>
-                          </div>
-                        ) : null}
                       </div>
                     </div>
                     {transaction ? (
@@ -155,26 +159,28 @@ export const CheckoutPage = () => {
                     ) : null}
                     {paymentSession?.payment_url ? (
                       <a href={paymentSession.payment_url} target="_blank" rel="noreferrer">
-                        <Button type="button" disabled={booking.payment_status === "PAID" || isExpired}>
-                          Mo cong thanh toan
-                        </Button>
+                        <Button>Mo cong thanh toan</Button>
                       </a>
                     ) : null}
                     <Button
-                      variant="secondary"
                       onClick={() => paymentMutation.mutate(booking.code)}
-                      disabled={paymentMutation.isPending || booking.payment_status === "PAID" || isExpired}
+                      disabled={
+                        paymentMutation.isPending || booking.payment_status === "PAID" || isExpired
+                      }
                     >
                       {booking.payment_status === "PAID"
                         ? "Da thanh toan"
                         : isExpired
                           ? "QR da het han"
-                          : paymentMutation.isPending
-                            ? "Dang kiem tra..."
+                        : paymentMutation.isPending
+                            ? "Dang xu ly..."
                             : "Kiem tra trang thai thanh toan"}
                     </Button>
                     {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
-                      <p className="detail-copy">He thong chua nhan duoc trang thai PAID tu cong thanh toan.</p>
+                      <p className="calendar-selection-note">
+                        He thong chua nhan duoc trang thai PAID tu cong thanh toan. Hay kiem tra lai sau khi
+                        thanh toan xong.
+                      </p>
                     ) : null}
                 <Link to="/tracking">
                   <Button variant="secondary">Theo doi hanh trinh bay</Button>

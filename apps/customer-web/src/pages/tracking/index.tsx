@@ -14,7 +14,7 @@ import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 type LookupForm = { query: string };
 
 const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
-const mapStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
+const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
@@ -141,10 +141,10 @@ export const TrackingPage = () => {
                 </Panel>
               </Card>
 
-              {mapStatuses.has(result.booking.flight_status) ? (
+              {mapVisibleStatuses.has(result.booking.flight_status) ? (
                 <Card>
                   <Panel className="stack">
-                    <strong>Ban do hanh trinh</strong>
+                    <strong>Ban do GPS</strong>
                     <TrackingMap booking={result.booking} tracking={result.tracking} />
                   </Panel>
                 </Card>
@@ -152,7 +152,7 @@ export const TrackingPage = () => {
                 <Card>
                   <Panel className="stack-sm">
                     <strong>Ban do se hien thi khi hanh trinh bat dau.</strong>
-                    <p className="detail-copy">Trang thai hien tai chua co tracking tren ban do.</p>
+                    <p>Hien tai booking van dang cho xac nhan hoac cho toi gio khoi hanh.</p>
                   </Panel>
                 </Card>
               )}

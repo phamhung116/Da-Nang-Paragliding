@@ -6,7 +6,7 @@ export const businessInfo = {
   email: "hello@skynest.vn",
   address: "Cong vien Bien Dong, duong Vo Nguyen Giap, phuong Phuoc My, Son Tra, Da Nang",
   intro:
-    "Dat lich bay doi tai Son Tra tren web, xem slot theo weather, thanh toan dat coc va theo doi hanh trinh bay theo tung moc van hanh.",
+    "Khám phá vẻ đẹp tuyệt mỹ của bán đảo Sơn Trà từ góc nhìn của loài chim. An toàn, chuyên nghiệp và đầy cảm xúc.",
   supportHours: "05:30 - 19:00 moi ngay",
   meetingPoint: "Bai dap Son Tra, Da Nang",
   mapLatitude: 16.0687,

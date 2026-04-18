@@ -1,3 +1,97 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap");
+@import "tailwindcss" important;
+
+@theme {
+  --color-brand: #800000; /* Deep Maroon from PDF */
+  --color-brand-light: #A52A2A;
+}
+
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-stone-50 text-stone-900 font-sans;
+  }
+
+  /* Hide scrollbar for Chrome, Safari and Opera */
+  @media (max-width: 768px) {
+    ::-webkit-scrollbar {
+      display: none;
+    }
+    * {
+      -ms-overflow-style: none;  /* IE and Edge */
+      scrollbar-width: none;  /* Firefox */
+    }
+  }
+
+  /* Subtle scrollbar for desktop */
+  @media (min-width: 769px) {
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+  }
+}
+
+.glass-card {
+  @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+.btn-primary {
+  @apply bg-brand text-white px-6 py-3 rounded-full font-semibold transition-all hover:bg-brand-light active:scale-95 disabled:opacity-50;
+}
+
+.btn-secondary {
+  @apply border-2 border-brand text-brand px-6 py-3 rounded-full font-semibold transition-all hover:bg-brand hover:text-white active:scale-95;
+}
+
+.ui-button.btn-primary {
+  background: var(--color-brand) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  color: var(--color-white) !important;
+}
+
+.ui-button.btn-primary:hover {
+  background: var(--color-brand-light) !important;
+}
+
+.ui-button.btn-secondary {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.ui-button.btn-secondary:hover {
+  background: var(--color-brand) !important;
+  color: var(--color-white) !important;
+}
+
+.nav-header .nav-header-item {
+  color: var(--color-stone-600);
+  font-size: 0.875rem;
+  line-height: calc(1.25/0.875);
+  font-weight: 500;
+  transition: color 160ms ease;
+}
+
+.nav-header .nav-header-item:hover,
+.nav-header .nav-header-item.is-active {
+  color: var(--color-brand);
+}
+/* PHng */
+
+
 .site-shell {
   min-height: 100vh;
 }

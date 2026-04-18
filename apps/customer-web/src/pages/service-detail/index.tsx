@@ -5,7 +5,7 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { servicePreparationChecklist } from "@/shared/constants/customer-content";
 import { formatCurrency } from "@/shared/lib/format";
-import { SiteLayout } from "@/widgets/layout/site-layout";
+import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 
 const serviceFlowNotes = [
@@ -79,27 +79,61 @@ export const ServiceDetailPage = () => {
 
   return (
     <SiteLayout>
-      <section className="page-banner page-banner--service">
-        <div className="page-banner__image">
-          <img src={servicePackage.hero_image} alt={servicePackage.name} />
-          <div className="page-banner__overlay" />
-        </div>
-        <Container className="page-banner__content">
-          <Badge>{servicePackage.launch_site_name}</Badge>
-          <h1>{servicePackage.name}</h1>
-          <p>{servicePackage.short_description}</p>
-        </Container>
-      </section>
+      <Banner 
+        title={servicePackage.name} 
+        subtitle="Trải nghiệm bay lượn tuyệt vời nhất tại Đà Nẵng."
+        image={servicePackage.hero_image}
+      />
 
-      <section className="section">
-        <Container className="detail-layout">
-          <div className="detail-main-column">
-            <Card className="detail-copy-card">
-              <Panel className="stack">
-                <div className="detail-chip-row">
-                  <Badge>{formatCurrency(servicePackage.price)}</Badge>
-                  <Badge tone="success">{servicePackage.active ? "Dang mo ban" : "Tam khoa"}</Badge>
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-start-3 lg:col-span-1 order-first lg:order-last space-y-8">
+            <div className="glass-card rounded-[32px] p-6 sticky top-24">
+              <div className="mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-3xl font-bold text-red-600">{formatCurrency(servicePackage.price)}</h2>
+                  <Link
+                    to={
+                      selectedSlot
+                        ? `/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`
+                        : `/booking?service=${servicePackage.slug}`
+                    }
+                  >
+                    <Button className="btn-primary px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-brand/20">
+                      Đặt ngay
+                    </Button>
+                  </Link>
                 </div>
+                <p className="calendar-selection-note">
+                  {selectedSlot
+                    ? "Lich da chon se duoc giu san khi sang trang dien thong tin."
+                    : "Co the dat ngay va chon lich o buoc tiep theo."}
+                </p>
+              </div>
+              
+              {availability.length > 0 ? (
+                <BookingCalendar
+                  year={calendarState.year}
+                  month={calendarState.month}
+                  days={availability}
+                  selectedSlot={selectedSlot}
+                  onMonthChange={(year, month) => setCalendarState({ year, month })}
+                  onSelectSlot={setSelectedSlot}
+                />
+              ) : (
+                <Card className="empty-state-card">
+                  <Panel className="stack-sm">
+                    <Badge tone="danger">Chua mo lich</Badge>
+                    <strong>Thang nay chua co slot kha dung cho goi bay nay.</strong>
+                    <p>Ban co the doi sang thang khac hoac lien he doanh nghiep de duoc ho tro.</p>
+                  </Panel>
+                </Card>
+              )}
+            </div>
+          </div >
+          <div className="lg:col-span-2 space-y-6 lg:space-y-12">
+            <div>
+              <div>
                 <h2 className="detail-title">Tong quan goi bay</h2>
                 <p className="detail-copy">{servicePackage.description}</p>
                 <div className="detail-highlight-grid">
@@ -120,36 +154,8 @@ export const ServiceDetailPage = () => {
                     <strong>{servicePackage.min_child_age}+ tuoi</strong>
                   </article>
                 </div>
-              </Panel>
-            </Card>
-
-            <section className="detail-booking-section">
-              <div className="detail-booking-section__head">
-                <div className="stack-sm">
-                  <Badge>Dat lich bay</Badge>
-                  <h2 className="detail-title">Chon ngay va khung gio</h2>
-                </div>
               </div>
-
-              {availability.length > 0 ? (
-                <BookingCalendar
-                  year={calendarState.year}
-                  month={calendarState.month}
-                  days={availability}
-                  selectedSlot={selectedSlot}
-                  onMonthChange={(year, month) => setCalendarState({ year, month })}
-                  onSelectSlot={setSelectedSlot}
-                />
-              ) : (
-                <Card className="empty-state-card">
-                  <Panel className="stack-sm">
-                    <Badge tone="danger">Chua mo lich</Badge>
-                    <strong>Thang nay chua co slot kha dung cho goi bay nay.</strong>
-                    <p>Ban co the doi sang thang khac hoac lien he doanh nghiep de duoc ho tro.</p>
-                  </Panel>
-                </Card>
-              )}
-            </section>
+            </div>
 
             <div className="detail-section-grid">
               <Card className="detail-section-card">
@@ -206,54 +212,6 @@ export const ServiceDetailPage = () => {
               ))}
             </div>
           </div>
-
-          <aside className="detail-booking-column">
-            <Card className="detail-booking-sticky">
-              <Panel className="stack">
-                <div className="detail-price-card">
-                  <div className="detail-price-card__copy">
-                    <span>Gia dich vu</span>
-                    <strong>{formatCurrency(servicePackage.price)}</strong>
-                  </div>
-                </div>
-
-                <div className="detail-fact-list">
-                  <article>
-                    <span>Diem cat canh</span>
-                    <strong>{servicePackage.launch_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Diem ha canh</span>
-                    <strong>{servicePackage.landing_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Tre em toi thieu</span>
-                    <strong>{servicePackage.min_child_age}+ tuoi</strong>
-                  </article>
-                </div>
-
-                <div className="detail-booking-selection">
-                  <span>Khung gio da chon</span>
-                  <strong>{formatSelectedSlotLabel(selectedSlot)}</strong>
-                  <small>
-                    {selectedSlot
-                      ? "Khung gio nay se duoc mang sang trang dien thong tin."
-                      : "Co the dat lich ngay va chon khung gio o buoc tiep theo."}
-                  </small>
-                </div>
-
-                <Link
-                  to={
-                    selectedSlot
-                      ? `/booking?service=${servicePackage.slug}&date=${selectedSlot.date}&time=${selectedSlot.time}`
-                      : `/booking?service=${servicePackage.slug}`
-                  }
-                >
-                  <Button>{selectedSlot ? "Tiep tuc dat lich" : "Dat lich ngay"}</Button>
-                </Link>
-              </Panel>
-            </Card>
-          </aside>
         </Container>
       </section>
     </SiteLayout>

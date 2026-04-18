@@ -2,7 +2,18 @@ import { Link } from "react-router-dom";
 import { Badge, Button, Container } from "@paragliding/ui";
 import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
-import { SiteLayout } from "@/widgets/layout/site-layout";
+import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
+import { motion } from "motion/react";
+
+import {
+  FaFacebook,
+} from "react-icons/fa6";
+
+import {
+  Phone,
+  Mail,
+  MapPin,
+} from "lucide-react"
 
 const normalizedPhone = businessInfo.phone.replace(/\s+/g, "");
 const mapEmbedUrl =
@@ -13,128 +24,75 @@ const contactMethods = [
     label: "Hotline",
     value: businessInfo.phone,
     href: `tel:${normalizedPhone}`,
-    action: "Goi ngay"
-  },
-  {
-    label: "Dien thoai van phong",
-    value: businessInfo.secondaryPhone,
-    href: `tel:${businessInfo.secondaryPhone.replace(/\s+/g, "")}`,
-    action: "Goi van phong"
+    icon: <Phone size={20} />,
   },
   {
     label: "Email",
     value: businessInfo.email,
     href: `mailto:${businessInfo.email}`,
-    action: "Gui email"
+    icon: <Mail size={20} />,
+  },
+  {
+    label: "Địa chỉ",
+    value: businessInfo.address,
+    icon: <MapPin size={20} />,
   }
-];
-
-const supportNotes = [
-  "Tu van goi bay, lich trong va chinh sach dat coc.",
-  "Ho tro doi lich khi weather tai Son Tra khong phu hop.",
-  "Cap nhat trang thai booking va thong tin pilot phu trach."
 ];
 
 export const ContactPage = () => (
   <SiteLayout>
-    <section className="page-banner contact-page-banner">
-      <div className="page-banner__image">
-        <img
-          src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1800&q=80"
-          alt="Da Nang coastline"
-        />
-        <div className="page-banner__overlay" />
-      </div>
-      <Container className="page-banner__content">
-        <Badge>Lien he</Badge>
-        <h1>Ket noi voi SkyNest de chon gio bay phu hop tai Da Nang.</h1>
-        <p>Hotline, email, dia chi van phong va ban do duoc cap nhat de khach den dung diem hen.</p>
-      </Container>
-    </section>
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="pb-20"
+    >
+      <Banner 
+        title="Liên Hệ" 
+        subtitle="Bạn có thắc mắc hoặc muốn đặt lịch bay? Hãy liên hệ với chúng tôi qua các kênh dưới đây."
+        image="https://images.unsplash.com/photo-1596263576925-d90d63691097?auto=format&fit=crop&q=80&w=1920"
+      />
 
-    <section className="section">
-      <Container className="contact-page">
-        <div className="contact-page__grid">
-          <div className="contact-page__content">
-            <div className="contact-section-heading">
-              <Badge tone="success">Thong tin lien he</Badge>
-              <h2>Ho tro booking va dieu phoi lich bay moi ngay.</h2>
-              <p>
-                Doi dieu phoi tiep nhan yeu cau dat lich, doi lich, hoan coc va theo doi hanh trinh trong gio
-                hoat dong.
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <Container className="grid grid-cols-1 md:grid-cols-2 gap-16">
+          <div>
+              <h2 className="text-2xl md:text-3xl font-bold mb-6 text-stone-900">Liên Hệ Với Chúng Tôi</h2>
+              <p className="text-xs md:text-sm text-stone-600 mb-10 leading-relaxed">
+                Bạn có thắc mắc hoặc muốn đặt lịch bay? Hãy liên hệ với chúng tôi qua các kênh dưới đây hoặc để lại lời nhắn.
               </p>
-            </div>
 
-            <div className="contact-method-grid">
+            <div className="space-y-6 mb-10">
               {contactMethods.map((method) => (
-                <article key={method.label} className="contact-method">
-                  <span>{method.label}</span>
-                  <strong>{method.value}</strong>
-                  <a href={method.href}>{method.action}</a>
-                </article>
+                <div key={method.label} className="flex items-start gap-4">
+                  <div className="w-10 h-10 bg-stone-100 text-brand rounded-xl flex items-center justify-center shrink-0">
+                    {method.icon}
+                  </div>
+                  <div>
+                    <a href={method.href}><p className="text-[9px] font-bold text-stone-400 uppercase mb-0.5">{method.label}</p></a>
+                    <a href={method.href}><p className="text-sm md:text-base font-bold text-stone-900">{method.value}</p></a>
+                  </div>
+                </div>
               ))}
             </div>
-
-            <div className="contact-info-panel">
-              <div>
-                <span>Dia chi doanh nghiep</span>
-                <strong>{businessInfo.address}</strong>
-              </div>
-              <div>
-                <span>Diem hen bay</span>
-                <strong>{businessInfo.meetingPoint}</strong>
-              </div>
-              <div>
-                <span>Gio ho tro</span>
-                <strong>{businessInfo.supportHours}</strong>
-              </div>
-            </div>
-
-            <div className="contact-support-list">
-              {supportNotes.map((note) => (
-                <span key={note}>{note}</span>
-              ))}
-            </div>
-
-            <div className="contact-actions">
-              <a href={`tel:${normalizedPhone}`}>
-                <Button>Goi hotline</Button>
-              </a>
-              <Link to={routes.services}>
-                <Button variant="secondary">Xem goi bay</Button>
-              </Link>
+            <div className="flex gap-3">
+              <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://www.facebook.com/profile.php?id=100064087207931"><FaFacebook /></a></div>
+              <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://zalo.me/0935101188" className="flex items-center justify-center w-full h-full"><img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{width: "50%"}}/></a></div>
             </div>
           </div>
 
-          <div className="contact-map-panel">
-            <div className="contact-map-panel__header">
-              <div>
-                <Badge>Ban do</Badge>
-                <h2>Cong vien Bien Dong, Son Tra</h2>
-              </div>
-              <a href={businessInfo.googleMapsUrl} target="_blank" rel="noreferrer">
-                Mo Google Maps
-              </a>
-            </div>
-
-            <div className="contact-map">
-              <iframe
-                title="SkyNest contact map"
-                src={mapEmbedUrl}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
-            </div>
-
-            <div className="contact-map-panel__meta">
-              <span>Toa do</span>
-              <strong>
-                {businessInfo.mapLatitude}, {businessInfo.mapLongitude}
-              </strong>
-            </div>
+          <div className="h-[400px] md:h-[500px] rounded-[32px] overflow-hidden shadow-xl border border-stone-200">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15334.46083321591!2d108.261895!3d16.110555!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3142179635634967%3A0x584460af3013973d!2zQsOhbiDEkeG6o28gU8ahbiBUcsOg!5e0!3m2!1svi!2svn!4v1710670000000!5m2!1svi!2svn" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }} 
+              allowFullScreen 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
-        </div>
-      </Container>
-    </section>
+        </Container>
+      </section>
+    </motion.div>
   </SiteLayout>
 );
