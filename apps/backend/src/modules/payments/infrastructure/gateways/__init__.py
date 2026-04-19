@@ -5,6 +5,8 @@ from decimal import Decimal
 import hashlib
 import hmac
 import json
+import logging
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 from zlib import crc32
 from urllib.parse import quote
@@ -13,6 +15,9 @@ from uuid import uuid4
 from django.conf import settings
 
 from shared.exceptions import ValidationError
+
+
+logger = logging.getLogger(__name__)
 
 
 class MockPaymentGateway:
@@ -55,11 +60,11 @@ class PayOsPaymentGateway:
     endpoint = "https://api-merchant.payos.vn/v2/payment-requests"
 
     def __init__(self) -> None:
-        self.client_id = getattr(settings, "PAYOS_CLIENT_ID", "")
-        self.api_key = getattr(settings, "PAYOS_API_KEY", "")
-        self.checksum_key = getattr(settings, "PAYOS_CHECKSUM_KEY", "")
-        self.return_url = getattr(settings, "PAYOS_RETURN_URL", "").rstrip("/")
-        self.cancel_url = getattr(settings, "PAYOS_CANCEL_URL", "").rstrip("/")
+        self.client_id = str(getattr(settings, "PAYOS_CLIENT_ID", "")).strip()
+        self.api_key = str(getattr(settings, "PAYOS_API_KEY", "")).strip()
+        self.checksum_key = str(getattr(settings, "PAYOS_CHECKSUM_KEY", "")).strip()
+        self.return_url = str(getattr(settings, "PAYOS_RETURN_URL", "")).strip().rstrip("/")
+        self.cancel_url = str(getattr(settings, "PAYOS_CANCEL_URL", "")).strip().rstrip("/")
 
     def create_payment_session(
         self,
@@ -73,7 +78,7 @@ class PayOsPaymentGateway:
         self._ensure_configured()
         order_code = self._order_code(booking_code)
         amount_value = int(amount)
-        description = booking_code[:25]
+        description = self._description(booking_code, order_code)
         return_url = self.return_url or f"{settings.CUSTOMER_WEB_URL.rstrip('/')}/checkout?booking={booking_code}"
         cancel_url = self.cancel_url or f"{settings.CUSTOMER_WEB_URL.rstrip('/')}/checkout?booking={booking_code}&cancelled=1"
         payload = {
@@ -82,7 +87,7 @@ class PayOsPaymentGateway:
             "description": description,
             "items": [
                 {
-                    "name": f"Dat coc {booking_code}",
+                    "name": f"Dat coc {description}",
                     "quantity": 1,
                     "price": amount_value,
                 }
@@ -102,6 +107,11 @@ class PayOsPaymentGateway:
         )
 
         response = self._request(self.endpoint, method="POST", payload=payload)
+        response_code = str(response.get("code") or "")
+        if response_code and response_code != "00":
+            response_message = str(response.get("desc") or response.get("message") or "PayOS tu choi yeu cau.")
+            raise ValidationError(f"PayOS tu choi yeu cau: {response_message}")
+
         data = response.get("data") or {}
         checkout_url = str(data.get("checkoutUrl") or "")
         qr_code = str(data.get("qrCode") or "")
@@ -137,7 +147,9 @@ class PayOsPaymentGateway:
             data=body,
             method=method,
             headers={
+                "Accept": "application/json",
                 "Content-Type": "application/json",
+                "User-Agent": "DaNangParagliding/1.0 PayOSIntegration",
                 "x-client-id": self.client_id,
                 "x-api-key": self.api_key,
             },
@@ -145,8 +157,22 @@ class PayOsPaymentGateway:
         try:
             with urlopen(request, timeout=8) as response:
                 return json.loads(response.read().decode("utf-8"))
-        except Exception as exc:
-            raise ValidationError("Khong ket noi duoc PayOS. Hay thu lai sau.") from exc
+        except HTTPError as exc:
+            detail = exc.read().decode("utf-8", errors="replace")
+            safe_payload = dict(payload or {})
+            if "signature" in safe_payload:
+                safe_payload["signature"] = "***"
+            logger.warning("PayOS HTTP error %s: %s; payload=%s", exc.code, detail[:500], safe_payload)
+            error_message = self._payos_error_message(detail)
+            if error_message:
+                raise ValidationError(f"PayOS tu choi yeu cau ({exc.code}): {error_message}") from exc
+            raise ValidationError(f"PayOS tu choi yeu cau ({exc.code}). Hay kiem tra lai PayOS credentials.") from exc
+        except URLError as exc:
+            logger.warning("PayOS connection error: %s", exc)
+            raise ValidationError("Khong ket noi duoc PayOS. Hay kiem tra network/DNS cua backend.") from exc
+        except json.JSONDecodeError as exc:
+            logger.warning("PayOS returned invalid JSON: %s", exc)
+            raise ValidationError("PayOS tra ve phan hoi khong hop le.") from exc
 
     def _ensure_configured(self) -> None:
         if not self.client_id or not self.api_key or not self.checksum_key:
@@ -164,3 +190,18 @@ class PayOsPaymentGateway:
         digits = "".join(character for character in booking_code if character.isdigit())[-10:]
         suffix = crc32(booking_code.encode("utf-8")) % 10000
         return int(f"{digits or 0}{suffix:04d}")
+
+    def _description(self, booking_code: str, order_code: int) -> str:
+        digits = "".join(character for character in booking_code if character.isdigit())
+        short_code = digits[-7:] if digits else str(order_code)[-7:]
+        return f"BK{short_code}"[:9]
+
+    def _payos_error_message(self, detail: str) -> str:
+        try:
+            payload = json.loads(detail)
+        except json.JSONDecodeError:
+            return ""
+        if not isinstance(payload, dict):
+            return ""
+        message = str(payload.get("desc") or payload.get("message") or payload.get("error") or "").strip()
+        return message[:180]

@@ -202,7 +202,7 @@ export const BookingCalendar = ({
     ? {
         temp: weatherSource.temperature_c,
         condition: weatherSource.weather_condition || "Thoi tiet",
-        flight: weatherSource.flight_condition || "Dang cap nhat",
+        flight: weatherSource.flight_condition || "Đang cập nhật",
         wind: weatherSource.wind_kph,
         uv: weatherSource.uv_index
       }
@@ -394,7 +394,7 @@ export const BookingCalendar = ({
               </table>
             </div>
           ) : (
-            <div className="calendar-empty">Chua co du lieu kha dung cho thang nay.</div>
+            <div className="calendar-empty">Chưa có dữ liệu khả dụng cho tháng này.</div>
           )}
 
           <div className="flex justify-between items-center text-[10px] text-stone-400 pt-2 border-t border-stone-100">
@@ -443,7 +443,7 @@ export const BookingCalendar = ({
               </div>
             </div>
           ) : (
-              <p className="calendar-selection-note">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
+              <p className="calendar-selection-note">Chưa có dữ liệu thời tiết thực tế từ API cho lịch bay này.</p>
             )}
           </div>
         </div>

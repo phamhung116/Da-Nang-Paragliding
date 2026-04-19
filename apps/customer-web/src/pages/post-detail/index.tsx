@@ -1,8 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
+import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { WeatherShowcase } from "@/widgets/weather-showcase/weather-showcase";
 import { motion } from "motion/react";
@@ -21,15 +22,17 @@ export const PostDetailPage = () => {
   });
   const weatherServiceSlug = services[0]?.slug;
   const today = useMemo(() => new Date(), []);
-  const { data: forecast = [] } = useQuery({
-    queryKey: ["post-detail-weather", weatherServiceSlug, today.getFullYear(), today.getMonth() + 1],
-    queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", today.getFullYear(), today.getMonth() + 1),
-    enabled: Boolean(weatherServiceSlug)
+  const forecastMonthKeys = useMemo(() => getForecastMonthKeys(today, WEATHER_FORECAST_DAYS), [today]);
+  const forecastQueries = useQueries({
+    queries: forecastMonthKeys.map(({ year, month }) => ({
+      queryKey: ["post-detail-weather", weatherServiceSlug, year, month],
+      queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", year, month),
+      enabled: Boolean(weatherServiceSlug)
+    }))
   });
 
-  const upcomingForecast = forecast
-    .filter((item) => item.weather_available && new Date(item.date) >= new Date(new Date().toDateString()))
-    .slice(0, 7);
+  const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
+  const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
   const galleryImages = useMemo(
     () =>
       services
@@ -43,7 +46,7 @@ export const PostDetailPage = () => {
     return (
       <SiteLayout>
         <section className="section">
-          <Container>Dang tai bai viet...</Container>
+          <Container>Đang tải bài viết...</Container>
         </section>
       </SiteLayout>
     );
@@ -88,10 +91,10 @@ export const PostDetailPage = () => {
                 <Panel className="stack-sm">
                   <div className="post-sidebar-head">
                     <div>
-                      <Badge>Bo suu tap</Badge>
-                      <h3>Hinh anh noi bat</h3>
+                      <Badge>Bộ sưu tập</Badge>
+                      <h3>Hình ảnh nổi bật</h3>
                     </div>
-                    <Link to="/gallery">Xem tat ca</Link>
+                    <Link to="/gallery">Xem tất cả</Link>
                   </div>
                   <div className="post-gallery-strip">
                     {galleryImages.map((image) => (
@@ -106,9 +109,9 @@ export const PostDetailPage = () => {
               ) : (
                 <Card className="empty-state-card">
                   <Panel className="stack-sm">
-                    <Badge tone="danger">Chua co du lieu weather</Badge>
-                    <strong>He thong dang cho du lieu forecast cho thang nay.</strong>
-                    <p>Ban van co the xem danh sach goi bay va quay lai sau de chon lich phu hop.</p>
+                    <Badge tone="danger">Chưa có dữ liệu thời tiết</Badge>
+                    <strong>Hệ thống đang chờ dữ liệu dự báo cho tháng này.</strong>
+                    <p>Bạn vẫn có thể xem danh sách gói bay và quay lại sau để chọn lịch phù hợp.</p>
                   </Panel>
                 </Card>
               )}

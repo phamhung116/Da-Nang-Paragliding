@@ -47,10 +47,10 @@ export const CheckoutPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Chua co booking</Badge>
-            <p>Hay tao booking truoc khi vao trang thanh toan.</p>
+            <Badge tone="danger">Chưa có booking</Badge>
+            <p>Hãy tạo booking trước khi vào trang thanh toán.</p>
             <Link to="/services">
-              <Button variant="secondary">Chon goi dich vu</Button>
+              <Button variant="secondary">Chọn gói dịch vụ</Button>
             </Link>
           </Container>
         </section>
@@ -116,7 +116,7 @@ export const CheckoutPage = () => {
                   {booking.pickup_option === "pickup" ? (
                     <div className="booking-summary-card__fact">
                       <span>Dia chi don</span>
-                      <strong>{booking.pickup_address ?? "Dang cap nhat"}</strong>
+                      <strong>{booking.pickup_address ?? "Đang cập nhật"}</strong>
                     </div>
                   ) : null}
                   <div className="booking-summary-card__fact">
@@ -153,7 +153,7 @@ export const CheckoutPage = () => {
                     </div>
                     {transaction ? (
                       <div className="booking-summary-card__fact">
-                        <span>Giao dich</span>
+                        <span>Giao dịch</span>
                         <strong>{transaction.provider_reference}</strong>
                       </div>
                     ) : null}
@@ -173,13 +173,13 @@ export const CheckoutPage = () => {
                         : isExpired
                           ? "QR da het han"
                         : paymentMutation.isPending
-                            ? "Dang xu ly..."
+                            ? "Đang xử lý..."
                             : "Kiem tra trang thai thanh toan"}
                     </Button>
                     {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
                       <p className="calendar-selection-note">
-                        He thong chua nhan duoc trang thai PAID tu cong thanh toan. Hay kiem tra lai sau khi
-                        thanh toan xong.
+                        Hệ thống chưa nhận được trạng thái PAID từ cổng thanh toán. Hãy kiểm tra lại sau khi
+                        thanh toán xong.
                       </p>
                     ) : null}
                 <Link to="/tracking">

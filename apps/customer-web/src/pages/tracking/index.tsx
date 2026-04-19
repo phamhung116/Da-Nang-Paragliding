@@ -75,7 +75,7 @@ export const TrackingPage = () => {
                   <Field label="Email hoac so dien thoai">
                     <Input {...register("query", { required: true })} />
                   </Field>
-                  <Button>{mutation.isPending ? "Dang tra cuu..." : "Tra cuu booking"}</Button>
+                  <Button>{mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}</Button>
                 </form>
               </Panel>
             </Card>
@@ -94,7 +94,7 @@ export const TrackingPage = () => {
                     </div>
                     <div className="tracking-contact-actions">
                       <a href={`mailto:${result.booking.email}`}>Email khach</a>
-                      <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Lien he doanh nghiep</a>
+                      <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Liên hệ doanh nghiệp</a>
                     </div>
                   </div>
 
@@ -120,7 +120,7 @@ export const TrackingPage = () => {
                         <p>
                           Lich bay: {result.booking.flight_date} luc {result.booking.flight_time}
                         </p>
-                        <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Dang cap nhat"}</p>
+                        <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Đang cập nhật"}</p>
                       </Panel>
                     </Card>
 

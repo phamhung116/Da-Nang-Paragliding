@@ -151,7 +151,7 @@ export const AccountPage = () => {
                     </div>
                   ) : null}
                   <Button disabled={updateProfileMutation.isPending}>
-                    {updateProfileMutation.isPending ? "Dang luu..." : "Luu thong tin"}
+                    {updateProfileMutation.isPending ? "Đang lưu..." : "Lưu thông tin"}
                   </Button>
                 </form>
               </Panel>
@@ -163,8 +163,8 @@ export const AccountPage = () => {
                 {bookings.length === 0 ? (
                   <div className="account-bookings">
                     <article className="account-booking-card">
-                      <strong>Chua co booking nao trong tai khoan nay.</strong>
-                      <span>Hay chon mot goi dich vu va dat lich de bat dau luu lich su booking.</span>
+                      <strong>Chưa có booking nào trong tài khoản này.</strong>
+                      <span>Hãy chọn một gói dịch vụ và đặt lịch để bắt đầu lưu lịch sử booking.</span>
                     </article>
                   </div>
                 ) : (

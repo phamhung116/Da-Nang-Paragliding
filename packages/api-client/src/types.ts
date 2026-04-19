@@ -23,6 +23,15 @@ export type ServicePackage = {
   updated_at: string | null;
 };
 
+export type ServiceFeature = {
+  id: string;
+  name: string;
+  description: string;
+  active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
 export type AvailabilitySlot = {
   time: string;
   capacity: number;
@@ -240,4 +249,5 @@ export type ManagedAccountPayload = {
 };
 
 export type ServicePackageWritePayload = Omit<ServicePackage, "id" | "created_at" | "updated_at">;
+export type ServiceFeatureWritePayload = Omit<ServiceFeature, "id" | "created_at" | "updated_at">;
 export type PostWritePayload = Omit<Post, "id" | "published_at" | "created_at" | "updated_at">;

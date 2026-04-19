@@ -19,19 +19,19 @@ from shared.exceptions import NotFoundError, ValidationError
 from shared.utils import geocode_address, normalize_phone
 
 BASE_LOCATION = {
-    "name": "Chua Buu Dai Son",
+    "name": "Chùa Bửu Đài Sơn",
     "lat": 16.1107,
     "lng": 108.2554,
 }
 
 LAUNCH_LOCATION = {
-    "name": "Dinh Ban Co",
+    "name": "Đỉnh Bàn Cờ",
     "lat": 16.1372,
     "lng": 108.281,
 }
 
 LANDING_LOCATION = {
-    "name": "Bai bien truoc Chua Buu Dai Son",
+    "name": "Bãi biển trước Chùa Bửu Đài Sơn",
     "lat": 16.1107,
     "lng": 108.2554,
 }

@@ -131,6 +131,12 @@ class MongoAccountRepository:
         document.revoked_at = timezone.now()
         document.save(update_fields=["revoked_at", "updated_at"])
 
+    def revoke_account_sessions(self, account_id: str) -> None:
+        AccountSessionDocument.objects.filter(
+            account_id=account_id,
+            revoked_at__isnull=True,
+        ).update(revoked_at=timezone.now(), updated_at=timezone.now())
+
     def get_by_token(self, token: str) -> Account | None:
         session = AccountSessionDocument.objects.filter(
             token__in=_token_lookup_values(token),

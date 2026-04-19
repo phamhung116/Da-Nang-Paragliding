@@ -6,6 +6,7 @@ import { routes } from "@/shared/config/routes";
 
 const navItems = [
   { to: routes.bookings, label: "Bookings" },
+  { to: routes.services, label: "Services" },
   { to: routes.accounts, label: "Accounts" },
   { to: routes.posts, label: "Posts" }
 ];

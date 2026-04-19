@@ -10,6 +10,8 @@ const BookingsPage = lazy(() => import("@/pages/bookings").then((module) => ({ d
 const LoginPage = lazy(() => import("@/pages/login").then((module) => ({ default: module.LoginPage })));
 const PostDetailPage = lazy(() => import("@/pages/posts/detail").then((module) => ({ default: module.PostDetailPage })));
 const PostsPage = lazy(() => import("@/pages/posts").then((module) => ({ default: module.PostsPage })));
+const ServiceDetailPage = lazy(() => import("@/pages/services/detail").then((module) => ({ default: module.ServiceDetailPage })));
+const ServicesPage = lazy(() => import("@/pages/services").then((module) => ({ default: module.ServicesPage })));
 
 const page = (element: JSX.Element) => <Suspense fallback={null}>{element}</Suspense>;
 
@@ -61,6 +63,22 @@ export const AppRouter = () => (
       element={
         <ProtectedRoute>
           {page(<AccountDetailPage />)}
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={routes.services}
+      element={
+        <ProtectedRoute>
+          {page(<ServicesPage />)}
+        </ProtectedRoute>
+      }
+    />
+    <Route
+      path={routes.serviceDetail}
+      element={
+        <ProtectedRoute>
+          {page(<ServiceDetailPage />)}
         </ProtectedRoute>
       }
     />

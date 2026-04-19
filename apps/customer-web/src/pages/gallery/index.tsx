@@ -63,7 +63,7 @@ export const GalleryPage = () => {
           <div className="page-banner__overlay" />
         </div>
         <Container className="page-banner__content">
-          <Badge>Bo suu tap</Badge>
+          <Badge>Bộ sưu tập</Badge>
           <h1>Nhung khoanh khac bay, bien va Son Tra.</h1>
           <p>Tat ca hinh anh dang duoc su dung trong website duoc gom lai mot noi de khach xem nhanh.</p>
         </Container>
