@@ -1,5 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { Badge, Button, Card, Field, Input, Panel } from "@paragliding/ui";
 import type { ChangePasswordPayload } from "@paragliding/api-client";
 import { authApi } from "@/shared/config/api";
@@ -11,7 +12,8 @@ type PasswordForm = ChangePasswordPayload & {
 };
 
 export const PilotAccountPage = () => {
-  const { account } = usePilotAuth();
+  const navigate = useNavigate();
+  const { account, logout } = usePilotAuth();
   const form = useForm<PasswordForm>({
     defaultValues: {
       current_password: "",
@@ -29,6 +31,7 @@ export const PilotAccountPage = () => {
         new_password: "",
         confirm_password: ""
       });
+      void logout().finally(() => navigate("/login", { replace: true }));
     }
   });
 

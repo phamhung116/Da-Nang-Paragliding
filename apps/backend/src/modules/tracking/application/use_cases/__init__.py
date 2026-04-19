@@ -19,19 +19,19 @@ from shared.exceptions import NotFoundError, ValidationError
 from shared.utils import geocode_address, normalize_phone
 
 BASE_LOCATION = {
-    "name": "Chua Buu Dai Son",
+    "name": "Chùa Bửu Đài Sơn",
     "lat": 16.1107,
     "lng": 108.2554,
 }
 
 LAUNCH_LOCATION = {
-    "name": "Dinh Ban Co",
+    "name": "Đỉnh Bàn Cờ",
     "lat": 16.1372,
     "lng": 108.281,
 }
 
 LANDING_LOCATION = {
-    "name": "Bai bien truoc Chua Buu Dai Son",
+    "name": "Bãi biển trước Chùa Bửu Đài Sơn",
     "lat": 16.1107,
     "lng": 108.2554,
 }
@@ -158,6 +158,14 @@ class StartPilotTrackingUseCase:
 
     def execute(self, booking_code: str, pilot_phone: str, location: dict[str, object]):
         booking = self._validate_assigned_booking(booking_code, pilot_phone)
+        tracking = self.tracking_repository.get_by_booking_code(booking.code)
+        if tracking is None:
+            raise NotFoundError("Khong tim thay tracking.")
+        if tracking.tracking_active:
+            raise ValidationError("Chuyen di nay dang duoc tracking.")
+        if booking.flight_status == FLIGHT_STATUS_LANDED:
+            raise ValidationError("Chuyen di nay da ket thuc.")
+
         if booking.flight_status == FLIGHT_STATUS_WAITING:
             booking.flight_status = (
                 FLIGHT_STATUS_PICKING_UP
@@ -171,10 +179,13 @@ class StartPilotTrackingUseCase:
             current_location=location,
             timeline_event={
                 "status": updated_booking.flight_status,
-                "label": "Bat dau hanh trinh bay",
+                "label": "Bat dau chuyen di",
                 "recorded_at": datetime.utcnow().isoformat(),
                 "type": "TRACKING_STARTED",
             },
+            tracking_active=True,
+            append_route_point=True,
+            reset_route_points=True,
         )
         return {"booking": updated_booking, "tracking": tracking}
 
@@ -200,6 +211,11 @@ class AppendPilotTrackingPointUseCase:
             raise NotFoundError("Khong tim thay booking.")
         if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
             raise ValidationError("Pilot nay khong duoc gan cho booking nay.")
+        tracking = self.tracking_repository.get_by_booking_code(booking_code)
+        if tracking is None:
+            raise NotFoundError("Khong tim thay tracking.")
+        if not tracking.tracking_active:
+            raise ValidationError("Chuyen di nay chua bat dau tracking.")
         tracking = self.tracking_repository.append_position(
             booking_code,
             current_location=location,
@@ -219,6 +235,11 @@ class StopPilotTrackingUseCase:
             raise NotFoundError("Khong tim thay booking.")
         if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
             raise ValidationError("Pilot nay khong duoc gan cho booking nay.")
+        tracking = self.tracking_repository.get_by_booking_code(booking_code)
+        if tracking is None:
+            raise NotFoundError("Khong tim thay tracking.")
+        if not tracking.tracking_active:
+            raise ValidationError("Chuyen di nay chua bat dau tracking.")
 
         booking.flight_status = FLIGHT_STATUS_LANDED
         updated_booking = self.booking_repository.update(booking)
@@ -228,9 +249,11 @@ class StopPilotTrackingUseCase:
             current_location=location,
             timeline_event={
                 "status": FLIGHT_STATUS_LANDED,
-                "label": "Ket thuc hanh trinh bay",
+                "label": "Ket thuc chuyen di",
                 "recorded_at": datetime.utcnow().isoformat(),
                 "type": "TRACKING_STOPPED",
             },
+            tracking_active=False,
+            append_route_point=True,
         )
         return {"booking": updated_booking, "tracking": tracking}

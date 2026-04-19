@@ -12,6 +12,7 @@ class FlightTracking:
     service_name: str
     flight_status: str
     pilot_name: str | None
+    tracking_active: bool
     current_location: dict[str, object]
     route_points: list[dict[str, object]]
     timeline: list[dict[str, object]]

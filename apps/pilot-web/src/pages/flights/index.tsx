@@ -7,8 +7,9 @@ import { pilotApi } from "@/shared/config/api";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
-const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
+const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
 type LivePosition = {
   lat: number;
@@ -21,12 +22,12 @@ type TrackingMode = "start" | "ping" | "stop";
 type TrackingSession = {
   code: string;
   watchId: number;
-  phase: "idle" | "starting" | "started";
+  phase: "idle" | "starting" | "started" | "stopping";
   lastSentAt: number;
   lastPosition: LivePosition | null;
 };
 
-const statusLabels: Record<(typeof statusOptions)[number], string> = {
+const statusLabels: Record<string, string> = {
   WAITING: "Dang cho",
   PICKING_UP: "Dang di chuyen den diem don",
   EN_ROUTE: "Dang di chuyen den diem bay",
@@ -76,6 +77,9 @@ const getFallbackPosition = (flight: PilotFlight, livePosition?: LivePosition | 
   return null;
 };
 
+const isTrackingActive = (flight: PilotFlight, activeTrackingCode: string | null) =>
+  activeTrackingCode === flight.booking.code || Boolean(flight.tracking?.tracking_active);
+
 export const FlightsPage = () => {
   const queryClient = useQueryClient();
   const { account } = usePilotAuth();
@@ -100,6 +104,14 @@ export const FlightsPage = () => {
     );
   };
 
+  const clearTrackingSession = () => {
+    const session = trackingSessionRef.current;
+    if (session) {
+      navigator.geolocation.clearWatch(session.watchId);
+      trackingSessionRef.current = null;
+    }
+  };
+
   const flightsQuery = useQuery({
     queryKey,
     queryFn: () => pilotApi.listFlights(),
@@ -111,17 +123,13 @@ export const FlightsPage = () => {
     const flights = flightsQuery.data ?? [];
     return [
       { label: "Assigned", value: flights.length },
-      { label: "Tracking live", value: activeTrackingCode ? 1 : 0 },
+      {
+        label: "Tracking live",
+        value: flights.filter((flight) => isTrackingActive(flight, activeTrackingCode)).length
+      },
       { label: "Flying", value: flights.filter((item) => item.booking.flight_status === "FLYING").length }
     ];
   }, [activeTrackingCode, flightsQuery.data]);
-
-  const statusMutation = useMutation({
-    mutationFn: ({ code, status }: { code: string; status: string }) => pilotApi.updateFlightStatus(code, status),
-    onSuccess: (result) => {
-      updateFlightCache(result);
-    }
-  });
 
   const trackingMutation = useMutation({
     mutationFn: ({
@@ -146,21 +154,7 @@ export const FlightsPage = () => {
     }
   });
 
-  const clearTrackingSession = () => {
-    const session = trackingSessionRef.current;
-    if (session) {
-      navigator.geolocation.clearWatch(session.watchId);
-      trackingSessionRef.current = null;
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      clearTrackingSession();
-    };
-  }, []);
-
-  const startLiveTracking = (flight: PilotFlight) => {
+  const startLiveTracking = (flight: PilotFlight, options?: { resume?: boolean }) => {
     if (!navigator.geolocation) {
       setGeoError("Trinh duyet nay khong ho tro GPS real-time cho pilot.");
       return;
@@ -171,9 +165,14 @@ export const FlightsPage = () => {
       return;
     }
 
+    if (trackingSessionRef.current?.code === flight.booking.code) {
+      return;
+    }
+
     setGeoError(null);
-    setTrackingActionCode(flight.booking.code);
+    setTrackingActionCode(options?.resume ? null : flight.booking.code);
     setActiveTrackingCode(flight.booking.code);
+    const shouldResume = Boolean(options?.resume && flight.tracking?.tracking_active);
 
     const watchId = navigator.geolocation.watchPosition(
       (position) => {
@@ -201,12 +200,20 @@ export const FlightsPage = () => {
             const now = Date.now();
             if (latestSession.phase === "idle") {
               latestSession.phase = "starting";
-              await trackingMutation.mutateAsync({ code: flight.booking.code, mode: "start", payload });
-              if (trackingSessionRef.current?.code === flight.booking.code) {
-                trackingSessionRef.current.phase = "started";
-                trackingSessionRef.current.lastSentAt = now;
+              try {
+                await trackingMutation.mutateAsync({ code: flight.booking.code, mode: "start", payload });
+                if (trackingSessionRef.current?.code === flight.booking.code) {
+                  trackingSessionRef.current.phase = "started";
+                  trackingSessionRef.current.lastSentAt = now;
+                }
+                setTrackingActionCode(null);
+              } catch (error) {
+                if (trackingSessionRef.current?.code === flight.booking.code) {
+                  trackingSessionRef.current.phase = "idle";
+                  trackingSessionRef.current.lastSentAt = 0;
+                }
+                throw error;
               }
-              setTrackingActionCode(null);
               return;
             }
 
@@ -218,9 +225,18 @@ export const FlightsPage = () => {
               return;
             }
 
+            const previousSentAt = latestSession.lastSentAt;
             latestSession.lastSentAt = now;
-            await trackingMutation.mutateAsync({ code: flight.booking.code, mode: "ping", payload });
+            try {
+              await trackingMutation.mutateAsync({ code: flight.booking.code, mode: "ping", payload });
+            } catch (error) {
+              if (trackingSessionRef.current?.code === flight.booking.code) {
+                trackingSessionRef.current.lastSentAt = previousSentAt;
+              }
+              throw error;
+            }
           } catch (error) {
+            setTrackingActionCode(null);
             setGeoError(getErrorMessage(error));
           }
         };
@@ -243,7 +259,7 @@ export const FlightsPage = () => {
     trackingSessionRef.current = {
       code: flight.booking.code,
       watchId,
-      phase: "idle",
+      phase: shouldResume ? "started" : "idle",
       lastSentAt: 0,
       lastPosition: getFallbackPosition(flight, livePositions[flight.booking.code])
     };
@@ -252,11 +268,14 @@ export const FlightsPage = () => {
   const stopLiveTracking = async (flight: PilotFlight) => {
     const session = trackingSessionRef.current;
     if (session?.code === flight.booking.code) {
-      clearTrackingSession();
+      session.phase = "stopping";
     }
 
     const payload = session?.lastPosition ?? getFallbackPosition(flight, livePositions[flight.booking.code]);
     if (!payload) {
+      if (session?.code === flight.booking.code) {
+        session.phase = "started";
+      }
       setGeoError("Can co it nhat mot vi tri GPS hop le truoc khi dung tracking.");
       return;
     }
@@ -264,6 +283,9 @@ export const FlightsPage = () => {
     setTrackingActionCode(flight.booking.code);
     try {
       await trackingMutation.mutateAsync({ code: flight.booking.code, mode: "stop", payload });
+      if (trackingSessionRef.current?.code === flight.booking.code) {
+        clearTrackingSession();
+      }
       setActiveTrackingCode(null);
       setLivePositions((current) => {
         const next = { ...current };
@@ -271,11 +293,42 @@ export const FlightsPage = () => {
         return next;
       });
     } catch (error) {
+      if (trackingSessionRef.current?.code === flight.booking.code) {
+        trackingSessionRef.current.phase = "started";
+      }
       setGeoError(getErrorMessage(error));
     } finally {
       setTrackingActionCode(null);
     }
   };
+
+  const statusMutation = useMutation({
+    mutationFn: ({ code, status }: { code: string; status: string }) => pilotApi.updateFlightStatus(code, status),
+    onSuccess: (result) => {
+      updateFlightCache(result);
+      if (!result.tracking?.tracking_active && trackingSessionRef.current?.code === result.booking.code) {
+        clearTrackingSession();
+        setActiveTrackingCode(null);
+      }
+    }
+  });
+
+  useEffect(() => {
+    return () => {
+      clearTrackingSession();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (trackingSessionRef.current || activeTrackingCode) {
+      return;
+    }
+
+    const activeTrackedFlight = (flightsQuery.data ?? []).find((flight) => flight.tracking?.tracking_active);
+    if (activeTrackedFlight) {
+      startLiveTracking(activeTrackedFlight, { resume: true });
+    }
+  }, [activeTrackingCode, flightsQuery.data]);
 
   return (
     <PilotLayout>
@@ -284,7 +337,7 @@ export const FlightsPage = () => {
           <div>
             <Badge tone="success">Flight desk</Badge>
             <h1>Assigned flights</h1>
-            <p>Bat dau tracking GPS khi pilot vao hanh trinh, va dung tracking de luu toan bo route tren map.</p>
+            <p>Tracking chi bat dau tu luc pilot bam bat dau chuyen di va ket thuc khi bam ket thuc chuyen di.</p>
           </div>
           <div className="pilot-quick-stats">
             {stats.map((item) => (
@@ -301,16 +354,22 @@ export const FlightsPage = () => {
 
         <div className="pilot-flight-grid">
           {(flightsQuery.data ?? []).map((flight) => {
-            const isLiveTracking = activeTrackingCode === flight.booking.code;
+            const hasTrackingStarted = isTrackingActive(flight, activeTrackingCode);
             const isActionPending = trackingActionCode === flight.booking.code || trackingMutation.isPending;
+            const shouldShowMap =
+              MAP_VISIBLE_STATUSES.has(flight.booking.flight_status) ||
+              hasTrackingStarted ||
+              Boolean((flight.tracking?.route_points.length ?? 0) > 1);
 
             return (
               <Card key={flight.booking.code}>
                 <Panel className="pilot-flight-card">
                   <div className="row-meta">
                     <div className="pilot-flight-title">
-                      <Badge tone="success">{statusLabels[flight.booking.flight_status as keyof typeof statusLabels] ?? flight.booking.flight_status}</Badge>
-                      {isLiveTracking ? <Badge>GPS live</Badge> : null}
+                      <Badge tone="success">
+                        {statusLabels[flight.booking.flight_status] ?? flight.booking.flight_status}
+                      </Badge>
+                      {hasTrackingStarted ? <Badge>GPS live</Badge> : null}
                     </div>
                     <h2>{flight.booking.service_name}</h2>
                     <span>{flight.booking.code}</span>
@@ -350,55 +409,53 @@ export const FlightsPage = () => {
                       <div className="pilot-live-panel">
                         <div className="pilot-live-panel__copy">
                           <strong>GPS flight tracking</strong>
-                          <p>
-                            Khi pilot bat dau hanh trinh, he thong se cap nhat vi tri hien tai theo GPS va luu lai route
-                            tren map theo thoi gian thuc.
-                          </p>
+                          <p>Route chi duoc luu ke tu diem GPS dau tien khi pilot bam bat dau chuyen di.</p>
                         </div>
-
-                        <div className="pilot-live-panel__actions">
-                          <Button
-                            disabled={isLiveTracking || (Boolean(activeTrackingCode) && !isLiveTracking) || isActionPending}
-                            onClick={() => startLiveTracking(flight)}
-                          >
-                            Bat dau tracking
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            disabled={!isLiveTracking || isActionPending}
-                            onClick={() => void stopLiveTracking(flight)}
-                          >
-                            Dung va luu route
-                          </Button>
-                        </div>
+                        <Button
+                          type="button"
+                          variant={hasTrackingStarted ? "secondary" : "primary"}
+                          disabled={isActionPending || statusMutation.isPending}
+                          onClick={() => {
+                            if (hasTrackingStarted) {
+                              void stopLiveTracking(flight);
+                              return;
+                            }
+                            startLiveTracking(flight);
+                          }}
+                        >
+                          {hasTrackingStarted ? "Ket thuc chuyen di" : "Bat dau chuyen di"}
+                        </Button>
                       </div>
 
                       <div className="pilot-status-actions">
                         {statusOptions
                           .filter((status) => status !== "PICKING_UP" || flight.booking.pickup_option === "pickup")
                           .map((status) => (
-                          <Button
-                            key={status}
-                            variant={flight.booking.flight_status === status ? "primary" : "secondary"}
-                            onClick={() => statusMutation.mutate({ code: flight.booking.code, status })}
-                          >
-                            {statusLabels[status]}
-                          </Button>
-                        ))}
+                            <Button
+                              key={status}
+                              variant={flight.booking.flight_status === status ? "primary" : "secondary"}
+                              disabled={statusMutation.isPending || isActionPending}
+                              onClick={() => statusMutation.mutate({ code: flight.booking.code, status })}
+                            >
+                              {statusLabels[status]}
+                            </Button>
+                          ))}
                       </div>
                     </div>
 
-                    <div className="pilot-flight-visual">
-                      <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
+                    {shouldShowMap ? (
+                      <div className="pilot-flight-visual">
+                        <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
 
-                      <div className="pilot-map-note">
-                        <strong>Flight path</strong>
-                        <p>
-                          Sau khi pilot dung tracking, toan bo duong di chuyen van duoc giu tren map de admin va customer
-                          xem lai.
-                        </p>
+                        <div className="pilot-map-note">
+                          <strong>Flight path</strong>
+                          <p>
+                            Chi nhung diem GPS tu luc bat dau chuyen di den khi ket thuc chuyen di moi duoc dua vao
+                            route.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
                   </div>
 
                   <div className="pilot-timeline">

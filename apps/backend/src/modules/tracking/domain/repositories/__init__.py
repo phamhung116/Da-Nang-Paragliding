@@ -27,6 +27,9 @@ class TrackingRepository(Protocol):
         flight_status: str,
         current_location: dict[str, object],
         timeline_event: dict[str, object] | None,
+        tracking_active: bool | None = None,
+        append_route_point: bool = False,
+        reset_route_points: bool = False,
     ) -> FlightTracking: ...
     def append_position(
         self,

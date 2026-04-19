@@ -32,6 +32,7 @@ import { Badge, Button, Card, Dialog, Field, Input, Panel, Textarea } from "@par
 import type { PostWritePayload } from "@paragliding/api-client";
 import { adminApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
+import { ImageSourceField } from "@/widgets/forms/image-source-field";
 import { AdminLayout } from "@/widgets/layout/admin-layout";
 
 const blankValues: PostWritePayload = {
@@ -254,6 +255,14 @@ export const PostDetailPage = () => {
     saveMutation.mutate({ ...values, content: nextContent });
   };
 
+  const setCoverImage = (nextValue: string) => {
+    form.setValue("cover_image", nextValue, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true
+    });
+  };
+
   useEffect(() => {
     if (isNew) {
       form.reset(blankValues);
@@ -430,10 +439,14 @@ export const PostDetailPage = () => {
                 <Field label="Tom tat ngan">
                   <Textarea {...form.register("excerpt")} />
                 </Field>
-                <Field label="Thumbnail URL">
-                  <Input {...form.register("cover_image")} />
-                </Field>
-                {coverImage ? <img className="post-editor-sidebar__thumb" src={coverImage} alt="Post thumbnail preview" /> : null}
+                <ImageSourceField
+                  label="Thumbnail"
+                  value={coverImage}
+                  previewAlt="Post thumbnail preview"
+                  placeholder="https://..."
+                  onChange={setCoverImage}
+                />
+                <input type="hidden" {...form.register("cover_image", { required: true })} />
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("published")} />
                   <span>{published ? "Dang published" : "Luu draft"}</span>

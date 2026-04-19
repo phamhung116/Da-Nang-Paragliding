@@ -36,13 +36,7 @@ export const GalleryPage = () => {
   const images = useMemo(() => {
     const allImages = [
       ...staticGalleryImages,
-      ...services.flatMap((service) => [
-        { src: service.hero_image, title: service.name },
-        ...service.gallery_images.map((image, index) => ({
-          src: image,
-          title: `${service.name} ${index + 1}`
-        }))
-      ]),
+      ...services.map((service) => ({ src: service.hero_image, title: service.name })),
       ...posts.map((post) => ({ src: post.cover_image, title: post.title }))
     ];
     const seen = new Set<string>();
@@ -63,7 +57,7 @@ export const GalleryPage = () => {
           <div className="page-banner__overlay" />
         </div>
         <Container className="page-banner__content">
-          <Badge>Bo suu tap</Badge>
+          <Badge>Bộ sưu tập</Badge>
           <h1>Nhung khoanh khac bay, bien va Son Tra.</h1>
           <p>Tat ca hinh anh dang duoc su dung trong website duoc gom lai mot noi de khach xem nhanh.</p>
         </Container>

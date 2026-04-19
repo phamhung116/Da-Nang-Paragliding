@@ -4,5 +4,7 @@ export const routes = {
   bookingDetail: "/bookings/:code",
   accounts: "/accounts",
   accountDetail: "/accounts/:accountId",
-  posts: "/posts"
+  posts: "/posts",
+  services: "/services",
+  serviceDetail: "/services/:slug"
 };

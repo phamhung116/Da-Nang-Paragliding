@@ -167,7 +167,7 @@ class CreateBookingUseCase:
             flight_status=booking.flight_status,
             pilot_name=None,
             current_location={
-                "name": "Chua Buu Dai Son",
+                "name": "Chùa Bửu Đài Sơn",
                 "lat": 16.1107,
                 "lng": 108.2554,
             },

@@ -15,6 +15,7 @@ def _to_domain(document: FlightTrackingDocument) -> FlightTracking:
         service_name=document.service_name,
         flight_status=document.flight_status,
         pilot_name=document.pilot_name,
+        tracking_active=bool(document.tracking_active),
         current_location=dict(document.current_location),
         route_points=list(document.route_points),
         timeline=list(document.timeline),
@@ -40,13 +41,9 @@ class MongoTrackingRepository:
             service_name=service_name,
             flight_status=flight_status,
             pilot_name=pilot_name,
+            tracking_active=False,
             current_location=current_location,
-            route_points=[
-                {
-                    **current_location,
-                    "recorded_at": datetime.utcnow().isoformat(),
-                }
-            ],
+            route_points=[],
             timeline=[
                 {
                     "status": flight_status,
@@ -82,13 +79,17 @@ class MongoTrackingRepository:
         flight_status: str,
         current_location: dict[str, object],
         timeline_event: dict[str, object] | None,
+        tracking_active: bool | None = None,
+        append_route_point: bool = False,
+        reset_route_points: bool = False,
     ) -> FlightTracking:
         document = FlightTrackingDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
             raise NotFoundError("Khong tim thay tracking.")
 
-        route_points = list(document.route_points)
-        route_points.append({**current_location, "recorded_at": datetime.utcnow().isoformat()})
+        route_points = [] if reset_route_points else list(document.route_points)
+        if append_route_point:
+            route_points.append({**current_location, "recorded_at": datetime.utcnow().isoformat()})
         timeline = list(document.timeline)
         if timeline_event:
             timeline.append(timeline_event)
@@ -97,7 +98,11 @@ class MongoTrackingRepository:
         document.current_location = current_location
         document.route_points = route_points
         document.timeline = timeline
-        document.save(update_fields=["flight_status", "current_location", "route_points", "timeline", "updated_at"])
+        update_fields = ["flight_status", "current_location", "route_points", "timeline", "updated_at"]
+        if tracking_active is not None:
+            document.tracking_active = tracking_active
+            update_fields.append("tracking_active")
+        document.save(update_fields=update_fields)
         return _to_domain(document)
 
     def append_position(

@@ -25,7 +25,7 @@ const values = [
   },
   {
     title: "Memorable media",
-    description: "Hinh anh va video chuyen bay la mot phan cua trai nghiem, khong phai phan phu."
+    description: "Hình ảnh và video chuyến bay là một phần của trải nghiệm, không phải phần phụ."
   }
 ];
 
@@ -40,7 +40,7 @@ export const AboutPage = () => (
         <div className="page-banner__overlay" />
       </div>
       <Container className="page-banner__content">
-        <Badge>Gioi thieu</Badge>
+        <Badge>Giới thiệu</Badge>
         <h1>Doanh nghiep du luon van hanh theo huong service-first va safety-first.</h1>
         <p>
           Customer side duoc ket noi truc tiep voi booking, tracking va quy trinh van hanh thuc te cua doi

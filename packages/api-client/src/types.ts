@@ -5,12 +5,8 @@ export type ServicePackage = {
   short_description: string;
   description: string;
   price: string;
-  flight_duration_minutes: number;
   included_services: string[];
-  participation_requirements: string[];
-  min_child_age: number;
   hero_image: string;
-  gallery_images: string[];
   launch_site_name: string;
   launch_lat: number;
   launch_lng: number;
@@ -18,6 +14,15 @@ export type ServicePackage = {
   landing_lat: number;
   landing_lng: number;
   featured: boolean;
+  active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+export type ServiceFeature = {
+  id: string;
+  name: string;
+  description: string;
   active: boolean;
   created_at: string | null;
   updated_at: string | null;
@@ -175,6 +180,7 @@ export type Tracking = {
   service_name: string;
   flight_status: string;
   pilot_name: string | null;
+  tracking_active: boolean;
   current_location: Record<string, unknown>;
   route_points: Array<Record<string, unknown>>;
   timeline: Array<Record<string, unknown>>;
@@ -240,4 +246,5 @@ export type ManagedAccountPayload = {
 };
 
 export type ServicePackageWritePayload = Omit<ServicePackage, "id" | "created_at" | "updated_at">;
+export type ServiceFeatureWritePayload = Omit<ServiceFeature, "id" | "created_at" | "updated_at">;
 export type PostWritePayload = Omit<Post, "id" | "published_at" | "created_at" | "updated_at">;

@@ -10,6 +10,7 @@ class FlightTrackingSerializer(serializers.Serializer):
     service_name = serializers.CharField()
     flight_status = serializers.CharField()
     pilot_name = serializers.CharField(allow_null=True, allow_blank=True)
+    tracking_active = serializers.BooleanField()
     current_location = serializers.JSONField()
     route_points = serializers.ListField(child=serializers.JSONField())
     timeline = serializers.ListField(child=serializers.JSONField())

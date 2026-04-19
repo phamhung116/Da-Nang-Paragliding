@@ -8,9 +8,15 @@ from modules.availability.domain.value_objects import AvailabilitySlot
 from modules.bookings.domain.repositories import BookingRepository
 from modules.catalog.domain.repositories import ServicePackageRepository
 from shared.exceptions import NotFoundError
-from shared.utils import BAD_FLIGHT_CONDITION, daterange, fetch_weatherapi_forecast, month_bounds
+from shared.utils import (
+    BAD_FLIGHT_CONDITION,
+    daterange,
+    fetch_weatherapi_forecast,
+    month_bounds,
+)
 
 SLOT_TIMES = ["06:30", "08:00", "09:30", "11:00", "13:30", "15:30"]
+DAY_SUMMARY_SLOT_FALLBACKS = ["08:00", "09:30", "06:30"]
 
 
 class GetMonthlyAvailabilityUseCase:
@@ -118,19 +124,56 @@ class GetMonthlyAvailabilityUseCase:
                     weather_available=bool(slot_weather.get("weather_available", False)),
                 )
             )
+        summary = self._summarize_day_weather(weather, slots)
         return AvailabilityDay(
             id=day.id,
             service_slug=day.service_slug,
             date=day.date,
-            temperature_c=weather["temperature_c"],
-            wind_kph=weather["wind_kph"],
-            uv_index=weather["uv_index"],
-            visibility_km=weather["visibility_km"],
-            weather_condition=weather["weather_condition"],
-            flight_condition=weather["flight_condition"],
-            weather_available=bool(weather.get("weather_available", False)),
+            temperature_c=summary["temperature_c"],
+            wind_kph=summary["wind_kph"],
+            uv_index=summary["uv_index"],
+            visibility_km=summary["visibility_km"],
+            weather_condition=summary["weather_condition"],
+            flight_condition=summary["flight_condition"],
+            weather_available=summary["weather_available"],
             slots=slots,
         )
+
+    def _summarize_day_weather(
+        self,
+        weather: dict,
+        slots: list[AvailabilitySlot],
+    ) -> dict[str, float | int | str | bool]:
+        available_slots = [slot for slot in slots if slot.weather_available]
+        if not available_slots:
+            return {
+                "temperature_c": weather["temperature_c"],
+                "wind_kph": weather["wind_kph"],
+                "uv_index": weather["uv_index"],
+                "visibility_km": weather["visibility_km"],
+                "weather_condition": weather["weather_condition"],
+                "flight_condition": weather["flight_condition"],
+                "weather_available": bool(weather.get("weather_available", False)),
+            }
+
+        summary_slot = next(
+            (
+                slot
+                for preferred_time in DAY_SUMMARY_SLOT_FALLBACKS
+                for slot in available_slots
+                if slot.time == preferred_time
+            ),
+            available_slots[0],
+        )
+        return {
+            "temperature_c": summary_slot.temperature_c,
+            "wind_kph": summary_slot.wind_kph,
+            "uv_index": summary_slot.uv_index,
+            "visibility_km": summary_slot.visibility_km,
+            "weather_condition": summary_slot.weather_condition,
+            "flight_condition": summary_slot.flight_condition,
+            "weather_available": True,
+        }
 
     def _hydrate_day(
         self,

@@ -22,8 +22,8 @@ export const PostsPage = () => {
       className="pb-20"
       >
         <Banner 
-          title="Tin Tức & Hoạt Động" 
-          subtitle="Cập nhật những thông tin mới nhất về hoạt động nhảy dù lượn tại Đà Nẵng."
+          title="Tin tức & Hoạt động" 
+          subtitle="Cập nhật những thông tin mới nhất về hoạt động bay dù lượn tại Đà Nẵng."
           image="https://images.unsplash.com/photo-1544625344-63189df1e401?auto=format&fit=crop&q=80&w=1920"
         />
 
@@ -47,7 +47,7 @@ export const PostsPage = () => {
                     </p>
                     <Link to={`/posts/${post.slug}`}>
                       <Button className="mt-auto text-[10px] md:text-sm font-bold text-brand flex items-center gap-1 hover:gap-2 transition-all">
-                        Doc bai viet
+                        Đọc bài viết
                       </Button>
                     </Link>
                   </div>
@@ -57,8 +57,8 @@ export const PostsPage = () => {
           ) : (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge>Bai viet</Badge>
-                <strong>Blog dang duoc cap nhat.</strong>
+                <Badge>Bài viết</Badge>
+                <strong>Blog đang được cập nhật.</strong>
               </Panel>
             </Card>
           )}

@@ -1,3 +1,3 @@
-from modules.catalog.infrastructure.persistence.mongo.documents import ServicePackageDocument
+from modules.catalog.infrastructure.persistence.mongo.documents import ServiceFeatureDocument, ServicePackageDocument
 
-__all__ = ["ServicePackageDocument"]
+__all__ = ["ServiceFeatureDocument", "ServicePackageDocument"]

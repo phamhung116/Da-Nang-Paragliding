@@ -11,6 +11,7 @@ class FlightTrackingDocument(models.Model):
     service_name = models.CharField(max_length=160)
     flight_status = models.CharField(max_length=40)
     pilot_name = models.CharField(max_length=120, blank=True, null=True)
+    tracking_active = models.BooleanField(default=False)
     current_location = models.JSONField(default=dict)
     route_points = models.JSONField(default=list)
     timeline = models.JSONField(default=list)

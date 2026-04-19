@@ -25,3 +25,10 @@ class ServicePackagePayload:
     landing_lng: float
     featured: bool
     active: bool
+
+
+@dataclass(slots=True)
+class ServiceFeaturePayload:
+    name: str
+    description: str
+    active: bool

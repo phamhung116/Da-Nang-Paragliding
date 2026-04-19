@@ -42,7 +42,7 @@ export const LoginPage = () => {
       if (!result.ready) {
         return;
       }
-      setClaimNotice("Email da duoc xac thuc. Dang chuyen vao tai khoan...");
+      setClaimNotice("Email đã được xác thực. Đang chuyển vào tài khoản...");
     }
   });
 
@@ -97,8 +97,8 @@ export const LoginPage = () => {
             <form className="auth-luxe-form" onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))}>
               <div className="auth-email-sent auth-email-sent--compact">
                 <span className="auth-email-sent__icon">SN</span>
-                <h1>Dang nhap bang email</h1>
-                <p>Nhap email, Da Nang Paragliding se gui link xac thuc. Khong can mat khau va khong can dang ky rieng.</p>
+                <h1>Đăng nhập bằng email</h1>
+                <p>Nhập email, Da Nang Paragliding sẽ gửi link xác thực. Không cần mật khẩu và không cần đăng ký riêng.</p>
               </div>
 
               <Field label="Email">
@@ -128,7 +128,7 @@ export const LoginPage = () => {
               {claimNotice ? <div className="auth-minimal-alert is-success">{claimNotice}</div> : null}
 
               <Button className="auth-luxe-submit" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? "Dang gui link..." : "Gui link xac thuc"}
+                {loginMutation.isPending ? "Đang gửi link..." : "Gửi link xác thực"}
               </Button>
             </form>
           </Panel>
