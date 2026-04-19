@@ -318,10 +318,12 @@ class ChangeMyPasswordUseCase:
             raise NotFoundError("Khong tim thay tai khoan.")
         if not self.account_repository.verify_password(account.id or "", request.current_password):
             raise ValidationError("Mat khau hien tai khong dung.")
-        return self.account_repository.update(
+        updated_account = self.account_repository.update(
             account,
             password_hash=self.password_hasher.hash(request.new_password),
         )
+        self.account_repository.revoke_account_sessions(account.id or "")
+        return updated_account
 
 
 class ListMyBookingsUseCase:
@@ -406,15 +408,21 @@ class UpdateManagedAccountUseCase:
             exclude_id=account.id,
         )
 
+        email_changed = account.email != email
+        password_changed = bool(request.password)
+
         account.full_name = request.full_name.strip()
         account.email = email
         account.phone = phone
         account.role = request.role
         account.preferred_language = request.preferred_language
-        return self.account_repository.update(
+        updated_account = self.account_repository.update(
             account,
             password_hash=self.password_hasher.hash(request.password) if request.password else None,
         )
+        if email_changed or password_changed:
+            self.account_repository.revoke_account_sessions(account.id or "")
+        return updated_account
 
 
 class DisableAccountUseCase:

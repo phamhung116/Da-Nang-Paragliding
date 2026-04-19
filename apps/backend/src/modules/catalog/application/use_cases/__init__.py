@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from modules.catalog.application.dto import ServicePackagePayload
+from modules.catalog.application.dto import ServiceFeaturePayload, ServicePackagePayload
 from modules.catalog.domain.repositories import ServicePackageRepository
 from shared.exceptions import NotFoundError
 
@@ -46,3 +46,35 @@ class DeleteServicePackageUseCase:
 
     def execute(self, slug: str) -> None:
         self.repository.delete(slug)
+
+
+class ListServiceFeaturesUseCase:
+    def __init__(self, repository: ServicePackageRepository) -> None:
+        self.repository = repository
+
+    def execute(self, *, active_only: bool = False):
+        return self.repository.list_features(active_only=active_only)
+
+
+class CreateServiceFeatureUseCase:
+    def __init__(self, repository: ServicePackageRepository) -> None:
+        self.repository = repository
+
+    def execute(self, payload: ServiceFeaturePayload):
+        return self.repository.create_feature(payload)
+
+
+class UpdateServiceFeatureUseCase:
+    def __init__(self, repository: ServicePackageRepository) -> None:
+        self.repository = repository
+
+    def execute(self, feature_id: str, payload: ServiceFeaturePayload):
+        return self.repository.update_feature(feature_id, payload)
+
+
+class DeleteServiceFeatureUseCase:
+    def __init__(self, repository: ServicePackageRepository) -> None:
+        self.repository = repository
+
+    def execute(self, feature_id: str) -> None:
+        self.repository.delete_feature(feature_id)

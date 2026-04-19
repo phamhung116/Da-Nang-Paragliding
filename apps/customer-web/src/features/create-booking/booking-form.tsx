@@ -22,18 +22,18 @@ type BookingSubmitForm = BookingCreatePayload & {
 const paymentOptions = [
   {
     value: "wallet",
-    title: "QR vi dien tu",
-    description: "Thanh toan dat coc online bang QR."
+    title: "QR ví điện tử",
+    description: "Thanh toán đặt cọc online bằng QR."
   },
   {
     value: "gateway",
-    title: "QR cong thanh toan",
-    description: "Checkout online va nhan booking confirm ngay sau khi tra coc."
+    title: "QR cổng thanh toán",
+    description: "Checkout online và nhận booking xác nhận ngay sau khi trả cọc."
   },
   {
     value: "bank_transfer",
-    title: "QR chuyen khoan",
-    description: "Hien thi QR va noi dung chuyen khoan theo ma booking."
+    title: "QR chuyển khoản",
+    description: "Hiển thị QR và nội dung chuyển khoản theo mã booking."
   }
 ] as const;
 
@@ -46,6 +46,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const accountNeedsContactDetails = !account?.phone || account.phone.startsWith("EMAIL");
   const accountPhone = accountNeedsContactDetails ? "" : account?.phone ?? "";
+
   const { data: servicePackage } = useQuery({
     queryKey: ["service", serviceSlug],
     queryFn: () => customerApi.getService(serviceSlug)
@@ -92,7 +93,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   const mutation = useMutation({
     mutationFn: ({ agree_terms: _, ...payload }: BookingSubmitForm) => customerApi.createBooking(payload),
     onSuccess: (result) => {
-      setSuccessMessage(`Dat lich thanh cong. Ma booking ${result.booking.code}. Dang chuyen sang buoc thanh toan dat coc...`);
+      setSuccessMessage(`Đặt lịch thành công. Mã booking ${result.booking.code}. Đang chuyển sang bước thanh toán đặt cọc...`);
       checkoutStorage.set(result);
       trackingLookupStorage.set(account?.email ?? account?.phone ?? "");
       window.setTimeout(() => navigate("/checkout"), 900);
@@ -102,43 +103,50 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   return (
     <div className="booking-form-layout">
       {successMessage ? <div className="booking-toast">{successMessage}</div> : null}
+
       <Card>
         <Panel className="booking-summary-card">
-          <h3>Booking summary</h3>
+          <h3>Tóm tắt booking</h3>
           <div className="booking-summary-card__fact">
-            <span>Service</span>
+            <span>Dịch vụ</span>
             <strong>{servicePackage?.name ?? serviceSlug}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Ngay bay</span>
+            <span>Ngày bay</span>
             <strong>{selectedDate}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Khung gio</span>
+            <span>Khung giờ</span>
             <strong>{selectedTime}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Tre em toi thieu</span>
-            <strong>{servicePackage?.min_child_age ?? 6}+ tuoi</strong>
-          </div>
-          <div className="booking-summary-card__fact">
-            <span>Gia tri tour</span>
+            <span>Giá trị tour</span>
             <strong>{formatCurrency(tourTotal)}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Xe don</span>
-            <strong>{pickupFee ? formatCurrency(pickupFee) : "Tu den"}</strong>
+            <span>Xe đón</span>
+            <strong>{pickupFee ? formatCurrency(pickupFee) : "Tự đến"}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Tong gia tri</span>
+            <span>Tổng giá trị</span>
             <strong>{formatCurrency(finalTotal)}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Can tra truoc</span>
+            <span>Cần trả trước</span>
             <strong>{formatCurrency(depositAmount)}</strong>
           </div>
+          {servicePackage?.included_services.length ? (
+            <div className="booking-summary-card__features">
+              <span>Dịch vụ đi kèm</span>
+              <ul>
+                {servicePackage.included_services.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <p className="booking-summary-card__note">
-            Tien tra truoc gom {DEPOSIT_PERCENT}% gia tri tour va phi xe don neu khach chon xe den don.
+            Tiền trả trước gồm {DEPOSIT_PERCENT}% giá trị tour và phí xe đón nếu khách chọn xe đến đón.
           </p>
         </Panel>
       </Card>
@@ -147,14 +155,14 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
         <Panel className="stack">
           <form className="booking-form-grid" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
             <div className="booking-form-grid__cols">
-              <Field label="Ho va ten">
+              <Field label="Họ và tên">
                 {accountNeedsContactDetails ? (
                   <Input {...register("customer_name", { required: true })} />
                 ) : (
                   <Input value={account?.full_name ?? ""} disabled readOnly />
                 )}
               </Field>
-              <Field label="So dien thoai">
+              <Field label="Số điện thoại">
                 {accountNeedsContactDetails ? (
                   <Input {...register("phone", { required: true })} />
                 ) : (
@@ -167,57 +175,52 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <Field label="Email">
                 <Input type="email" value={account?.email ?? ""} disabled readOnly />
               </Field>
-              <Field label="So nguoi lon">
+              <Field label="Số người lớn">
                 <Input type="number" min={0} {...register("adults", { valueAsNumber: true })} />
               </Field>
             </div>
 
             <div className="booking-form-grid__cols">
-              <Field label="So tre em" hint={`Tre em tu ${servicePackage?.min_child_age ?? 6} tuoi tro len.`}>
+              <Field label="Số trẻ em">
                 <Input type="number" min={0} {...register("children", { valueAsNumber: true })} />
               </Field>
-              <Field label="Ghi chu">
+              <Field label="Ghi chú">
                 <Textarea {...register("notes")} />
               </Field>
             </div>
 
             <div className="stack-sm">
-              <strong>Di chuyen den diem bay</strong>
+              <strong>Di chuyển đến điểm bay</strong>
               <div className="payment-options payment-options--pickup">
                 <label className={`payment-option ${pickupOption !== "pickup" ? "is-active" : ""}`}>
                   <input type="radio" value="self" {...register("pickup_option")} />
-                  <strong>Tu den diem hen</strong>
-                  <span>Khach tu di chuyen den khu vuc Chua Buu Dai Son.</span>
+                  <strong>Tự đến điểm hẹn</strong>
+                  <span>Khách tự di chuyển đến khu vực Chùa Bửu Đài Sơn.</span>
                 </label>
                 <label className={`payment-option ${pickupOption === "pickup" ? "is-active" : ""}`}>
                   <input type="radio" value="pickup" {...register("pickup_option")} />
-                  <strong>Xe den don</strong>
-                  <span>Cong them 50.000 VND vao tien tra truoc.</span>
+                  <strong>Xe đến đón</strong>
+                  <span>Cộng thêm 50.000 VND vào tiền trả trước.</span>
                 </label>
               </div>
               {pickupOption === "pickup" ? (
-                <Field label="Dia chi don">
+                <Field label="Địa chỉ đón">
                   <Input
-                    placeholder="Nhap dia chi don tai Da Nang"
+                    placeholder="Nhập địa chỉ đón tại Đà Nẵng"
                     {...register("pickup_address", {
-                      required: pickupOption === "pickup" ? "Nhap dia chi don." : false
+                      required: pickupOption === "pickup" ? "Nhập địa chỉ đón." : false
                     })}
                   />
                 </Field>
               ) : null}
-              {formState.errors.pickup_address ? (
-                <p className="form-error">{formState.errors.pickup_address.message}</p>
-              ) : null}
+              {formState.errors.pickup_address ? <p className="form-error">{formState.errors.pickup_address.message}</p> : null}
             </div>
 
             <div className="stack-sm">
-              <strong>Phuong thuc thanh toan</strong>
+              <strong>Phương thức thanh toán</strong>
               <div className="payment-options">
                 {paymentOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    className={`payment-option ${paymentMethod === option.value ? "is-active" : ""}`}
-                  >
+                  <label key={option.value} className={`payment-option ${paymentMethod === option.value ? "is-active" : ""}`}>
                     <input type="radio" value={option.value} {...register("payment_method")} />
                     <strong>{option.title}</strong>
                     <span>{option.description}</span>
@@ -228,18 +231,15 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
 
             <label className="terms-check">
               <input type="checkbox" {...register("agree_terms", { required: true })} />
-              <span>
-                Toi dong y dieu khoan bay, dieu kien suc khoe va chinh sach hoan huy booking cua doanh
-                nghiep.
-              </span>
+              <span>Tôi đồng ý điều khoản bay, điều kiện sức khỏe và chính sách hoàn hủy booking của doanh nghiệp.</span>
             </label>
 
             {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 
             <div className="booking-form-actions">
-              <p>Thong tin lien he duoc lay tu tai khoan. Neu can chinh sua, hay cap nhat trong trang tai khoan.</p>
+              <p>Thông tin liên hệ được lấy từ tài khoản. Nếu cần chỉnh sửa, hãy cập nhật trong trang tài khoản.</p>
               <Button disabled={mutation.isPending || !formState.isValid}>
-                {mutation.isPending ? "Dang gui booking..." : "Xac nhan dat lich"}
+                {mutation.isPending ? "Đang gửi booking..." : "Xác nhận đặt lịch"}
               </Button>
             </div>
           </form>

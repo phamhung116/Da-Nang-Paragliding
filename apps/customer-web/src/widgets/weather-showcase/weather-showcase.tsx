@@ -1,6 +1,7 @@
 import { Badge } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
-import { useState } from "react";
+import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
+import { useEffect, useMemo, useState } from "react";
 
 import { 
   Wind, 
@@ -8,6 +9,8 @@ import {
   Clock,
   Sun,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Eye,
 } from 'lucide-react';
 
@@ -15,6 +18,8 @@ type WeatherShowcaseProps = {
   days: AvailabilityDay[];
   isDark?: boolean;
 };
+
+const FORECAST_PAGE_SIZE = 4;
 
 const normalizeCondition = (condition: string) =>
   condition
@@ -37,9 +42,26 @@ const getWeatherTone = (condition: string): "default" | "success" | "danger" => 
 };
 
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
-  const forecast = days.filter((day) => day.weather_available).slice(0, 7);
+  const forecast = days.filter((day) => day.weather_available).slice(0, WEATHER_FORECAST_DAYS);
   const today = forecast[0];
   const [isForecastOpen, setIsForecastOpen] = useState(false);
+  const [forecastPage, setForecastPage] = useState(0);
+  const forecastKey = useMemo(() => forecast.map((item) => item.date).join("|"), [forecast]);
+  const forecastPageCount = Math.max(1, Math.ceil(forecast.length / FORECAST_PAGE_SIZE));
+  const visibleForecast = forecast.slice(
+    forecastPage * FORECAST_PAGE_SIZE,
+    forecastPage * FORECAST_PAGE_SIZE + FORECAST_PAGE_SIZE
+  );
+
+  useEffect(() => {
+    setForecastPage(0);
+  }, [forecastKey]);
+
+  useEffect(() => {
+    if (forecastPage >= forecastPageCount) {
+      setForecastPage(forecastPageCount - 1);
+    }
+  }, [forecastPage, forecastPageCount]);
 
   if (!today) {
     return null;
@@ -108,7 +130,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           <div className={`mt-6 md:mt-10 p-3 md:p-6 ${isDark ? 'bg-white/5 border-white/5' : 'bg-stone-50 border-stone-100'} rounded-2xl border flex items-center gap-4 md:gap-6`}>
              <div className="text-2xl md:text-5xl font-bold">{today.temperature_c}°C</div>
              <div className="flex flex-col">
-               <span className="text-sm md:text-lg font-medium">{today.weather_condition || "Dang cap nhat"}</span>
+               <span className="text-sm md:text-lg font-medium">{today.weather_condition || "Đang cập nhật"}</span>
                <span className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-[10px] md:text-sm`}>
                  Tam nhin: {today.visibility_km} km
                </span>
@@ -117,7 +139,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           </div>
         </div>
 
-        {/* 7-Day Summary */}
+        {/* 14-Day Summary */}
         <div className={`lg:w-1/2 p-6 md:p-12 ${isDark ? 'bg-stone-800/30' : 'bg-stone-50/50'}`}>
           <div 
             className="flex items-center justify-between mb-6 md:mb-8 cursor-pointer md:cursor-default"
@@ -131,7 +153,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           </div>
           
           <div className={`${isForecastOpen ? 'max-h-[1000px] opacity-100 mt-0' : 'max-h-0 opacity-0 -mt-4'} md:max-h-none md:opacity-100 md:mt-0 overflow-hidden transition-all duration-500 space-y-3 md:space-y-4`}>
-            {forecast.map((item) => (
+            {visibleForecast.map((item) => (
               <article key={item.date} className={`flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-xl ${isDark ? 'hover:bg-white/5' : 'hover:bg-stone-100'} transition-colors`}>
                 <span className="w-14 md:w-16 font-medium text-[10px] md:text-sm">
                   {new Date(item.date).toLocaleDateString("vi-VN", {
@@ -159,6 +181,39 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 <span className="font-bold text-[10px] md:text-sm">{item.temperature_c}°C</span>
               </article>
             ))}
+            {forecastPageCount > 1 ? (
+              <div className="flex items-center justify-between pt-2">
+                <button
+                  type="button"
+                  aria-label="Previous forecast page"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                    isDark
+                      ? "border-white/10 text-white hover:bg-white/10 disabled:text-white/30"
+                      : "border-stone-200 text-stone-700 hover:bg-stone-100 disabled:text-stone-300"
+                  }`}
+                  disabled={forecastPage === 0}
+                  onClick={() => setForecastPage((page) => Math.max(0, page - 1))}
+                >
+                  <ChevronLeft size={16} />
+                </button>
+                <span className={`text-xs font-bold ${isDark ? "text-stone-400" : "text-stone-500"}`}>
+                  {forecastPage + 1} / {forecastPageCount}
+                </span>
+                <button
+                  type="button"
+                  aria-label="Next forecast page"
+                  className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                    isDark
+                      ? "border-white/10 text-white hover:bg-white/10 disabled:text-white/30"
+                      : "border-stone-200 text-stone-700 hover:bg-stone-100 disabled:text-stone-300"
+                  }`}
+                  disabled={forecastPage >= forecastPageCount - 1}
+                  onClick={() => setForecastPage((page) => Math.min(forecastPageCount - 1, page + 1))}
+                >
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>

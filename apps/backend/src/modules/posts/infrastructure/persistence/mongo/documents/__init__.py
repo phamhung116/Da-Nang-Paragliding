@@ -10,7 +10,7 @@ class PostDocument(models.Model):
     title = models.CharField(max_length=220)
     excerpt = models.CharField(max_length=320)
     content = models.TextField()
-    cover_image = models.URLField()
+    cover_image = models.TextField()
     published = models.BooleanField(default=True, db_index=True)
     published_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

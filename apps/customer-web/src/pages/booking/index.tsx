@@ -71,9 +71,9 @@ export const BookingPage = () => {
         <section className="section">
           <Container className="stack">
             <Badge tone="danger">Thieu thong tin dat lich</Badge>
-            <h2 className="detail-title">Hay chon mot goi dich vu truoc khi dat lich.</h2>
+            <h2 className="detail-title">Hãy chọn một gói dịch vụ trước khi đặt lịch.</h2>
             <Link to={routes.services}>
-              <Button variant="secondary">Quay lai danh sach dich vu</Button>
+              <Button variant="secondary">Quay lại danh sách dịch vụ</Button>
             </Link>
           </Container>
         </section>
@@ -87,12 +87,12 @@ export const BookingPage = () => {
         <section className="section">
           <Container className="stack">
             <Badge>Bat buoc dang nhap</Badge>
-            <h2 className="detail-title">Dang nhap de tiep tuc dat lich</h2>
+            <h2 className="detail-title">Đăng nhập để tiếp tục đặt lịch</h2>
             <p className="detail-copy">
               He thong se tu dong dien email, so dien thoai va luu lich su booking vao tai khoan cua ban.
             </p>
             <Link to={`${routes.login}?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}>
-              <Button>Dang nhap ngay</Button>
+              <Button>Đăng nhập ngay</Button>
             </Link>
           </Container>
         </section>
@@ -152,8 +152,8 @@ export const BookingPage = () => {
           ) : (
             <Card>
               <Panel className="calendar-selection-card">
-                <Badge tone="danger">Chua chon khung gio</Badge>
-                <strong>Hay chon mot o con trong tren lich truoc khi dien form dat lich.</strong>
+                <Badge tone="danger">Chưa chọn khung giờ</Badge>
+                <strong>Hãy chọn một ô còn trống trên lịch trước khi điền form đặt lịch.</strong>
                 <small>Thong tin thoi tiet theo gio se hien ngay ben duoi lich khi hover vao tung slot.</small>
               </Panel>
             </Card>

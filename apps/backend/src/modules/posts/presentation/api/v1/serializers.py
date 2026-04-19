@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from modules.posts.application.dto import PostPayload
 from shared.html import sanitize_post_html
+from shared.media import validate_image_source
 
 
 class PostReadSerializer(serializers.Serializer):
@@ -12,7 +13,7 @@ class PostReadSerializer(serializers.Serializer):
     title = serializers.CharField()
     excerpt = serializers.CharField()
     content = serializers.SerializerMethodField()
-    cover_image = serializers.URLField()
+    cover_image = serializers.CharField()
     published = serializers.BooleanField()
     published_at = serializers.DateTimeField(allow_null=True)
     created_at = serializers.DateTimeField(allow_null=True)
@@ -29,11 +30,14 @@ class PostWriteSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=220)
     excerpt = serializers.CharField(max_length=320)
     content = serializers.CharField()
-    cover_image = serializers.URLField()
+    cover_image = serializers.CharField()
     published = serializers.BooleanField(default=True)
 
     def validate_content(self, value: str) -> str:
         return sanitize_post_html(value)
+
+    def validate_cover_image(self, value: str) -> str:
+        return validate_image_source(value)
 
     def to_payload(self) -> PostPayload:
         data = self.validated_data

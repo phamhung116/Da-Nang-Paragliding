@@ -156,17 +156,17 @@ def flight_condition_for(
         if weather_code is not None
         else False
     )
-    bad_temperature = temperature_c is not None and (temperature_c < 15 or temperature_c > 38)
-    bad_gust = wind_gust_kph is not None and wind_gust_kph > 36
+    bad_temperature = temperature_c is not None and (temperature_c < 13 or temperature_c > 40)
+    bad_gust = wind_gust_kph is not None and wind_gust_kph > 42
     if (
         blocking_weather_code
         or bad_temperature
         or bad_gust
-        or precip_mm > 2
-        or chance_of_rain >= 70
-        or wind_kph > 28
-        or uv_index > 11
-        or visibility_km < 6
+        or precip_mm > 4
+        or chance_of_rain >= 85
+        or wind_kph > 34
+        or uv_index > 12
+        or visibility_km < 4.5
     ):
         return BAD_FLIGHT_CONDITION
     return IDEAL_FLIGHT_CONDITION
@@ -344,7 +344,7 @@ def fetch_weatherapi_forecast(
             end_date=end_date,
             slot_times=slot_times,
         )
-    plan_days = max(1, min(14, int(getattr(settings, "WEATHERAPI_FORECAST_DAYS", 3))))
+    plan_days = min(14, max(14, int(getattr(settings, "WEATHERAPI_FORECAST_DAYS", 14))))
     forecast_days = min(plan_days, max(1, (end_date - date.today()).days + 1))
     cache_key = (
         "weatherapi:v1:"
@@ -449,6 +449,23 @@ def fetch_weatherapi_forecast(
                 "weather_available": True,
             }
         result[date_value] = day_weather
+
+    missing_dates = [
+        forecast_date.isoformat()
+        for forecast_date in daterange(start_date, end_date)
+        if forecast_date.isoformat() not in result
+    ]
+    if missing_dates:
+        fallback = _fetch_open_meteo_forecast(
+            latitude=latitude,
+            longitude=longitude,
+            start_date=start_date,
+            end_date=end_date,
+            slot_times=slot_times,
+        )
+        for date_value in missing_dates:
+            if date_value in fallback:
+                result[date_value] = fallback[date_value]
 
     cache.set(cache_key, result, getattr(settings, "WEATHER_API_CACHE_SECONDS", 900))
     return result

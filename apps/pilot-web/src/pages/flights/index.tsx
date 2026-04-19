@@ -9,6 +9,8 @@ import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
 const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
+const AUTO_TRACKING_STATUSES = new Set(["PICKING_UP", "EN_ROUTE"]);
+const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
 type LivePosition = {
   lat: number;
@@ -120,6 +122,13 @@ export const FlightsPage = () => {
     mutationFn: ({ code, status }: { code: string; status: string }) => pilotApi.updateFlightStatus(code, status),
     onSuccess: (result) => {
       updateFlightCache(result);
+      const nextFlight = { booking: result.booking, tracking: result.tracking };
+      if (AUTO_TRACKING_STATUSES.has(result.booking.flight_status)) {
+        startLiveTracking(nextFlight);
+      }
+      if (result.booking.flight_status === "LANDED" && trackingSessionRef.current?.code === result.booking.code) {
+        void stopLiveTracking(nextFlight);
+      }
     }
   });
 
@@ -168,6 +177,10 @@ export const FlightsPage = () => {
 
     if (trackingSessionRef.current && trackingSessionRef.current.code !== flight.booking.code) {
       setGeoError("Dang co mot hanh trinh duoc tracking. Hay dung hanh trinh hien tai truoc.");
+      return;
+    }
+
+    if (trackingSessionRef.current?.code === flight.booking.code) {
       return;
     }
 
@@ -277,6 +290,19 @@ export const FlightsPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (trackingSessionRef.current || activeTrackingCode) {
+      return;
+    }
+
+    const activeMovingFlight = (flightsQuery.data ?? []).find((flight) =>
+      AUTO_TRACKING_STATUSES.has(flight.booking.flight_status)
+    );
+    if (activeMovingFlight) {
+      startLiveTracking(activeMovingFlight);
+    }
+  }, [activeTrackingCode, flightsQuery.data]);
+
   return (
     <PilotLayout>
       <div className="pilot-stack">
@@ -303,6 +329,10 @@ export const FlightsPage = () => {
           {(flightsQuery.data ?? []).map((flight) => {
             const isLiveTracking = activeTrackingCode === flight.booking.code;
             const isActionPending = trackingActionCode === flight.booking.code || trackingMutation.isPending;
+            const shouldShowMap =
+              MAP_VISIBLE_STATUSES.has(flight.booking.flight_status) ||
+              isLiveTracking ||
+              Boolean((flight.tracking?.route_points.length ?? 0) > 1);
 
             return (
               <Card key={flight.booking.code}>
@@ -351,25 +381,9 @@ export const FlightsPage = () => {
                         <div className="pilot-live-panel__copy">
                           <strong>GPS flight tracking</strong>
                           <p>
-                            Khi pilot bat dau hanh trinh, he thong se cap nhat vi tri hien tai theo GPS va luu lai route
-                            tren map theo thoi gian thuc.
+                            Khi trạng thái chuyển sang đang di chuyển, hệ thống tự lấy GPS, cập nhật vị trí hiện tại và
+                            lưu route trên map theo thời gian thực.
                           </p>
-                        </div>
-
-                        <div className="pilot-live-panel__actions">
-                          <Button
-                            disabled={isLiveTracking || (Boolean(activeTrackingCode) && !isLiveTracking) || isActionPending}
-                            onClick={() => startLiveTracking(flight)}
-                          >
-                            Bat dau tracking
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            disabled={!isLiveTracking || isActionPending}
-                            onClick={() => void stopLiveTracking(flight)}
-                          >
-                            Dung va luu route
-                          </Button>
                         </div>
                       </div>
 
@@ -380,6 +394,7 @@ export const FlightsPage = () => {
                           <Button
                             key={status}
                             variant={flight.booking.flight_status === status ? "primary" : "secondary"}
+                            disabled={statusMutation.isPending || isActionPending}
                             onClick={() => statusMutation.mutate({ code: flight.booking.code, status })}
                           >
                             {statusLabels[status]}
@@ -388,17 +403,18 @@ export const FlightsPage = () => {
                       </div>
                     </div>
 
-                    <div className="pilot-flight-visual">
-                      <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
+                    {shouldShowMap ? (
+                      <div className="pilot-flight-visual">
+                        <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
 
-                      <div className="pilot-map-note">
-                        <strong>Flight path</strong>
-                        <p>
-                          Sau khi pilot dung tracking, toan bo duong di chuyen van duoc giu tren map de admin va customer
-                          xem lai.
-                        </p>
+                        <div className="pilot-map-note">
+                          <strong>Flight path</strong>
+                          <p>
+                            Route được tự động lưu khi pilot chuyển sang trạng thái đang di chuyển và tiếp tục cập nhật đến khi hạ cánh.
+                          </p>
+                        </div>
                       </div>
-                    </div>
+                    ) : null}
                   </div>
 
                   <div className="pilot-timeline">

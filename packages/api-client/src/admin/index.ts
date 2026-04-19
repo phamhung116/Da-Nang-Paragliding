@@ -6,6 +6,8 @@ import type {
   ManagedAccountPayload,
   Post,
   PostWritePayload,
+  ServiceFeature,
+  ServiceFeatureWritePayload,
   ServicePackage,
   ServicePackageWritePayload
 } from "../types";
@@ -64,6 +66,21 @@ export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | 
       }),
     deleteService: (slug: string) =>
       http.request<{ slug: string }>(`/services/${slug}/`, {
+        method: "DELETE"
+      }),
+    listServiceFeatures: () => http.request<ServiceFeature[]>("/service-features/"),
+    createServiceFeature: (payload: ServiceFeatureWritePayload) =>
+      http.request<ServiceFeature>("/service-features/", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      }),
+    updateServiceFeature: (featureId: string, payload: ServiceFeatureWritePayload) =>
+      http.request<ServiceFeature>(`/service-features/${featureId}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload)
+      }),
+    deleteServiceFeature: (featureId: string) =>
+      http.request<{ id: string }>(`/service-features/${featureId}/`, {
         method: "DELETE"
       }),
     listAccounts: (filters?: { role?: string; active?: string }) =>

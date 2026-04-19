@@ -9,23 +9,10 @@ import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 
 const serviceFlowNotes = [
-  "Khach se duoc brief an toan truoc gio bay va xac nhan suc khoe tai diem tap ket.",
-  "Anh va video se duoc doi ngu media ho tro ban giao sau chuyen bay theo goi dich vu.",
-  "Lich bay thuc te co the duoc dieu chinh nhe neu weather thay doi sat gio cat canh."
+  "Khách sẽ được brief an toàn trước giờ bay và xác nhận sức khỏe tại điểm tập kết.",
+  "Ảnh và video sẽ được đội ngũ media hỗ trợ bàn giao sau chuyến bay theo gói dịch vụ.",
+  "Lịch bay thực tế có thể được điều chỉnh nhẹ nếu thời tiết thay đổi sát giờ cất cánh."
 ];
-
-const parseDateKey = (value: string) => {
-  const [rawYear, rawMonth, rawDay] = value.split("-").map(Number);
-  return new Date(rawYear, rawMonth - 1, rawDay);
-};
-
-const formatSelectedSlotLabel = (value: { date: string; time: string } | null) => {
-  if (!value) {
-    return "Chua chon khung gio";
-  }
-
-  return `${value.time} - ${parseDateKey(value.date).toLocaleDateString("vi-VN")}`;
-};
 
 export const ServiceDetailPage = () => {
   const { slug = "" } = useParams();
@@ -43,11 +30,11 @@ export const ServiceDetailPage = () => {
   });
 
   const availabilityMonths = useMemo(() => {
-    const currentDate = new Date(calendarState.year, calendarState.month - 1, 1);
+    const anchorDate = new Date(calendarState.year, calendarState.month - 1, 1);
     const prevDate = new Date(calendarState.year, calendarState.month - 2, 1);
     const nextDate = new Date(calendarState.year, calendarState.month, 1);
 
-    return [prevDate, currentDate, nextDate].map((date) => ({
+    return [prevDate, anchorDate, nextDate].map((date) => ({
       year: date.getFullYear(),
       month: date.getMonth() + 1
     }));
@@ -71,7 +58,7 @@ export const ServiceDetailPage = () => {
     return (
       <SiteLayout>
         <section className="section">
-          <Container>Dang tai goi dich vu...</Container>
+          <Container>Đang tải gói dịch vụ...</Container>
         </section>
       </SiteLayout>
     );
@@ -79,8 +66,8 @@ export const ServiceDetailPage = () => {
 
   return (
     <SiteLayout>
-      <Banner 
-        title={servicePackage.name} 
+      <Banner
+        title={servicePackage.name}
         subtitle="Trải nghiệm bay lượn tuyệt vời nhất tại Đà Nẵng."
         image={servicePackage.hero_image}
       />
@@ -106,11 +93,11 @@ export const ServiceDetailPage = () => {
                 </div>
                 <p className="calendar-selection-note">
                   {selectedSlot
-                    ? "Lich da chon se duoc giu san khi sang trang dien thong tin."
-                    : "Co the dat ngay va chon lich o buoc tiep theo."}
+                    ? "Lịch đã chọn sẽ được giữ sẵn khi sang trang điền thông tin."
+                    : "Có thể đặt ngay và chọn lịch ở bước tiếp theo."}
                 </p>
               </div>
-              
+
               {availability.length > 0 ? (
                 <BookingCalendar
                   year={calendarState.year}
@@ -123,71 +110,52 @@ export const ServiceDetailPage = () => {
               ) : (
                 <Card className="empty-state-card">
                   <Panel className="stack-sm">
-                    <Badge tone="danger">Chua mo lich</Badge>
-                    <strong>Thang nay chua co slot kha dung cho goi bay nay.</strong>
-                    <p>Ban co the doi sang thang khac hoac lien he doanh nghiep de duoc ho tro.</p>
+                    <Badge tone="danger">Chưa mở lịch</Badge>
+                    <strong>Tháng này chưa có slot khả dụng cho gói bay này.</strong>
+                    <p>Bạn có thể đổi sang tháng khác hoặc liên hệ doanh nghiệp để được hỗ trợ.</p>
                   </Panel>
                 </Card>
               )}
             </div>
-          </div >
+          </div>
+
           <div className="lg:col-span-2 space-y-6 lg:space-y-12">
             <div>
-              <div>
-                <h2 className="detail-title">Tong quan goi bay</h2>
-                <p className="detail-copy">{servicePackage.description}</p>
-                <div className="detail-highlight-grid">
-                  <article>
-                    <span>Flight duration</span>
-                    <strong>{servicePackage.flight_duration_minutes} phut</strong>
-                  </article>
-                  <article>
-                    <span>Meeting point</span>
-                    <strong>{servicePackage.launch_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Landing point</span>
-                    <strong>{servicePackage.landing_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Kid minimum age</span>
-                    <strong>{servicePackage.min_child_age}+ tuoi</strong>
-                  </article>
-                </div>
+              <h2 className="detail-title">Tổng quan gói bay</h2>
+              <p className="detail-copy">{servicePackage.description}</p>
+              <div className="detail-highlight-grid">
+                <article>
+                  <span>Giá gói</span>
+                  <strong>{formatCurrency(servicePackage.price)}</strong>
+                </article>
+                <article>
+                  <span>Dịch vụ đi kèm</span>
+                  <strong>{servicePackage.included_services.length} mục</strong>
+                </article>
+                <article>
+                  <span>Đặt lịch</span>
+                  <strong>Chọn khung giờ phù hợp trên lịch</strong>
+                </article>
               </div>
             </div>
 
-            <div className="detail-section-grid">
-              <Card className="detail-section-card">
-                <Panel className="stack-sm">
-                  <Badge>Dich vu di kem</Badge>
-                  <h3>Nhung gi da co trong goi</h3>
-                  <ul className="detail-list">
-                    {servicePackage.included_services.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </Panel>
-              </Card>
-
-              <Card className="detail-section-card">
-                <Panel className="stack-sm">
-                  <Badge tone="success">Luu y</Badge>
-                  <h3>Dieu kien tham gia</h3>
-                  <ul className="detail-list">
-                    {servicePackage.participation_requirements.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </Panel>
-              </Card>
-            </div>
+            <Card className="detail-section-card">
+              <Panel className="stack-sm">
+                <Badge>Dịch vụ đi kèm</Badge>
+                <h3>Những gì đã có trong gói</h3>
+                <ul className="detail-list">
+                  {servicePackage.included_services.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </Panel>
+            </Card>
 
             <div className="info-grid">
               {serviceFlowNotes.map((item) => (
                 <Card key={item} className="info-card">
                   <Panel className="stack-sm">
-                    <strong>Van hanh trong ngay bay</strong>
+                    <strong>Vận hành trong ngày bay</strong>
                     <p>{item}</p>
                   </Panel>
                 </Card>
@@ -196,8 +164,8 @@ export const ServiceDetailPage = () => {
 
             <Card className="detail-section-card">
               <Panel className="stack-sm">
-                <Badge>Chuan bi truoc bay</Badge>
-                <h3>Checklist danh cho khach hang</h3>
+                <Badge>Chuẩn bị trước bay</Badge>
+                <h3>Checklist dành cho khách hàng</h3>
                 <ul className="detail-list">
                   {servicePreparationChecklist.map((item) => (
                     <li key={item}>{item}</li>
@@ -205,12 +173,6 @@ export const ServiceDetailPage = () => {
                 </ul>
               </Panel>
             </Card>
-
-            <div className="detail-gallery detail-gallery--mosaic">
-              {servicePackage.gallery_images.map((image, index) => (
-                <img key={`${image}-${index}`} src={image} alt={`${servicePackage.name} ${index + 1}`} />
-              ))}
-            </div>
           </div>
         </Container>
       </section>

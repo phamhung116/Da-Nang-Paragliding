@@ -1,9 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import React from "react";
+import React, { useMemo } from "react";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { businessInfo } from "@/shared/constants/business";
+import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { HomeHero } from "@/widgets/hero/home-hero";
 import { ServiceCard } from "@/widgets/service-card/service-card";
@@ -30,16 +31,18 @@ export const HomePage = () => {
   });
 
   const weatherServiceSlug = services[0]?.slug;
-  const today = new Date();
-  const { data: forecast = [] } = useQuery({
-    queryKey: ["home-weather", weatherServiceSlug, today.getFullYear(), today.getMonth() + 1],
-    queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", today.getFullYear(), today.getMonth() + 1),
-    enabled: Boolean(weatherServiceSlug)
+  const today = useMemo(() => new Date(), []);
+  const forecastMonthKeys = useMemo(() => getForecastMonthKeys(today, WEATHER_FORECAST_DAYS), [today]);
+  const forecastQueries = useQueries({
+    queries: forecastMonthKeys.map(({ year, month }) => ({
+      queryKey: ["home-weather", weatherServiceSlug, year, month],
+      queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", year, month),
+      enabled: Boolean(weatherServiceSlug)
+    }))
   });
 
-  const upcomingForecast = forecast
-    .filter((item) => item.weather_available && new Date(item.date) >= new Date(new Date().toDateString()))
-    .slice(0, 7);
+  const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
+  const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
 
   return (
     <SiteLayout>
@@ -141,9 +144,9 @@ export const HomePage = () => {
             ) : (
               <Card className="empty-state-card">
                 <Panel className="stack-sm">
-                  <Badge tone="danger">Chua co du lieu weather</Badge>
-                  <strong>He thong dang cho du lieu forecast cho thang nay.</strong>
-                  <p>Ban van co the xem danh sach goi bay va quay lai sau de chon lich phu hop.</p>
+                  <Badge tone="danger">Chưa có dữ liệu thời tiết</Badge>
+                  <strong>Hệ thống đang chờ dữ liệu dự báo cho tháng này.</strong>
+                  <p>Bạn vẫn có thể xem danh sách gói bay và quay lại sau để chọn lịch phù hợp.</p>
                 </Panel>
               </Card>
             )}
@@ -164,9 +167,9 @@ export const HomePage = () => {
           ) : (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge tone="danger">Tam thoi chua mo ban</Badge>
-                <strong>Hien tai chua co goi dich vu active de hien thi.</strong>
-                <p>Hay lien he {businessInfo.phone} de duoc tu van lich bay phu hop.</p>
+                <Badge tone="danger">Tạm thời chưa mở bán</Badge>
+                <strong>Hiện tại chưa có gói dịch vụ hoạt động để hiển thị.</strong>
+                <p>Hãy liên hệ {businessInfo.phone} để được tư vấn lịch bay phù hợp.</p>
               </Panel>
             </Card>
           )}
@@ -205,7 +208,7 @@ export const HomePage = () => {
               </div>
               <Link to="/posts">
                 <Button className="text-brand font-bold flex items-center gap-2 hover:gap-4 transition-all group">
-                  Xem tat ca bai viet
+                  Xem tất cả bài viết
                   <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
@@ -235,16 +238,16 @@ export const HomePage = () => {
             ) : (
               <Card className="empty-state-card">
                 <Panel className="stack-sm">
-                  <Badge>Bai viet</Badge>
-                  <strong>Blog dang duoc cap nhat.</strong>
-                  <p>Khi admin dang bai moi, user va pilot se thay noi dung tai day.</p>
+                  <Badge>Bài viết</Badge>
+                  <strong>Blog đang được cập nhật.</strong>
+                  <p>Khi admin đăng bài mới, khách hàng và pilot sẽ thấy nội dung tại đây.</p>
                 </Panel>
               </Card>
             )}
 
             <div className="section-actions">
               <Link to="/posts">
-                <Button variant="secondary">Xem tat ca bai viet</Button>
+                <Button variant="secondary">Xem tất cả bài viết</Button>
               </Link>
             </div>
         </section>
