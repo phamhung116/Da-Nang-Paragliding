@@ -27,4 +27,4 @@ coverage/
 
 apps/backend/staticfiles/
 apps/backend/media/
-apps/customer-web/media/video/
+apps/customer-web/media/
