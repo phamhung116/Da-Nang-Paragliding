@@ -5,12 +5,8 @@ export type ServicePackage = {
   short_description: string;
   description: string;
   price: string;
-  flight_duration_minutes: number;
   included_services: string[];
-  participation_requirements: string[];
-  min_child_age: number;
   hero_image: string;
-  gallery_images: string[];
   launch_site_name: string;
   launch_lat: number;
   launch_lng: number;

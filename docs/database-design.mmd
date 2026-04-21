@@ -1,0 +1,175 @@
+erDiagram
+    ACCOUNTS {
+        ObjectId id PK
+        string full_name
+        string email UK
+        string phone UK
+        string password_hash
+        string role
+        string preferred_language
+        boolean is_active
+        boolean email_verified
+        datetime email_verified_at
+        string email_verification_token
+        datetime email_verification_sent_at
+        string email_login_poll_token
+        datetime email_login_poll_expires_at
+        datetime email_login_poll_verified_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    ACCOUNT_SESSIONS {
+        ObjectId id PK
+        string account_id
+        string token UK
+        datetime expires_at
+        datetime revoked_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    SERVICE_PACKAGES {
+        ObjectId id PK
+        string slug UK
+        string name
+        string short_description
+        text description
+        decimal price
+        int flight_duration_minutes
+        json included_services
+        json participation_requirements
+        int min_child_age
+        string hero_image
+        json gallery_images
+        string launch_site_name
+        float launch_lat
+        float launch_lng
+        string landing_site_name
+        float landing_lat
+        float landing_lng
+        boolean featured
+        boolean active
+        datetime created_at
+        datetime updated_at
+    }
+
+    SERVICE_FEATURES {
+        ObjectId id PK
+        string name UK
+        string description
+        boolean active
+        datetime created_at
+        datetime updated_at
+    }
+
+    BOOKINGS {
+        ObjectId id PK
+        string code UK
+        string service_slug
+        string service_name
+        string launch_site_name
+        date flight_date
+        string flight_time
+        string customer_name
+        string phone
+        string email
+        int adults
+        int children
+        text notes
+        string pickup_option
+        text pickup_address
+        decimal pickup_fee
+        decimal unit_price
+        decimal original_total
+        decimal final_total
+        decimal deposit_amount
+        int deposit_percentage
+        string payment_method
+        string payment_status
+        string approval_status
+        text rejection_reason
+        string flight_status
+        string assigned_pilot_name
+        string assigned_pilot_phone
+        datetime created_at
+        datetime updated_at
+    }
+
+    PAYMENT_TRANSACTIONS {
+        ObjectId id PK
+        string booking_code UK
+        string method
+        string status
+        decimal amount
+        int deposit_percentage
+        string provider_name
+        string provider_reference
+        string payment_url
+        string qr_code_url
+        string transfer_content
+        datetime expires_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    AVAILABILITY_DAYS {
+        ObjectId id PK
+        string service_slug
+        date date
+        float temperature_c
+        float wind_kph
+        int uv_index
+        float visibility_km
+        string weather_condition
+        string flight_condition
+        boolean weather_available
+        json slots
+        datetime updated_at
+    }
+
+    FLIGHT_TRACKING {
+        ObjectId id PK
+        string booking_code UK
+        string phone
+        string service_name
+        string flight_status
+        string pilot_name
+        json current_location
+        json route_points
+        json timeline
+        datetime created_at
+        datetime updated_at
+    }
+
+    POSTS {
+        ObjectId id PK
+        string slug UK
+        string title
+        string excerpt
+        text content
+        string cover_image
+        boolean published
+        datetime published_at
+        datetime created_at
+        datetime updated_at
+    }
+
+    NOTIFICATION_LOGS {
+        ObjectId id PK
+        string channel
+        string recipient
+        string title
+        text message
+        datetime created_at
+    }
+
+    ACCOUNTS ||--o{ ACCOUNT_SESSIONS : account_id
+    ACCOUNTS ||--o{ BOOKINGS : customer_phone
+    ACCOUNTS ||--o{ BOOKINGS : assigned_pilot_phone
+    SERVICE_PACKAGES ||--o{ BOOKINGS : service_slug
+    SERVICE_PACKAGES ||--o{ AVAILABILITY_DAYS : service_slug
+    BOOKINGS ||--o| PAYMENT_TRANSACTIONS : booking_code
+    BOOKINGS ||--o| FLIGHT_TRACKING : booking_code
+    SERVICE_FEATURES }o..o{ SERVICE_PACKAGES : included_services_json
+

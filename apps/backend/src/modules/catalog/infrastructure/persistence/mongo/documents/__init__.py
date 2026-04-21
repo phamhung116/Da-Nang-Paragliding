@@ -15,7 +15,7 @@ class ServicePackageDocument(models.Model):
     included_services = models.JSONField(default=list)
     participation_requirements = models.JSONField(default=list)
     min_child_age = models.PositiveIntegerField(default=6)
-    hero_image = models.URLField()
+    hero_image = models.TextField()
     gallery_images = models.JSONField(default=list)
     launch_site_name = models.CharField(max_length=120)
     launch_lat = models.FloatField()

@@ -34,11 +34,7 @@ export const PostDetailPage = () => {
   const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
   const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
   const galleryImages = useMemo(
-    () =>
-      services
-        .flatMap((service) => [service.hero_image, ...service.gallery_images])
-        .filter(Boolean)
-        .slice(0, 6),
+    () => services.map((service) => service.hero_image).filter(Boolean).slice(0, 6),
     [services]
   );
 

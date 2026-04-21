@@ -156,17 +156,17 @@ def flight_condition_for(
         if weather_code is not None
         else False
     )
-    bad_temperature = temperature_c is not None and (temperature_c < 15 or temperature_c > 38)
-    bad_gust = wind_gust_kph is not None and wind_gust_kph > 36
+    bad_temperature = temperature_c is not None and (temperature_c < 13 or temperature_c > 40)
+    bad_gust = wind_gust_kph is not None and wind_gust_kph > 42
     if (
         blocking_weather_code
         or bad_temperature
         or bad_gust
-        or precip_mm > 2
-        or chance_of_rain >= 70
-        or wind_kph > 28
-        or uv_index > 11
-        or visibility_km < 6
+        or precip_mm > 4
+        or chance_of_rain >= 85
+        or wind_kph > 34
+        or uv_index > 12
+        or visibility_km < 4.5
     ):
         return BAD_FLIGHT_CONDITION
     return IDEAL_FLIGHT_CONDITION

@@ -761,6 +761,17 @@ body {
   border: 1px solid rgba(201, 24, 66, 0.08);
 }
 
+.image-source-field {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.image-source-field__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+}
+
 .post-editor-sidebar__actions {
   display: grid;
   gap: 0.65rem;

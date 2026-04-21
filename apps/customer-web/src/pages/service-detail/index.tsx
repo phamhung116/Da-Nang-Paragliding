@@ -58,11 +58,11 @@ export const ServiceDetailPage = () => {
   };
 
   const availabilityMonths = useMemo(() => {
-    const currentDate = new Date(calendarState.year, calendarState.month - 1, 1);
+    const anchorDate = new Date(calendarState.year, calendarState.month - 1, 1);
     const prevDate = new Date(calendarState.year, calendarState.month - 2, 1);
     const nextDate = new Date(calendarState.year, calendarState.month, 1);
 
-    return [prevDate, currentDate, nextDate].map((date) => ({
+    return [prevDate, anchorDate, nextDate].map((date) => ({
       year: date.getFullYear(),
       month: date.getMonth() + 1
     }));
@@ -94,8 +94,8 @@ export const ServiceDetailPage = () => {
 
   return (
     <SiteLayout>
-      <Banner 
-        title={servicePackage.name} 
+      <Banner
+        title={servicePackage.name}
         subtitle="Trải nghiệm bay lượn tuyệt vời nhất tại Đà Nẵng."
         image={servicePackage.hero_image}
       />
@@ -125,7 +125,7 @@ export const ServiceDetailPage = () => {
                     : "Có thể đặt ngay và chọn lịch ở bước tiếp theo."}
                 </p>
               </div>
-              
+
               {availability.length > 0 ? (
                 <BookingCalendar
                   year={calendarState.year}
@@ -145,7 +145,8 @@ export const ServiceDetailPage = () => {
                 </Card>
               )}
             </div>
-          </div >
+          </div>
+
           <div className="lg:col-span-2 space-y-6 lg:space-y-12">
             <section className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none overflow-hidden">
               <button 
@@ -172,7 +173,7 @@ export const ServiceDetailPage = () => {
                 </div>
               </div>
             </section>
-
+            
             <section className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none overflow-hidden">
               <button 
                 onClick={() => toggleSection('services')}

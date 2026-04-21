@@ -1,0 +1,186 @@
+Project paragliding_platform {
+  database_type: "MongoDB via django-mongodb-backend"
+  Note: "Logical database design. References are application-level references, not strict MongoDB foreign keys."
+}
+
+Table accounts {
+  id ObjectId [pk]
+  full_name varchar
+  email varchar [unique]
+  phone varchar [unique]
+  password_hash varchar
+  role varchar
+  preferred_language varchar
+  is_active boolean
+  email_verified boolean
+  email_verified_at datetime
+  email_verification_token varchar
+  email_verification_sent_at datetime
+  email_login_poll_token varchar
+  email_login_poll_expires_at datetime
+  email_login_poll_verified_at datetime
+  created_at datetime
+  updated_at datetime
+
+  Note: "role separates CUSTOMER, PILOT, and ADMIN accounts."
+}
+
+Table account_sessions {
+  id ObjectId [pk]
+  account_id varchar
+  token varchar [unique]
+  expires_at datetime
+  revoked_at datetime
+  created_at datetime
+  updated_at datetime
+}
+
+Table service_packages {
+  id ObjectId [pk]
+  slug varchar [unique]
+  name varchar
+  short_description varchar
+  description text
+  price decimal
+  flight_duration_minutes int
+  included_services json [note: "Selected service feature names."]
+  participation_requirements json
+  min_child_age int
+  hero_image varchar
+  gallery_images json
+  launch_site_name varchar
+  launch_lat float
+  launch_lng float
+  landing_site_name varchar
+  landing_lat float
+  landing_lng float
+  featured boolean
+  active boolean
+  created_at datetime
+  updated_at datetime
+}
+
+Table service_features {
+  id ObjectId [pk]
+  name varchar [unique]
+  description varchar
+  active boolean
+  created_at datetime
+  updated_at datetime
+}
+
+Table bookings {
+  id ObjectId [pk]
+  code varchar [unique]
+  service_slug varchar
+  service_name varchar
+  launch_site_name varchar
+  flight_date date
+  flight_time varchar
+  customer_name varchar
+  phone varchar
+  email varchar
+  adults int
+  children int
+  notes text
+  pickup_option varchar
+  pickup_address text
+  pickup_fee decimal
+  unit_price decimal
+  original_total decimal
+  final_total decimal
+  deposit_amount decimal
+  deposit_percentage int
+  payment_method varchar
+  payment_status varchar
+  approval_status varchar
+  rejection_reason text
+  flight_status varchar
+  assigned_pilot_name varchar
+  assigned_pilot_phone varchar
+  created_at datetime
+  updated_at datetime
+
+  Note: "Stores snapshots for service, customer, and assigned pilot data."
+}
+
+Table payment_transactions {
+  id ObjectId [pk]
+  booking_code varchar [unique]
+  method varchar
+  status varchar
+  amount decimal
+  deposit_percentage int
+  provider_name varchar
+  provider_reference varchar
+  payment_url varchar
+  qr_code_url varchar
+  transfer_content varchar
+  expires_at datetime
+  created_at datetime
+  updated_at datetime
+}
+
+Table availability_days {
+  id ObjectId [pk]
+  service_slug varchar
+  date date
+  temperature_c float
+  wind_kph float
+  uv_index int
+  visibility_km float
+  weather_condition varchar
+  flight_condition varchar
+  weather_available boolean
+  slots json
+  updated_at datetime
+
+  Indexes {
+    (service_slug, date) [unique]
+  }
+}
+
+Table flight_tracking {
+  id ObjectId [pk]
+  booking_code varchar [unique]
+  phone varchar
+  service_name varchar
+  flight_status varchar
+  pilot_name varchar
+  current_location json
+  route_points json
+  timeline json
+  created_at datetime
+  updated_at datetime
+}
+
+Table posts {
+  id ObjectId [pk]
+  slug varchar [unique]
+  title varchar
+  excerpt varchar
+  content text
+  cover_image varchar
+  published boolean
+  published_at datetime
+  created_at datetime
+  updated_at datetime
+}
+
+Table notification_logs {
+  id ObjectId [pk]
+  channel varchar
+  recipient varchar
+  title varchar
+  message text
+  created_at datetime
+}
+
+Ref: account_sessions.account_id > accounts.id
+Ref: bookings.phone > accounts.phone
+Ref: bookings.assigned_pilot_phone > accounts.phone
+Ref: bookings.service_slug > service_packages.slug
+Ref: availability_days.service_slug > service_packages.slug
+Ref: payment_transactions.booking_code - bookings.code
+Ref: flight_tracking.booking_code - bookings.code
+

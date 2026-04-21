@@ -46,6 +46,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const accountNeedsContactDetails = !account?.phone || account.phone.startsWith("EMAIL");
   const accountPhone = accountNeedsContactDetails ? "" : account?.phone ?? "";
+
   const { data: servicePackage } = useQuery({
     queryKey: ["service", serviceSlug],
     queryFn: () => customerApi.getService(serviceSlug)
@@ -102,6 +103,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   return (
     <div className="booking-form-layout">
       {successMessage ? <div className="booking-toast">{successMessage}</div> : null}
+
       <Card>
         <Panel className="booking-summary-card">
           <h3>Tóm tắt booking</h3>
@@ -116,10 +118,6 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
           <div className="booking-summary-card__fact">
             <span>Khung giờ</span>
             <strong>{selectedTime}</strong>
-          </div>
-          <div className="booking-summary-card__fact">
-            <span>Trẻ em tối thiểu</span>
-            <strong>{servicePackage?.min_child_age ?? 6}+ tuổi</strong>
           </div>
           <div className="booking-summary-card__fact">
             <span>Giá trị tour</span>
@@ -157,14 +155,14 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
         <Panel className="stack">
           <form className="booking-form-grid" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
             <div className="booking-form-grid__cols">
-              <Field label="Ho va ten">
+              <Field label="Họ và tên">
                 {accountNeedsContactDetails ? (
                   <Input {...register("customer_name", { required: true })} />
                 ) : (
                   <Input value={account?.full_name ?? ""} disabled readOnly />
                 )}
               </Field>
-              <Field label="So dien thoai">
+              <Field label="Số điện thoại">
                 {accountNeedsContactDetails ? (
                   <Input {...register("phone", { required: true })} />
                 ) : (
@@ -177,16 +175,17 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <Field label="Email">
                 <Input type="email" value={account?.email ?? ""} disabled readOnly />
               </Field>
-              <Field label="So nguoi lon">
+              <Field label="Số người lớn">
                 <Input type="number" min={0} {...register("adults", { valueAsNumber: true })} />
               </Field>
             </div>
 
             <div className="booking-form-grid__cols">
-              <Field label="Số trẻ em" hint={`Trẻ em từ ${servicePackage?.min_child_age ?? 6} tuổi trở lên.`}>
+
+              <Field label="Số trẻ em">
                 <Input type="number" min={0} {...register("children", { valueAsNumber: true })} />
               </Field>
-              <Field label="Ghi chu">
+              <Field label="Ghi chú">
                 <Textarea {...register("notes")} />
               </Field>
             </div>
@@ -215,19 +214,14 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
                   />
                 </Field>
               ) : null}
-              {formState.errors.pickup_address ? (
-                <p className="form-error">{formState.errors.pickup_address.message}</p>
-              ) : null}
+              {formState.errors.pickup_address ? <p className="form-error">{formState.errors.pickup_address.message}</p> : null}
             </div>
 
             <div className="stack-sm">
               <strong>Phương thức thanh toán</strong>
               <div className="payment-options">
                 {paymentOptions.map((option) => (
-                  <label
-                    key={option.value}
-                    className={`payment-option ${paymentMethod === option.value ? "is-active" : ""}`}
-                  >
+                  <label key={option.value} className={`payment-option ${paymentMethod === option.value ? "is-active" : ""}`}>
                     <input type="radio" value={option.value} {...register("payment_method")} />
                     <strong>{option.title}</strong>
                     <span>{option.description}</span>
@@ -238,10 +232,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
 
             <label className="terms-check">
               <input type="checkbox" {...register("agree_terms", { required: true })} />
-              <span>
-                Tôi đồng ý điều khoản bay, điều kiện sức khỏe và chính sách hoàn hủy booking của doanh
-                nghiệp.
-              </span>
+              <span>Tôi đồng ý điều khoản bay, điều kiện sức khỏe và chính sách hoàn hủy booking của doanh nghiệp.</span>
             </label>
 
             {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}

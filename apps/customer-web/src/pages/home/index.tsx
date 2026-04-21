@@ -82,7 +82,6 @@ export const HomePage = () => {
       video.pause();
     };
   }, []);
-
   return (
     <SiteLayout>
       <motion.div 
@@ -283,9 +282,7 @@ export const HomePage = () => {
               </Card>
             )}
         </section>
-
       </motion.div>
-      
     </SiteLayout>
   );
 };

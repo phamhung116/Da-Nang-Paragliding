@@ -7,13 +7,12 @@ import type { ServicePackageWritePayload } from "@paragliding/api-client";
 import { adminApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { formatCurrency } from "@/shared/lib/format";
+
+import { ImageSourceField } from "@/widgets/forms/image-source-field";
 import { AdminLayout } from "@/widgets/layout/admin-layout";
 
-const defaultHeroImage = "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
-const defaultGalleryImages = [
-  "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?auto=format&fit=crop&w=900&q=80",
-  "https://images.unsplash.com/photo-1517022812141-23620dba5c23?auto=format&fit=crop&w=900&q=80"
-];
+const defaultHeroImage =
+  "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80";
 
 const blankValues: ServicePackageWritePayload = {
   slug: "",
@@ -21,12 +20,8 @@ const blankValues: ServicePackageWritePayload = {
   short_description: "",
   description: "",
   price: "0",
-  flight_duration_minutes: 20,
   included_services: [],
-  participation_requirements: ["Tuân thủ briefing an toàn"],
-  min_child_age: 7,
   hero_image: defaultHeroImage,
-  gallery_images: defaultGalleryImages,
   launch_site_name: "Điểm cất cánh Sơn Trà",
   launch_lat: 16.1202,
   launch_lng: 108.2894,
@@ -47,9 +42,6 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-const toLines = (items: string[]) => items.join("\n");
-const fromLines = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
-
 export const ServiceDetailPage = () => {
   const { slug = "" } = useParams();
   const isNew = slug === "new";
@@ -57,8 +49,6 @@ export const ServiceDetailPage = () => {
   const queryClient = useQueryClient();
   const form = useForm<ServicePackageWritePayload>({ defaultValues: blankValues });
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
-  const [requirementsText, setRequirementsText] = useState(toLines(blankValues.participation_requirements));
-  const [galleryText, setGalleryText] = useState(toLines(blankValues.gallery_images));
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const priceValue = form.watch("price");
   const heroImage = form.watch("hero_image");
@@ -83,37 +73,31 @@ export const ServiceDetailPage = () => {
     if (isNew) {
       form.reset(blankValues);
       setSelectedFeatures([]);
-      setRequirementsText(toLines(blankValues.participation_requirements));
-      setGalleryText(toLines(blankValues.gallery_images));
       return;
     }
 
-    if (serviceQuery.data) {
-      form.reset({
-        slug: serviceQuery.data.slug,
-        name: serviceQuery.data.name,
-        short_description: serviceQuery.data.short_description,
-        description: serviceQuery.data.description,
-        price: serviceQuery.data.price,
-        flight_duration_minutes: serviceQuery.data.flight_duration_minutes,
-        included_services: serviceQuery.data.included_services,
-        participation_requirements: serviceQuery.data.participation_requirements,
-        min_child_age: serviceQuery.data.min_child_age,
-        hero_image: serviceQuery.data.hero_image,
-        gallery_images: serviceQuery.data.gallery_images,
-        launch_site_name: serviceQuery.data.launch_site_name,
-        launch_lat: serviceQuery.data.launch_lat,
-        launch_lng: serviceQuery.data.launch_lng,
-        landing_site_name: serviceQuery.data.landing_site_name,
-        landing_lat: serviceQuery.data.landing_lat,
-        landing_lng: serviceQuery.data.landing_lng,
-        featured: serviceQuery.data.featured,
-        active: serviceQuery.data.active
-      });
-      setSelectedFeatures(serviceQuery.data.included_services);
-      setRequirementsText(toLines(serviceQuery.data.participation_requirements));
-      setGalleryText(toLines(serviceQuery.data.gallery_images));
+    if (!serviceQuery.data) {
+      return;
     }
+
+    form.reset({
+      slug: serviceQuery.data.slug,
+      name: serviceQuery.data.name,
+      short_description: serviceQuery.data.short_description,
+      description: serviceQuery.data.description,
+      price: serviceQuery.data.price,
+      included_services: serviceQuery.data.included_services,
+      hero_image: serviceQuery.data.hero_image,
+      launch_site_name: serviceQuery.data.launch_site_name,
+      launch_lat: serviceQuery.data.launch_lat,
+      launch_lng: serviceQuery.data.launch_lng,
+      landing_site_name: serviceQuery.data.landing_site_name,
+      landing_lat: serviceQuery.data.landing_lat,
+      landing_lng: serviceQuery.data.landing_lng,
+      featured: serviceQuery.data.featured,
+      active: serviceQuery.data.active
+    });
+    setSelectedFeatures(serviceQuery.data.included_services);
   }, [form, isNew, serviceQuery.data]);
 
   const saveMutation = useMutation({
@@ -137,21 +121,24 @@ export const ServiceDetailPage = () => {
 
   const toggleFeature = (featureName: string) => {
     setSelectedFeatures((current) =>
-      current.includes(featureName)
-        ? current.filter((item) => item !== featureName)
-        : [...current, featureName]
+      current.includes(featureName) ? current.filter((item) => item !== featureName) : [...current, featureName]
     );
   };
 
+  const setHeroImage = (nextValue: string) => {
+    form.setValue("hero_image", nextValue, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true
+    });
+  };
+
   const handleSubmit = (values: ServicePackageWritePayload) => {
-    const nextSlug = values.slug.trim() || slugify(values.name);
     saveMutation.mutate({
       ...values,
-      slug: nextSlug,
+      slug: values.slug.trim() || slugify(values.name),
       price: String(values.price),
-      included_services: selectedFeatures,
-      participation_requirements: fromLines(requirementsText),
-      gallery_images: fromLines(galleryText)
+      included_services: selectedFeatures
     });
   };
 
@@ -166,7 +153,7 @@ export const ServiceDetailPage = () => {
           <div className="portal-heading__text">
             <Badge>{isNew ? "NEW SERVICE" : serviceQuery.data?.active ? "ACTIVE" : "INACTIVE"}</Badge>
             <h1>{isNew ? "Tạo gói dịch vụ" : serviceQuery.data?.name ?? "Service detail"}</h1>
-            <p>Chỉnh tên gói, giá, tổng quan và các dịch vụ đi kèm hiển thị ở customer web.</p>
+            <p>Chỉnh tên gói, giá, ảnh đại diện và các feature đi kèm hiển thị cho khách hàng.</p>
           </div>
           <Link to={routes.services}>
             <Button variant="secondary">Quay lại danh sách</Button>
@@ -205,7 +192,10 @@ export const ServiceDetailPage = () => {
                     </div>
                     <div className="feature-picker">
                       {activeFeatures.map((feature) => (
-                        <label key={feature.id} className={`feature-option ${selectedFeatures.includes(feature.name) ? "is-selected" : ""}`}>
+                        <label
+                          key={feature.id}
+                          className={`feature-option ${selectedFeatures.includes(feature.name) ? "is-selected" : ""}`}
+                        >
                           <input
                             type="checkbox"
                             checked={selectedFeatures.includes(feature.name)}
@@ -218,18 +208,11 @@ export const ServiceDetailPage = () => {
                         </label>
                       ))}
                     </div>
-                    {!activeFeatures.length ? <p className="row-muted">Chưa có feature. Hãy tạo feature ở trang danh sách Services.</p> : null}
+                    {!activeFeatures.length ? (
+                      <p className="row-muted">Chưa có feature. Hãy tạo feature ở trang danh sách Services.</p>
+                    ) : null}
                   </Panel>
                 </Card>
-
-                <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Điều kiện tham gia">
-                    <Textarea rows={5} value={requirementsText} onChange={(event) => setRequirementsText(event.target.value)} />
-                  </Field>
-                  <Field label="Gallery images">
-                    <Textarea rows={5} value={galleryText} onChange={(event) => setGalleryText(event.target.value)} />
-                  </Field>
-                </div>
               </div>
 
               <aside className="post-editor-sidebar">
@@ -243,43 +226,20 @@ export const ServiceDetailPage = () => {
                   <Input {...form.register("slug")} disabled={!isNew} placeholder="Tự tạo nếu bỏ trống" />
                 </Field>
 
-                <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Thời lượng bay">
-                    <Input type="number" min={10} {...form.register("flight_duration_minutes", { valueAsNumber: true })} />
-                  </Field>
-                  <Field label="Tuổi tối thiểu">
-                    <Input type="number" min={3} {...form.register("min_child_age", { valueAsNumber: true })} />
-                  </Field>
-                </div>
-
-                <Field label="Hero image">
-                  <Input {...form.register("hero_image", { required: true })} />
-                </Field>
-                {heroImage ? <img className="post-editor-sidebar__thumb" src={heroImage} alt="Service preview" /> : null}
-
-                <Field label="Điểm cất cánh">
-                  <Input {...form.register("launch_site_name")} />
-                </Field>
-                <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Launch lat">
-                    <Input type="number" step="0.0001" {...form.register("launch_lat", { valueAsNumber: true })} />
-                  </Field>
-                  <Field label="Launch lng">
-                    <Input type="number" step="0.0001" {...form.register("launch_lng", { valueAsNumber: true })} />
-                  </Field>
-                </div>
-
-                <Field label="Điểm hạ cánh">
-                  <Input {...form.register("landing_site_name")} />
-                </Field>
-                <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Landing lat">
-                    <Input type="number" step="0.0001" {...form.register("landing_lat", { valueAsNumber: true })} />
-                  </Field>
-                  <Field label="Landing lng">
-                    <Input type="number" step="0.0001" {...form.register("landing_lng", { valueAsNumber: true })} />
-                  </Field>
-                </div>
+                <ImageSourceField
+                  label="Ảnh đại diện"
+                  value={heroImage}
+                  previewAlt="Service preview"
+                  placeholder="https://..."
+                  onChange={setHeroImage}
+                />
+                <input type="hidden" {...form.register("hero_image", { required: true })} />
+                <input type="hidden" {...form.register("launch_site_name")} />
+                <input type="hidden" {...form.register("launch_lat", { valueAsNumber: true })} />
+                <input type="hidden" {...form.register("launch_lng", { valueAsNumber: true })} />
+                <input type="hidden" {...form.register("landing_site_name")} />
+                <input type="hidden" {...form.register("landing_lat", { valueAsNumber: true })} />
+                <input type="hidden" {...form.register("landing_lng", { valueAsNumber: true })} />
 
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("featured")} />
@@ -294,7 +254,9 @@ export const ServiceDetailPage = () => {
                 {deleteMutation.error instanceof Error ? <p className="form-error">{deleteMutation.error.message}</p> : null}
 
                 <div className="post-editor-sidebar__actions">
-                  <Button disabled={saveMutation.isPending}>{saveMutation.isPending ? "Đang lưu..." : "Lưu gói dịch vụ"}</Button>
+                  <Button disabled={saveMutation.isPending}>
+                    {saveMutation.isPending ? "Đang lưu..." : "Lưu gói dịch vụ"}
+                  </Button>
                   {!isNew ? (
                     <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(true)}>
                       Xóa gói dịch vụ

@@ -36,13 +36,7 @@ export const GalleryPage = () => {
   const images = useMemo(() => {
     const allImages = [
       ...staticGalleryImages,
-      ...services.flatMap((service) => [
-        { src: service.hero_image, title: service.name },
-        ...service.gallery_images.map((image, index) => ({
-          src: image,
-          title: `${service.name} ${index + 1}`
-        }))
-      ]),
+      ...services.map((service) => ({ src: service.hero_image, title: service.name })),
       ...posts.map((post) => ({ src: post.cover_image, title: post.title }))
     ];
     const seen = new Set<string>();
