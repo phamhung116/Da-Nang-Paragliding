@@ -182,11 +182,9 @@ export const HomePage = () => {
 
         <section className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 pb-12 md:pb-20">
           <div className="relative aspect-video md:rounded-[40px] overflow-hidden shadow-2xl max-w-5xl mx-auto group">
-            <img 
-              src="https://images.unsplash.com/photo-1596263576925-d90d63691097?auto=format&fit=crop&q=80&w=1920" 
-              alt="Paragliding Video Thumbnail" 
+            <video 
+              src="/media/video/video1.mp4"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-              referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
               <div className="w-14 h-14 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform cursor-pointer">
