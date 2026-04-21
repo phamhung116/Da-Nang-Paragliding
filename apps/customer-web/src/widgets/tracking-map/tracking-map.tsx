@@ -7,15 +7,15 @@ type TrackingMapProps = {
   tracking: Tracking;
 };
 
-const basePoint = { lat: 16.1107, lng: 108.2554, name: "Chua Buu Dai Son" };
-const launchPoint = { lat: 16.1372, lng: 108.281, name: "Dinh Ban Co" };
-const landingPoint = { lat: 16.1107, lng: 108.2554, name: "Bai bien truoc Chua Buu Dai Son" };
-
 type MapPoint = {
   lat: number;
   lng: number;
   name: string;
 };
+
+const basePoint = { lat: 16.1107, lng: 108.2554, name: "Chùa Bửu Đài Sơn" };
+const launchPoint = { lat: 16.1372, lng: 108.281, name: "Đỉnh Bàn Cờ" };
+const landingPoint = { lat: 16.1107, lng: 108.2554, name: "Bãi biển trước Chùa Bửu Đài Sơn" };
 
 const parseMapPoint = (value: Record<string, unknown> | undefined, fallbackName: string): MapPoint | null => {
   const lat = Number(value?.lat);
@@ -33,7 +33,7 @@ const parseMapPoint = (value: Record<string, unknown> | undefined, fallbackName:
 
 const parseTrackedRoutePoints = (tracking: Tracking) =>
   tracking.route_points
-    .map((point) => parseMapPoint(point, "Tracking point"))
+    .map((point) => parseMapPoint(point, "Điểm tracking"))
     .filter((point): point is MapPoint => Boolean(point));
 
 const isSamePoint = (left: MapPoint, right: MapPoint) =>
@@ -129,10 +129,10 @@ const MapViewport = ({ points }: { points: MapPoint[] }) => {
 };
 
 export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
-  const currentLocation = parseMapPoint(tracking.current_location, "Diem hien tai") ?? {
+  const currentLocation = parseMapPoint(tracking.current_location, "Điểm hiện tại") ?? {
     lat: 16.093,
     lng: 108.247,
-    name: "Da Nang"
+    name: "Đà Nẵng"
   };
   const trackedRoutePoints = useMemo(() => parseTrackedRoutePoints(tracking), [tracking]);
   const hasTrackedSession = trackedRoutePoints.length > 0;
@@ -168,10 +168,7 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
   }, [markers, trackedRoutePoints]);
 
   const viewportPoints = useMemo(
-    () =>
-      routePositions
-        .map(([lat, lng]) => ({ lat, lng, name: "Route" }))
-        .concat(markerPoints),
+    () => routePositions.map(([lat, lng]) => ({ lat, lng, name: "Route" })).concat(markerPoints),
     [markerPoints, routePositions]
   );
 

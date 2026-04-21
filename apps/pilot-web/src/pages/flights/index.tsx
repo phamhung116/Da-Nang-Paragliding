@@ -2,12 +2,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Badge, Button, Card, Panel } from "@paragliding/ui";
 import type { PilotFlight, Tracking } from "@paragliding/api-client";
-import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { pilotApi } from "@/shared/config/api";
+import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
-const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING"] as const;
+const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
 const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
@@ -449,10 +449,7 @@ export const FlightsPage = () => {
 
                         <div className="pilot-map-note">
                           <strong>Flight path</strong>
-                          <p>
-                            Chi nhung diem GPS tu luc bat dau chuyen di den khi ket thuc chuyen di moi duoc dua vao
-                            route.
-                          </p>
+                          <p>Chi nhung diem GPS tu luc bat dau chuyen di den khi ket thuc chuyen di moi duoc dua vao route.</p>
                         </div>
                       </div>
                     ) : null}

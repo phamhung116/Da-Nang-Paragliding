@@ -12,7 +12,7 @@ export const HomeHero = () => {
     <section className="relative h-[90vh] flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src="https://picsum.photos/seed/paragliding-hero/1920/1080"
+          src="/media/img/anh1.jpg"
           alt="Paragliding in Da Nang"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
@@ -32,7 +32,7 @@ export const HomeHero = () => {
           <h1 className="text-4xl md:text-7xl font-bold leading-[1.3] md:leading-[1.2] mb-6 md:mb-8 tracking-tight">
             {t("hero_title_line_1")}
             <br />
-            <span className="text-brand-light">{t("hero_title_line_2")}</span>
+            <span className="text-white">{t("hero_title_line_2")}</span>
           </h1>
           <p className="text-sm md:text-lg text-stone-200 mb-8 md:mb-10 leading-relaxed max-w-md md:max-w-none">
             {businessInfo.intro}
@@ -43,8 +43,8 @@ export const HomeHero = () => {
                 {t("hero_services")}
               </Button>
             </Link>
-            <Link to={routes.about}>
-              <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("hero_about")}</Button>
+            <Link to={routes.gallery}>
+              <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("nav_gallery")}</Button>
             </Link>
           </div>
         </motion.div>

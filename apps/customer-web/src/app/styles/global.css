@@ -318,12 +318,15 @@
 
 .mobile-menu-backdrop {
   position: fixed;
-  inset: 0;
+  top: 5rem;
+  right: 0;
+  bottom: 0;
+  left: 0;
   background: rgba(23, 12, 15, 0.42);
   opacity: 0;
   pointer-events: none;
   transition: opacity 180ms ease;
-  z-index: 29;
+  z-index: 55;
 }
 
 .mobile-menu-backdrop.is-open {
@@ -333,20 +336,20 @@
 
 .mobile-menu {
   position: fixed;
-  top: 0;
-  right: 0;
+  top: 5rem;
+  left: 0;
   width: min(380px, calc(100vw - 1.25rem));
-  height: 100vh;
+  height: calc(100vh - 5rem);
   padding: 1.2rem;
   display: grid;
   grid-template-rows: auto 1fr auto;
   gap: 1rem;
   background: #ffffff;
-  border-left: 1px solid var(--line);
-  box-shadow: -20px 0 48px rgba(128, 34, 54, 0.08);
-  transform: translateX(102%);
+  border-right: 1px solid var(--line);
+  box-shadow: 20px 0 48px rgba(128, 34, 54, 0.08);
+  transform: translateX(-102%);
   transition: transform 220ms ease;
-  z-index: 30;
+  z-index: 60;
 }
 
 .mobile-menu.is-open {

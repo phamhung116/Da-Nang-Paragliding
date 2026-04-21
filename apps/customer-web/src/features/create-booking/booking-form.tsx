@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { BookingCreatePayload } from "@paragliding/api-client";
 import { Button, Card, Field, Input, Panel, Textarea } from "@paragliding/ui";
-import { useAuth } from "@/shared/providers/auth-provider";
 import { customerApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
+import { useAuth } from "@/shared/providers/auth-provider";
 
 type BookingFormProps = {
   serviceSlug: string;
