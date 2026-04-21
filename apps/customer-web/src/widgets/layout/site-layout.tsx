@@ -252,7 +252,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   onClick={() => setLocale("vi")}
                   aria-label="Chuyển sang tiếng Việt"
                 >
-                  <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                  <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="h-6 w-10 rounded-sm object-cover shadow-sm" />
                 </button>
                 <button
                   type="button"
@@ -260,7 +260,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   onClick={() => setLocale("en")}
                   aria-label="Switch to English"
                 >
-                  <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
+                  <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="h-6 w-10 rounded-sm object-cover shadow-sm" />
                 </button>
               </div>
 
