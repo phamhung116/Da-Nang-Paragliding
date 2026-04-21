@@ -16,7 +16,6 @@ import {
 } from "react-icons/fa6";
 
 import { 
-  Wind, 
   UserRound,
   Menu, 
   X, 
@@ -128,8 +127,12 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 </button>
 
                 <Link className="flex items-center gap-2 cursor-pointer" to={routes.home}>
-                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white">
-                    <Wind size={24} />
+                  <div className="w-10 h-10 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
+                    <img
+                      src="/media/img/logo.jpg"
+                      alt="Da Nang Paragliding logo"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div>
                     <h1 className="text-xl font-bold tracking-tight text-brand">ĐÀ NẴNG</h1>

@@ -1,6 +1,6 @@
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { businessInfo } from "@/shared/constants/business";
@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 export const HomePage = () => {
+  const showcaseVideoRef = useRef<HTMLVideoElement | null>(null);
   const { data: services = [] } = useQuery({
     queryKey: ["featured-services"],
     queryFn: () => customerApi.listServices()
@@ -43,6 +44,44 @@ export const HomePage = () => {
 
   const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
   const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
+
+  useEffect(() => {
+    const video = showcaseVideoRef.current;
+    if (!video) {
+      return;
+    }
+
+    video.muted = true;
+    video.loop = true;
+    video.playsInline = true;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry) {
+          return;
+        }
+
+        if (entry.isIntersecting) {
+          void video.play().catch(() => {
+            // Autoplay can still be blocked in some low-power browser contexts.
+          });
+          return;
+        }
+
+        video.pause();
+      },
+      {
+        threshold: 0.5
+      }
+    );
+
+    observer.observe(video);
+
+    return () => {
+      observer.disconnect();
+      video.pause();
+    };
+  }, []);
 
   return (
     <SiteLayout>
@@ -182,18 +221,19 @@ export const HomePage = () => {
 
         <section className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 pb-12 md:pb-20">
           <div className="relative aspect-video md:rounded-[40px] overflow-hidden shadow-2xl max-w-5xl mx-auto group">
-            <video 
+            <video
+              ref={showcaseVideoRef}
               src="/media/video/video1.mp4"
+              autoPlay
+              controls
+              loop
+              muted
+              playsInline
+              preload="metadata"
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
             />
-            <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <div className="w-14 h-14 md:w-20 md:h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform cursor-pointer">
-                <div className="w-0 h-0 border-t-[8px] md:border-t-[12px] border-t-transparent border-l-[14px] md:border-l-[20px] border-l-white border-b-[8px] md:border-b-[12px] border-b-transparent ml-1 md:ml-2" />
-              </div>
-            </div>
             <div className="absolute bottom-4 left-4 md:bottom-8 md:left-8 text-white text-left">
               <p className="text-[10px] md:text-xs font-bold uppercase tracking-widest mb-1 md:mb-2 opacity-80">Trải nghiệm thực tế</p>
-              <h3 className="text-lg md:text-2xl font-bold">Hành trình chinh phục đỉnh Sơn Trà</h3>
             </div>
           </div>
         </section>
@@ -205,7 +245,7 @@ export const HomePage = () => {
                 <p className="text-sm md:text-base text-stone-500">Cập nhật những thông tin, kinh nghiệm và câu chuyện thú vị về dù lượn.</p>
               </div>
               <Link to="/posts">
-                <Button className="text-brand font-bold flex items-center gap-2 hover:gap-4 transition-all group">
+                <Button className="font-bold flex items-center gap-2 hover:gap-4 transition-all group">
                   Xem tất cả bài viết
                   <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
                 </Button>
