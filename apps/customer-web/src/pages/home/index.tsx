@@ -57,7 +57,7 @@ export const HomePage = () => {
         <section className="relative py-20 overflow-hidden">
           <div className="absolute inset-0 z-0">
             <img 
-              src="https://images.unsplash.com/photo-1544625344-63189df1e401?auto=format&fit=crop&q=80&w=1920" 
+              src="/media/img/tour-bay-du-luon-tu-do-paragliding-hon-en-nha-trang-1.webp" 
               alt="Paragliding Background" 
               className="w-full h-full object-cover"
               referrerPolicy="no-referrer"
@@ -220,14 +220,14 @@ export const HomePage = () => {
                       <img className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" referrerPolicy="no-referrer"
                         src={post.cover_image} alt={post.title} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"/>
-                      <div className="flex-1 flex flex-col justify-center">
-                        <p className="text-brand font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-1 md:mb-2">
-                          {new Date(post.published_at ?? post.created_at ?? "").toLocaleDateString("vi-VN")}
-                        </p>
-                        <h3 className="text-base md:text-xl font-bold text-stone-900 leading-tight group-hover:text-brand transition-colors line-clamp-2">
-                          {post.title}
-                        </h3>
-                      </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-center">
+                      <p className="text-brand font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-1 md:mb-2">
+                        {new Date(post.published_at ?? post.created_at ?? "").toLocaleDateString("vi-VN")}
+                      </p>
+                      <h3 className="text-base md:text-xl font-bold text-stone-900 leading-tight group-hover:text-brand transition-colors line-clamp-2">
+                        {post.title}
+                      </h3>
                     </div>
                     
                   </article>
@@ -242,12 +242,6 @@ export const HomePage = () => {
                 </Panel>
               </Card>
             )}
-
-            <div className="section-actions">
-              <Link to="/posts">
-                <Button variant="secondary">Xem tất cả bài viết</Button>
-              </Link>
-            </div>
         </section>
 
       </motion.div>
