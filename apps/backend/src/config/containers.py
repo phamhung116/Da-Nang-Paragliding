@@ -42,10 +42,14 @@ from modules.bookings.application.use_cases import (
 from modules.bookings.domain.services import PricingPolicy
 from modules.bookings.infrastructure.persistence.mongo.repositories import MongoBookingRepository
 from modules.catalog.application.use_cases import (
+    CreateServiceFeatureUseCase,
     CreateServicePackageUseCase,
+    DeleteServiceFeatureUseCase,
     DeleteServicePackageUseCase,
     GetServicePackageUseCase,
+    ListServiceFeaturesUseCase,
     ListServicePackagesUseCase,
+    UpdateServiceFeatureUseCase,
     UpdateServicePackageUseCase,
 )
 from modules.catalog.infrastructure.persistence.mongo.repositories import (
@@ -56,7 +60,7 @@ from modules.notifications.infrastructure.persistence.mongo.repositories import 
     MongoNotificationLogRepository,
 )
 from modules.payments.application.use_cases import CompleteOnlinePaymentUseCase
-from modules.payments.infrastructure.gateways import MockPaymentGateway
+from modules.payments.infrastructure.gateways import MockPaymentGateway, PayOsPaymentGateway
 from modules.payments.infrastructure.persistence.mongo.repositories import (
     MongoPaymentTransactionRepository,
 )
@@ -116,6 +120,8 @@ def pricing_policy() -> PricingPolicy:
 
 
 def payment_gateway() -> MockPaymentGateway:
+    if str(settings.PAYMENT_PROVIDER).lower() == "payos":
+        return PayOsPaymentGateway()
     return MockPaymentGateway(provider_name=settings.PAYMENT_PROVIDER)
 
 
@@ -152,6 +158,22 @@ def update_service_package_use_case() -> UpdateServicePackageUseCase:
 
 def delete_service_package_use_case() -> DeleteServicePackageUseCase:
     return DeleteServicePackageUseCase(service_package_repository())
+
+
+def list_service_features_use_case() -> ListServiceFeaturesUseCase:
+    return ListServiceFeaturesUseCase(service_package_repository())
+
+
+def create_service_feature_use_case() -> CreateServiceFeatureUseCase:
+    return CreateServiceFeatureUseCase(service_package_repository())
+
+
+def update_service_feature_use_case() -> UpdateServiceFeatureUseCase:
+    return UpdateServiceFeatureUseCase(service_package_repository())
+
+
+def delete_service_feature_use_case() -> DeleteServiceFeatureUseCase:
+    return DeleteServiceFeatureUseCase(service_package_repository())
 
 
 def list_posts_use_case() -> ListPostsUseCase:

@@ -7,9 +7,9 @@ export const routes = {
   account: "/account",
   accountBookingDetail: "/account/bookings/:code",
   posts: "/posts",
+  gallery: "/gallery",
   services: "/services",
   booking: "/booking",
   checkout: "/checkout",
-  tracking: "/tracking",
-  contact: "/contact",
+  tracking: "/tracking"
 };

@@ -4,7 +4,7 @@ from decimal import Decimal
 
 from rest_framework import serializers
 
-from modules.catalog.application.dto import ServicePackagePayload
+from modules.catalog.application.dto import ServiceFeaturePayload, ServicePackagePayload
 
 
 class ServicePackageReadSerializer(serializers.Serializer):
@@ -74,5 +74,28 @@ class ServicePackageWriteSerializer(serializers.Serializer):
             landing_lat=data["landing_lat"],
             landing_lng=data["landing_lng"],
             featured=data.get("featured", False),
+            active=data.get("active", True),
+        )
+
+
+class ServiceFeatureReadSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    active = serializers.BooleanField()
+    created_at = serializers.DateTimeField(allow_null=True)
+    updated_at = serializers.DateTimeField(allow_null=True)
+
+
+class ServiceFeatureWriteSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=120)
+    description = serializers.CharField(max_length=255, allow_blank=True, required=False)
+    active = serializers.BooleanField(default=True)
+
+    def to_payload(self) -> ServiceFeaturePayload:
+        data = self.validated_data
+        return ServiceFeaturePayload(
+            name=data["name"].strip(),
+            description=str(data.get("description") or "").strip(),
             active=data.get("active", True),
         )

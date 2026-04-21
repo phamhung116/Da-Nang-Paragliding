@@ -640,6 +640,49 @@ body {
   align-items: start;
 }
 
+.service-editor-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 360px;
+  gap: 1.1rem;
+  align-items: start;
+}
+
+.feature-picker {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.feature-option {
+  display: flex;
+  gap: 0.7rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(126, 17, 43, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  cursor: pointer;
+}
+
+.feature-option.is-selected {
+  border-color: rgba(201, 24, 66, 0.38);
+  background: rgba(255, 240, 244, 0.8);
+}
+
+.feature-option input {
+  margin-top: 0.2rem;
+  accent-color: var(--accent);
+}
+
+.feature-option span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.feature-option small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .rich-text-editor {
   min-width: 0;
   border: 1px solid rgba(126, 17, 43, 0.14);
@@ -773,8 +816,9 @@ body {
   .inline-field-grid--two,
   .inline-field-grid--three,
   .booking-detail-grid,
-  .post-editor-layout,
-  .detail-list > div {
+    .post-editor-layout,
+    .service-editor-layout,
+    .detail-list > div {
     grid-template-columns: 1fr;
   }
 
@@ -822,6 +866,10 @@ body {
 
   .portal-content {
     padding-bottom: 1.5rem;
+  }
+
+  .feature-picker {
+    grid-template-columns: 1fr;
   }
 
   .data-table th,

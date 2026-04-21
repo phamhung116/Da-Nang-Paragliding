@@ -47,10 +47,10 @@ export const CheckoutPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Chua co booking</Badge>
-            <p>Hay tao booking truoc khi vao trang thanh toan.</p>
+            <Badge tone="danger">Chưa có booking</Badge>
+            <p>Hãy tạo booking trước khi vào trang thanh toán.</p>
             <Link to="/services">
-              <Button variant="secondary">Chon goi dich vu</Button>
+              <Button variant="secondary">Chọn gói dịch vụ</Button>
             </Link>
           </Container>
         </section>
@@ -110,6 +110,16 @@ export const CheckoutPage = () => {
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
+                    <span>Di chuyen</span>
+                    <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Tu den"}</strong>
+                  </div>
+                  {booking.pickup_option === "pickup" ? (
+                    <div className="booking-summary-card__fact">
+                      <span>Dia chi don</span>
+                      <strong>{booking.pickup_address ?? "Đang cập nhật"}</strong>
+                    </div>
+                  ) : null}
+                  <div className="booking-summary-card__fact">
                     <span>Trang thai</span>
                     <strong>{booking.approval_status}</strong>
                   </div>
@@ -121,8 +131,8 @@ export const CheckoutPage = () => {
               <Panel className="stack">
                 <Badge>Dat coc bang QR</Badge>
                     <p className="detail-copy">
-                      Dat coc {paymentSession?.deposit_percentage}% de xac nhan booking. Sau khi thanh toan
-                      thanh cong, booking se duoc confirm va email xac nhan se duoc gui cho khach.
+                      Thanh toan so tien tra truoc qua cong thanh toan. Sau khi nha cung cap tra ve trang thai
+                      PAID, booking se duoc confirm va email xac nhan se duoc gui cho khach.
                     </p>
                     <div className="checkout-qr">
                       <img src={paymentSession?.qr_code_url} alt={`QR ${booking.code}`} />
@@ -143,9 +153,14 @@ export const CheckoutPage = () => {
                     </div>
                     {transaction ? (
                       <div className="booking-summary-card__fact">
-                        <span>Giao dich</span>
+                        <span>Giao dịch</span>
                         <strong>{transaction.provider_reference}</strong>
                       </div>
+                    ) : null}
+                    {paymentSession?.payment_url ? (
+                      <a href={paymentSession.payment_url} target="_blank" rel="noreferrer">
+                        <Button>Mo cong thanh toan</Button>
+                      </a>
                     ) : null}
                     <Button
                       onClick={() => paymentMutation.mutate(booking.code)}
@@ -158,9 +173,15 @@ export const CheckoutPage = () => {
                         : isExpired
                           ? "QR da het han"
                         : paymentMutation.isPending
-                            ? "Dang xu ly..."
-                            : "Gia lap thanh toan thanh cong"}
+                            ? "Đang xử lý..."
+                            : "Kiem tra trang thai thanh toan"}
                     </Button>
+                    {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
+                      <p className="calendar-selection-note">
+                        Hệ thống chưa nhận được trạng thái PAID từ cổng thanh toán. Hãy kiểm tra lại sau khi
+                        thanh toán xong.
+                      </p>
+                    ) : null}
                 <Link to="/tracking">
                   <Button variant="secondary">Theo doi hanh trinh bay</Button>
                 </Link>

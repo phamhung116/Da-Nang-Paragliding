@@ -6,6 +6,7 @@ import { routes } from "@/shared/config/routes";
 
 const navItems = [
   { to: routes.bookings, label: "Bookings" },
+  { to: routes.services, label: "Services" },
   { to: routes.accounts, label: "Accounts" },
   { to: routes.posts, label: "Posts" }
 ];
@@ -23,9 +24,9 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
     <div className="portal-shell portal-shell--admin">
       <aside className="portal-sidebar">
         <div className="portal-sidebar__brandmark">
-          <span className="portal-sidebar__icon">SN</span>
+          <span className="portal-sidebar__icon">DP</span>
           <div className="portal-sidebar__brand">
-            <span>SkyNest</span>
+            <span>Da Nang Paragliding</span>
             <small>Admin workspace</small>
           </div>
         </div>
@@ -48,7 +49,7 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
         <header className="portal-topbar">
           <Container className="portal-topbar__inner">
             <div>
-              <strong>SkyNest Control Room</strong>
+              <strong>Da Nang Paragliding Control Room</strong>
               <p>Bookings are approval records. Flight progress is updated from the pilot workspace.</p>
             </div>
             <div className="admin-topbar-actions">

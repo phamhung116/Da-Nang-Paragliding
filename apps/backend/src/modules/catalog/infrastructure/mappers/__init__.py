@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from modules.catalog.application.dto import ServicePackagePayload
-from modules.catalog.domain.entities import ServicePackage
+from modules.catalog.application.dto import ServiceFeaturePayload, ServicePackagePayload
+from modules.catalog.domain.entities import ServiceFeature, ServicePackage
 
 
 def to_domain(document) -> ServicePackage:
@@ -51,5 +51,24 @@ def to_document_defaults(payload: ServicePackagePayload) -> dict[str, object]:
         "landing_lat": payload.landing_lat,
         "landing_lng": payload.landing_lng,
         "featured": payload.featured,
+        "active": payload.active,
+    }
+
+
+def to_feature_domain(document) -> ServiceFeature:
+    return ServiceFeature(
+        id=str(document.id),
+        name=document.name,
+        description=document.description,
+        active=document.active,
+        created_at=document.created_at,
+        updated_at=document.updated_at,
+    )
+
+
+def to_feature_document_defaults(payload: ServiceFeaturePayload) -> dict[str, object]:
+    return {
+        "name": payload.name,
+        "description": payload.description,
         "active": payload.active,
     }

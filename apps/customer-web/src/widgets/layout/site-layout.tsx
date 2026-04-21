@@ -71,6 +71,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     { to: routes.home, label: t("nav_home") },
     { to: routes.services, label: t("nav_services") },
     { to: routes.posts, label: t("nav_posts") },
+    { to: routes.gallery, label: t("nav_gallery") },
     { to: routes.tracking, label: t("nav_tracking") },
     { to: routes.about, label: t("nav_about") },
     { to: routes.contact, label: t("nav_contact") }
@@ -103,7 +104,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
   const avatarLabel = useMemo(() => {
     const fullName = account?.full_name?.trim();
     if (!fullName) {
-      return "SN";
+      return "DP";
     }
 
     return fullName
@@ -214,7 +215,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
           <aside className={`mobile-menu ${mobileMenuOpen ? "is-open" : ""}`}>
             <div className="mobile-menu__header">
               <div className="site-brand">
-                <span className="site-brand__icon">SN</span>
+                <span className="site-brand__icon">DP</span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
                   <small>Đà Nẵng Paragliding</small>

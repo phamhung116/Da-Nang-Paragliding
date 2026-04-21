@@ -185,7 +185,7 @@ class StartCustomerEmailAuthUseCase:
         if account is None:
             account = self.account_repository.create(
                 AccountPayload(
-                    full_name=email.split("@")[0].replace(".", " ").title() or "SkyNest Customer",
+                    full_name=email.split("@")[0].replace(".", " ").title() or "Da Nang Paragliding Customer",
                     email=email,
                     phone=self._placeholder_phone(email),
                     role=ROLE_CUSTOMER,
@@ -318,10 +318,12 @@ class ChangeMyPasswordUseCase:
             raise NotFoundError("Khong tim thay tai khoan.")
         if not self.account_repository.verify_password(account.id or "", request.current_password):
             raise ValidationError("Mat khau hien tai khong dung.")
-        return self.account_repository.update(
+        updated_account = self.account_repository.update(
             account,
             password_hash=self.password_hasher.hash(request.new_password),
         )
+        self.account_repository.revoke_account_sessions(account.id or "")
+        return updated_account
 
 
 class ListMyBookingsUseCase:
@@ -361,6 +363,8 @@ class CreateManagedAccountUseCase:
     def execute(self, request: ManagedAccountRequest) -> Account:
         if request.role not in MANAGEABLE_ROLES:
             raise ValidationError("Admin chi duoc tao Pilot hoac Admin.")
+        if not request.password:
+            raise ValidationError("Mat khau la bat buoc khi tao tai khoan admin hoac pilot.")
         email = _normalize_email(request.email)
         phone = normalize_phone(request.phone)
         _ensure_unique_account(self.account_repository, email=email, phone=phone)
@@ -375,7 +379,7 @@ class CreateManagedAccountUseCase:
                 is_active=True,
                 email_verified=True,
             ),
-            password_hash=self.password_hasher.hash(request.password or "ChangeMe123!"),
+            password_hash=self.password_hasher.hash(request.password),
         )
 
 
@@ -404,15 +408,21 @@ class UpdateManagedAccountUseCase:
             exclude_id=account.id,
         )
 
+        email_changed = account.email != email
+        password_changed = bool(request.password)
+
         account.full_name = request.full_name.strip()
         account.email = email
         account.phone = phone
         account.role = request.role
         account.preferred_language = request.preferred_language
-        return self.account_repository.update(
+        updated_account = self.account_repository.update(
             account,
             password_hash=self.password_hasher.hash(request.password) if request.password else None,
         )
+        if email_changed or password_changed:
+            self.account_repository.revoke_account_sessions(account.id or "")
+        return updated_account
 
 
 class DisableAccountUseCase:

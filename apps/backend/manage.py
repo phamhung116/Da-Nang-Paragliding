@@ -7,6 +7,13 @@ import sys
 from pathlib import Path
 
 
+def default_settings_module() -> str:
+    django_env = os.getenv("DJANGO_ENV", "").strip().lower()
+    if django_env == "production" or os.getenv("VERCEL"):
+        return "config.settings.production"
+    return "config.settings.local"
+
+
 def main() -> None:
     project_root = Path(__file__).resolve().parent
     source_root = project_root / "src"
@@ -14,7 +21,7 @@ def main() -> None:
     if str(source_root) not in sys.path:
         sys.path.insert(0, str(source_root))
 
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings.local")
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", default_settings_module())
 
     try:
         from django.core.management import execute_from_command_line

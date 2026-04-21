@@ -34,3 +34,19 @@ class ServicePackageDocument(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class ServiceFeatureDocument(models.Model):
+    id = ObjectIdAutoField(primary_key=True)
+    name = models.CharField(max_length=120, unique=True)
+    description = models.CharField(max_length=255, blank=True)
+    active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "service_features"
+        ordering = ["name"]
+
+    def __str__(self) -> str:
+        return self.name

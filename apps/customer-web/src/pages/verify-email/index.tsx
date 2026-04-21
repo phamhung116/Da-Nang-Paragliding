@@ -29,8 +29,8 @@ export const VerifyEmailPage = () => {
     : mutation.isSuccess
       ? "Email da duoc xac thuc"
       : mutation.isError
-        ? "Khong the xac thuc email"
-        : "Dang xac thuc email";
+        ? "Không thể xác thực email"
+        : "Đang xác thực email";
 
   return (
     <div className="auth-screen">
@@ -41,7 +41,7 @@ export const VerifyEmailPage = () => {
           <Link to={routes.home} className="auth-screen__brand">
             <span className="auth-screen__brand-icon">SN</span>
             <span className="auth-screen__brand-copy">
-              <strong>SkyNest</strong>
+              <strong>Da Nang Paragliding</strong>
               <small>Da Nang Paragliding</small>
             </span>
           </Link>
@@ -53,7 +53,7 @@ export const VerifyEmailPage = () => {
               <span className="auth-email-sent__icon">{mutation.isSuccess ? "OK" : "SN"}</span>
               <h1>{title}</h1>
               {!token ? (
-                <p>Token xac thuc bi thieu. Hay mo dung link moi nhat trong email SkyNest.</p>
+                <p>Token xác thực bị thiếu. Hãy mở đúng link mới nhất trong email Da Nang Paragliding.</p>
               ) : mutation.isSuccess ? (
                 <p>Tai khoan cua ban da san sang. He thong se chuyen ve trang chu trong giay lat.</p>
               ) : mutation.isError ? (
@@ -63,7 +63,7 @@ export const VerifyEmailPage = () => {
               )}
 
               <div className="auth-luxe-meta">
-                <Link to={routes.login}>Dang nhap</Link>
+                <Link to={routes.login}>Đăng nhập</Link>
                 <Link to={routes.home}>Ve trang chu</Link>
               </div>
 

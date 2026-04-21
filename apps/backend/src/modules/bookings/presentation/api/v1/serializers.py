@@ -27,9 +27,14 @@ class BookingReadSerializer(serializers.Serializer):
     adults = serializers.IntegerField()
     children = serializers.IntegerField()
     notes = serializers.CharField(allow_null=True, allow_blank=True)
+    pickup_option = serializers.CharField()
+    pickup_address = serializers.CharField(allow_null=True, allow_blank=True)
+    pickup_fee = serializers.DecimalField(max_digits=10, decimal_places=2)
     unit_price = serializers.DecimalField(max_digits=10, decimal_places=2)
     original_total = serializers.DecimalField(max_digits=10, decimal_places=2)
     final_total = serializers.DecimalField(max_digits=10, decimal_places=2)
+    deposit_amount = serializers.DecimalField(max_digits=10, decimal_places=2)
+    deposit_percentage = serializers.IntegerField()
     payment_method = serializers.CharField()
     payment_status = serializers.CharField()
     approval_status = serializers.CharField()
@@ -52,6 +57,8 @@ class BookingCreateSerializer(serializers.Serializer):
     children = serializers.IntegerField(min_value=0)
     notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     payment_method = serializers.ChoiceField(choices=["wallet", "gateway", "bank_transfer"])
+    pickup_option = serializers.ChoiceField(choices=["self", "pickup"], required=False, default="self")
+    pickup_address = serializers.CharField(max_length=500, required=False, allow_blank=True, allow_null=True)
 
     def validate_flight_date(self, value: date) -> date:
         if value < date.today():
@@ -62,6 +69,8 @@ class BookingCreateSerializer(serializers.Serializer):
         if attrs["adults"] + attrs["children"] <= 0:
             raise serializers.ValidationError("Phai co it nhat 1 khach tham gia.")
         attrs["phone"] = normalize_phone(attrs.get("phone", ""))
+        if attrs.get("pickup_option") == "pickup" and not str(attrs.get("pickup_address") or "").strip():
+            raise serializers.ValidationError("Nhap dia chi don neu chon xe den don.")
         return attrs
 
     def to_request(self) -> BookingCreateRequest:
@@ -77,6 +86,8 @@ class BookingCreateSerializer(serializers.Serializer):
             children=data["children"],
             notes=data.get("notes"),
             payment_method=data["payment_method"],
+            pickup_option=data.get("pickup_option", "self"),
+            pickup_address=data.get("pickup_address"),
         )
 
 

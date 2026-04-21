@@ -13,7 +13,8 @@ import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
 type LookupForm = { query: string };
 
-const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
@@ -74,7 +75,7 @@ export const TrackingPage = () => {
                   <Field label="Email hoac so dien thoai">
                     <Input {...register("query", { required: true })} />
                   </Field>
-                  <Button>{mutation.isPending ? "Dang tra cuu..." : "Tra cuu booking"}</Button>
+                  <Button>{mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}</Button>
                 </form>
               </Panel>
             </Card>
@@ -93,7 +94,7 @@ export const TrackingPage = () => {
                     </div>
                     <div className="tracking-contact-actions">
                       <a href={`mailto:${result.booking.email}`}>Email khach</a>
-                      <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Lien he doanh nghiep</a>
+                      <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Liên hệ doanh nghiệp</a>
                     </div>
                   </div>
 
@@ -119,7 +120,7 @@ export const TrackingPage = () => {
                         <p>
                           Lich bay: {result.booking.flight_date} luc {result.booking.flight_time}
                         </p>
-                        <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Dang cap nhat"}</p>
+                        <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Đang cập nhật"}</p>
                       </Panel>
                     </Card>
 
@@ -140,12 +141,21 @@ export const TrackingPage = () => {
                 </Panel>
               </Card>
 
-              <Card>
-                <Panel className="stack">
-                  <strong>Ban do GPS</strong>
-                  <TrackingMap tracking={result.tracking} />
-                </Panel>
-              </Card>
+              {mapVisibleStatuses.has(result.booking.flight_status) ? (
+                <Card>
+                  <Panel className="stack">
+                    <strong>Ban do GPS</strong>
+                    <TrackingMap booking={result.booking} tracking={result.tracking} />
+                  </Panel>
+                </Card>
+              ) : (
+                <Card>
+                  <Panel className="stack-sm">
+                    <strong>Ban do se hien thi khi hanh trinh bat dau.</strong>
+                    <p>Hien tai booking van dang cho xac nhan hoac cho toi gio khoi hanh.</p>
+                  </Panel>
+                </Card>
+              )}
             </>
           ) : (
             <Card className="empty-state-card">

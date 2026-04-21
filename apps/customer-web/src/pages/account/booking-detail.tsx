@@ -152,11 +152,11 @@ export const AccountBookingDetailPage = () => {
                   </div>
                   <div>
                     <span>Ghi chu</span>
-                    <strong>{booking.notes || "Khong co ghi chu"}</strong>
+                    <strong>{booking.notes || "Không có ghi chú"}</strong>
                   </div>
                   <div>
                     <span>Pilot phu trach</span>
-                    <strong>{booking.assigned_pilot_name ?? "Dang cap nhat"}</strong>
+                    <strong>{booking.assigned_pilot_name ?? "Đang cập nhật"}</strong>
                   </div>
                   <div>
                     <span>Tong gia tri tour</span>
@@ -171,14 +171,14 @@ export const AccountBookingDetailPage = () => {
                 ) : (
                   <div className="booking-decision-card booking-decision-card--danger">
                     <strong>Ly do huy</strong>
-                    <p>{booking.rejection_reason ?? "Khong co ly do"}</p>
+                    <p>{booking.rejection_reason ?? "Không có lý do"}</p>
                   </div>
                 )}
               </Panel>
             </Card>
           ) : (
             <Card>
-              <Panel>Dang tai booking hoac booking khong ton tai trong tai khoan nay.</Panel>
+              <Panel>Đang tải booking hoặc booking không tồn tại trong tài khoản này.</Panel>
             </Card>
           )}
 
@@ -208,7 +208,7 @@ export const AccountBookingDetailPage = () => {
                   }
                   onClick={cancelBooking}
                 >
-                  {cancelMutation.isPending ? "Dang huy..." : "Huy booking"}
+                  {cancelMutation.isPending ? "Đang hủy..." : "Hủy booking"}
                 </Button>
               </>
             }

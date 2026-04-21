@@ -20,12 +20,15 @@ from modules.tracking.presentation.api.v1.serializers import (
 from shared.auth import BearerTokenAuthentication, IsAdminAccount, IsPilotAccount
 from shared.exceptions import DomainError
 from shared.responses import error, success
+from shared.throttling import AccountScopedRateThrottle
 from shared.utils import serialize_entity
 
 
 class PublicTrackingLookupApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "lookup"
 
     def get(self, request):
         phone = (

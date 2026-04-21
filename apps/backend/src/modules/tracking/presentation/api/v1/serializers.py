@@ -18,7 +18,9 @@ class FlightTrackingSerializer(serializers.Serializer):
 
 
 class FlightStatusUpdateSerializer(serializers.Serializer):
-    status = serializers.ChoiceField(choices=["WAITING_CONFIRMATION", "WAITING", "EN_ROUTE", "FLYING", "LANDED"])
+    status = serializers.ChoiceField(
+        choices=["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]
+    )
 
 
 class LiveTrackingPointSerializer(serializers.Serializer):

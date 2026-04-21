@@ -8,7 +8,7 @@ from modules.availability.domain.value_objects import AvailabilitySlot
 from modules.bookings.domain.repositories import BookingRepository
 from modules.catalog.domain.repositories import ServicePackageRepository
 from shared.exceptions import NotFoundError
-from shared.utils import daterange, fetch_weatherapi_forecast, month_bounds
+from shared.utils import BAD_FLIGHT_CONDITION, daterange, fetch_weatherapi_forecast, month_bounds
 
 SLOT_TIMES = ["06:30", "08:00", "09:30", "11:00", "13:30", "15:30"]
 
@@ -108,7 +108,7 @@ class GetMonthlyAvailabilityUseCase:
                     time=slot.time,
                     capacity=slot.capacity,
                     booked=slot.booked,
-                    is_locked=slot.is_locked or slot_weather["flight_condition"] == "Thoi tiet xau",
+                    is_locked=slot.is_locked or slot_weather["flight_condition"] == BAD_FLIGHT_CONDITION,
                     temperature_c=slot_weather["temperature_c"],
                     wind_kph=slot_weather["wind_kph"],
                     uv_index=slot_weather["uv_index"],

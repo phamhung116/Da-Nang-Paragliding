@@ -29,3 +29,13 @@ class ServicePackage:
     active: bool
     created_at: datetime | None = None
     updated_at: datetime | None = None
+
+
+@dataclass(slots=True)
+class ServiceFeature:
+    id: str | None
+    name: str
+    description: str
+    active: bool
+    created_at: datetime | None = None
+    updated_at: datetime | None = None

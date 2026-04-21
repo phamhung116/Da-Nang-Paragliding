@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import type { ServicePackage } from "@paragliding/api-client";
-import { Badge, Button, Card, Panel } from "@paragliding/ui";
+import { Button, Card, Panel } from "@paragliding/ui";
 import { formatCurrency } from "@/shared/lib/format";
 
 type ServiceCardProps = {
@@ -17,14 +17,24 @@ export const ServiceCard = ({ item }: ServiceCardProps) => (
       <h3>{item.name}</h3>
       <p>{item.short_description}</p>
 
+      {item.included_services.length > 0 ? (
+        <div className="package-card__feature-list">
+          {item.included_services.slice(0, 5).map((feature) => (
+            <span key={feature}>{feature}</span>
+          ))}
+        </div>
+      ) : null}
+
       <div className="package-card__footer">
         <div className="package-card__price">
           <small>Giá từ</small>
           <strong>{formatCurrency(item.price)}</strong>
         </div>
-        <Link to={`/services/${item.slug}`}>
-          <Button variant="secondary">Xem chi tiết</Button>
-        </Link>
+        <div className="package-card__actions">
+          <Link to={`/services/${item.slug}`}>
+            <Button variant="secondary">Xem chi tiết</Button>
+          </Link>
+        </div>
       </div>
     </Panel>
   </Card>

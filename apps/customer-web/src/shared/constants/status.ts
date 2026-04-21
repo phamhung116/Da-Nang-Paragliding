@@ -1,6 +1,7 @@
 export const flightStatusLabels: Record<string, string> = {
   WAITING_CONFIRMATION: "Cho xac nhan",
   WAITING: "Dang cho",
+  PICKING_UP: "Dang di chuyen den diem don",
   EN_ROUTE: "Dang di chuyen den diem bay",
   FLYING: "Dang bay",
   LANDED: "Da ha canh"

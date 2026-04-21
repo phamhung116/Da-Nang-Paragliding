@@ -38,12 +38,15 @@ from modules.bookings.presentation.api.v1.serializers import BookingReadSerializ
 from shared.auth import BearerTokenAuthentication, IsAdminAccount, IsAuthenticatedAccount
 from shared.exceptions import DomainError
 from shared.responses import error, success
+from shared.throttling import AccountScopedRateThrottle
 from shared.utils import serialize_entity
 
 
 class RegisterAccountApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = RegisterAccountSerializer(data=request.data)
@@ -65,6 +68,8 @@ class RegisterAccountApi(APIView):
 class VerifyEmailApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = VerifyEmailSerializer(data=request.data)
@@ -84,6 +89,8 @@ class VerifyEmailApi(APIView):
 class ResendVerificationEmailApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = ResendVerificationEmailSerializer(data=request.data)
@@ -103,6 +110,8 @@ class ResendVerificationEmailApi(APIView):
 class StartEmailAuthApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = EmailAuthStartSerializer(data=request.data)
@@ -123,6 +132,8 @@ class StartEmailAuthApi(APIView):
 class ClaimEmailAuthApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = EmailAuthClaimSerializer(data=request.data)
@@ -145,6 +156,8 @@ class ClaimEmailAuthApi(APIView):
 class LoginApi(APIView):
     authentication_classes: list = []
     permission_classes: list = []
+    throttle_classes = [AccountScopedRateThrottle]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

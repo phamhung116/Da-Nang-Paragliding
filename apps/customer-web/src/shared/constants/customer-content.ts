@@ -1,114 +1,114 @@
 export const customerExperienceSteps = [
   {
-    title: "1. Chon goi bay",
-    description: "Xem thong tin dich vu, gia, dieu kien tham gia va cac dich vu di kem truoc khi dat."
+    title: "1. Chọn gói bay",
+    description: "Xem thông tin dịch vụ, giá, điều kiện tham gia và các dịch vụ đi kèm trước khi đặt."
   },
   {
-    title: "2. Chon ngay va khung gio",
-    description: "Lich booking hien slot con trong, slot da day va weather snapshot theo tung gio bay."
+    title: "2. Chọn ngày và khung giờ",
+    description: "Lịch booking hiển thị slot còn trống, slot đã đầy và snapshot thời tiết theo từng giờ bay."
   },
   {
-    title: "3. Dang nhap va xac nhan",
-    description: "He thong tu dong dien thong tin tai khoan, luu lich su booking va ghi nhan yeu cau."
+    title: "3. Đăng nhập và xác nhận",
+    description: "Hệ thống tự động điền thông tin tài khoản, lưu lịch sử booking và ghi nhận yêu cầu."
   },
   {
-    title: "4. Thanh toan va theo doi",
-    description: "Nhan ma booking, QR dat coc va theo doi trang thai chuyen bay sau khi xac nhan."
+    title: "4. Thanh toán và theo dõi",
+    description: "Nhận mã booking, QR đặt cọc và theo dõi trạng thái chuyến bay sau khi xác nhận."
   }
 ];
 
 export const customerFaqs = [
   {
-    question: "Tre em co the tham gia khong?",
-    answer: "Tre em duoc tham gia khi dat do tuoi toi thieu cua goi bay va co nguoi giam ho di cung."
+    question: "Trẻ em có thể tham gia không?",
+    answer: "Trẻ em được tham gia khi đạt độ tuổi tối thiểu của gói bay và có người giám hộ đi cùng."
   },
   {
-    question: "Neu weather xau thi sao?",
-    answer: "Booking se duoc doi lich sang khung gio an toan hon hoac ho tro xu ly theo chinh sach hoan huy."
+    question: "Nếu thời tiết xấu thì sao?",
+    answer: "Booking sẽ được đổi lịch sang khung giờ an toàn hơn hoặc hỗ trợ xử lý theo chính sách hoàn hủy."
   },
   {
-    question: "Toi co can thanh toan du 100 phan tram khong?",
-    answer: "He thong co luong dat coc online. So tien con lai co the thanh toan tai diem bay neu goi cho phep."
+    question: "Tôi có cần thanh toán đủ 100 phần trăm không?",
+    answer: "Hệ thống có luồng đặt cọc online. Số tiền còn lại có thể thanh toán tại điểm bay nếu gói cho phép."
   }
 ];
 
 export const servicePageNotes = [
-  "Tat ca goi bay hien thi cho customer side la cac goi dang active.",
-  "Anh, gia va CTA duoc dong bo de card khong bi lech bo cuc tren mobile.",
-  "Khach co the click vao tung goi de xem lich va weather theo gio."
+  "Tất cả gói bay hiển thị cho khách hàng là các gói đang hoạt động.",
+  "Ảnh, giá và CTA được đồng bộ để card không bị lệch bố cục trên mobile.",
+  "Khách có thể click vào từng gói để xem lịch và thời tiết theo giờ."
 ];
 
 export const servicePreparationChecklist = [
-  "Mac trang phuc gon gang, giay the thao va tranh mang vat dung de roi.",
-  "Den diem tap ket som 20 den 30 phut de brief an toan va can doi thiet bi.",
-  "Thong bao truoc neu ban co tien su say xe, benh tien dinh hoac van de tim mach."
+  "Mặc trang phục gọn gàng, giày thể thao và tránh mang vật dụng dễ rơi.",
+  "Đến điểm tập kết sớm 20 đến 30 phút để brief an toàn và cân đối thiết bị.",
+  "Thông báo trước nếu bạn có tiền sử say xe, bệnh tiền đình hoặc vấn đề tim mạch."
 ];
 
 export const aboutOperationalHighlights = [
-  "Pilot co chung chi va duoc admin gan theo booking da xac nhan.",
-  "Nhan su dieu phoi cap nhat slot full, weather va flight status theo ngay.",
-  "Khach nhan ma booking ro rang, email xac nhan va kenh lien he truc tiep."
+  "Pilot có chứng chỉ và được admin gán theo booking đã xác nhận.",
+  "Nhân sự điều phối cập nhật slot đầy, thời tiết và trạng thái chuyến bay theo ngày.",
+  "Khách nhận mã booking rõ ràng, email xác nhận và kênh liên hệ trực tiếp."
 ];
 
 export const loginBenefits = [
-  "Tu dong dien email, so dien thoai va ho ten vao form booking.",
-  "Xem lich su booking, trang thai thanh toan va hanh trinh bay.",
-  "Nhan email xac nhan, doi lich nhanh va luu lai lich su tra cuu."
+  "Tự động điền email, số điện thoại và họ tên vào form booking.",
+  "Xem lịch sử booking, trạng thái thanh toán và hành trình bay.",
+  "Nhận email xác nhận, đổi lịch nhanh và lưu lại lịch sử tra cứu."
 ];
 
 export const authTrustStats = [
   {
     value: "24/7",
-    label: "Tra cuu booking, thanh toan va tracking tren cung mot tai khoan."
+    label: "Tra cứu booking, thanh toán và tracking trên cùng một tài khoản."
   },
   {
     value: "3 roles",
-    label: "Customer, pilot va admin dong bo du lieu tren cung he thong van hanh."
+    label: "Khách hàng, pilot và admin đồng bộ dữ liệu trên cùng hệ thống vận hành."
   },
   {
     value: "7 days",
-    label: "Weather forecast va slot plan duoc cap nhat de khach chon lich hop ly."
+    label: "Dự báo thời tiết và kế hoạch slot được cập nhật để khách chọn lịch hợp lý."
   }
 ];
 
 export const authJourneyHighlights = [
-  "Tao tai khoan mot lan de dat lich nhanh hon cho cac lan bay sau.",
-  "Luu lich su booking, QR dat coc va trang thai chuyen bay theo tung ma code.",
-  "Nhan email xac nhan va truy cap lai tracking ngay ca khi roi khoi website."
+  "Tạo tài khoản một lần để đặt lịch nhanh hơn cho các lần bay sau.",
+  "Lưu lịch sử booking, QR đặt cọc và trạng thái chuyến bay theo từng mã code.",
+  "Nhận email xác nhận và truy cập lại tracking ngay cả khi rời khỏi website."
 ];
 
 export const authPasswordRules = [
-  "It nhat 8 ky tu.",
-  "Co chu hoa, chu thuong va so.",
-  "Co it nhat 1 ky tu dac biet."
+  "Ít nhất 8 ký tự.",
+  "Có chữ hoa, chữ thường và số.",
+  "Có ít nhất 1 ký tự đặc biệt."
 ];
 
 export const authSupportNotes = [
-  "Email va so dien thoai la duy nhat cho moi tai khoan.",
-  "Dang ky xong se duoc dang nhap ngay de tiep tuc dat lich.",
-  "Neu backend hoac database mat ket noi, form se hien thi loi cu the thay vi thong bao chung chung."
+  "Email và số điện thoại là duy nhất cho mỗi tài khoản.",
+  "Đăng ký xong sẽ được đăng nhập ngay để tiếp tục đặt lịch.",
+  "Nếu backend hoặc database mất kết nối, form sẽ hiển thị lỗi cụ thể thay vì thông báo chung chung."
 ];
 
 export const accountSupportNotes = [
-  "Cap nhat dung so dien thoai de doanh nghiep lien he nhanh khi can doi lich.",
-  "Moi booking se luu ma code, trang thai thanh toan va tinh trang chuyen bay.",
-  "Neu can ho tro gap, khach co the goi truc tiep trong khung gio support."
+  "Cập nhật đúng số điện thoại để doanh nghiệp liên hệ nhanh khi cần đổi lịch.",
+  "Mỗi booking sẽ lưu mã code, trạng thái thanh toán và tình trạng chuyến bay.",
+  "Nếu cần hỗ trợ gấp, khách có thể gọi trực tiếp trong khung giờ support."
 ];
 
 export const bookingRules = [
-  "Khong the dat vao ngay day hoac slot da full.",
-  "So tre em phai phu hop do tuoi toi thieu cua goi bay.",
-  "Sau khi gui booking, slot se duoc giu theo logic thanh toan cua he thong."
+  "Không thể đặt vào ngày đầy hoặc slot đã full.",
+  "Số trẻ em phải phù hợp độ tuổi tối thiểu của gói bay.",
+  "Sau khi gửi booking, slot sẽ được giữ theo logic thanh toán của hệ thống."
 ];
 
 export const checkoutGuidelines = [
-  "Booking online se hien thi QR va noi dung chuyen khoan theo ma booking.",
-  "Thanh toan thanh cong se chuyen booking sang confirmed.",
-  "Neu QR het han, khach can tao lai yeu cau thanh toan moi."
+  "Booking online sẽ hiển thị QR và nội dung chuyển khoản theo mã booking.",
+  "Thanh toán thành công sẽ chuyển booking sang đã xác nhận.",
+  "Nếu QR hết hạn, khách cần tạo lại yêu cầu thanh toán mới."
 ];
 
 export const trackingSupportNotes = [
-  "Nhap dung email hoac so dien thoai da dung khi dat lich de lay lai booking.",
-  "Tracking timeline hien cac moc dang cho, dang di chuyen, dang bay va da ha canh.",
-  "Neu khong tim thay booking, hay lien he doanh nghiep de kiem tra thong tin xac thuc."
+  "Nhập đúng email hoặc số điện thoại đã dùng khi đặt lịch để lấy lại booking.",
+  "Tracking timeline hiển thị các mốc đang chờ, đang di chuyển, đang bay và đã hạ cánh.",
+  "Nếu không tìm thấy booking, hãy liên hệ doanh nghiệp để kiểm tra thông tin xác thực."
 ];

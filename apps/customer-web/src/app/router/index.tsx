@@ -9,6 +9,7 @@ const AccountBookingDetailPage = lazy(() =>
 const BookingPage = lazy(() => import("@/pages/booking").then((module) => ({ default: module.BookingPage })));
 const CheckoutPage = lazy(() => import("@/pages/checkout").then((module) => ({ default: module.CheckoutPage })));
 const ContactPage = lazy(() => import("@/pages/contact").then((module) => ({ default: module.ContactPage })));
+const GalleryPage = lazy(() => import("@/pages/gallery").then((module) => ({ default: module.GalleryPage })));
 const HomePage = lazy(() => import("@/pages/home").then((module) => ({ default: module.HomePage })));
 const LoginPage = lazy(() => import("@/pages/login").then((module) => ({ default: module.LoginPage })));
 const PostDetailPage = lazy(() => import("@/pages/post-detail").then((module) => ({ default: module.PostDetailPage })));
@@ -31,6 +32,7 @@ export const AppRouter = () => (
     <Route path="/account/bookings/:code" element={page(<AccountBookingDetailPage />)} />
     <Route path="/posts" element={page(<PostsPage />)} />
     <Route path="/posts/:slug" element={page(<PostDetailPage />)} />
+    <Route path="/gallery" element={page(<GalleryPage />)} />
     <Route path="/services" element={page(<ServicesPage />)} />
     <Route path="/services/:slug" element={page(<ServiceDetailPage />)} />
     <Route path="/booking" element={page(<BookingPage />)} />

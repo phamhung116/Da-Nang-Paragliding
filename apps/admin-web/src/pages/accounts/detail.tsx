@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
@@ -6,6 +6,7 @@ import { Badge, Button, Card, Dialog, Field, Input, Panel, Select } from "@parag
 import type { ManagedAccountPayload } from "@paragliding/api-client";
 import { adminApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
+import { useAdminAuth } from "@/shared/providers/auth-provider";
 import { AdminLayout } from "@/widgets/layout/admin-layout";
 
 const toPayload = (account: NonNullable<Awaited<ReturnType<typeof adminApi.getAccount>>>): ManagedAccountPayload => ({
@@ -22,8 +23,10 @@ export const AccountDetailPage = () => {
   const { accountId = "" } = useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { account: currentAdmin, logout } = useAdminAuth();
   const [editing, setEditing] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const loginChangePendingRef = useRef(false);
   const form = useForm<ManagedAccountPayload>();
 
   const accountQuery = useQuery({
@@ -41,11 +44,24 @@ export const AccountDetailPage = () => {
   }, [account, form]);
 
   const updateMutation = useMutation({
-    mutationFn: (payload: ManagedAccountPayload) => adminApi.updateAccount(accountId, { ...payload, password: "", is_active: true }),
+    mutationFn: (payload: ManagedAccountPayload) => {
+      const currentEmailChanged = currentAdmin?.id === accountId && currentAdmin.email !== payload.email;
+      const currentPasswordChanged = currentAdmin?.id === accountId && account?.role === "ADMIN" && Boolean(payload.password);
+      loginChangePendingRef.current = Boolean(currentEmailChanged || currentPasswordChanged);
+      return adminApi.updateAccount(accountId, {
+        ...payload,
+        password: account?.role === "ADMIN" ? payload.password : "",
+        is_active: true
+      });
+    },
     onSuccess: (nextAccount) => {
       queryClient.setQueryData(["admin-account", accountId], nextAccount);
       queryClient.invalidateQueries({ queryKey: ["admin-accounts"] });
       setEditing(false);
+      if (loginChangePendingRef.current) {
+        loginChangePendingRef.current = false;
+        void logout().finally(() => navigate(routes.login, { replace: true }));
+      }
     }
   });
 
@@ -136,7 +152,12 @@ export const AccountDetailPage = () => {
                       </Select>
                     </Field>
                   </div>
-                  <p className="row-muted">Admin khong thay doi mat khau pilot. Pilot tu doi mat khau trong pilot workspace.</p>
+                  {account.role === "ADMIN" ? (
+                    <Field label="Mật khẩu mới">
+                      <Input type="password" {...form.register("password")} placeholder="Bỏ trống nếu không đổi" />
+                    </Field>
+                  ) : null}
+                  <p className="row-muted">Khi đổi email hoặc mật khẩu của account đăng nhập, toàn bộ thiết bị sẽ bị đăng xuất và cần đăng nhập lại.</p>
                   {updateMutation.error instanceof Error ? <p className="form-error">{updateMutation.error.message}</p> : null}
                   <Button disabled={updateMutation.isPending}>
                     {updateMutation.isPending ? "Dang luu..." : "Luu thay doi"}
