@@ -153,7 +153,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   ))}
                 </nav>
 
-                <div className="flex shrink-0 items-center gap-2 ml-4 border-l border-stone-200 pl-4">
+                <div className="ml-4 hidden shrink-0 items-center gap-2 border-l border-stone-200 pl-4 md:flex">
                   <button
                     type="button"
                     className={`transition-opacity ${locale === 'vi' ? 'opacity-100': 'opacity-40 hover:opacity-100'}`}
@@ -217,20 +217,18 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
           <aside className={`mobile-menu ${mobileMenuOpen ? "is-open" : ""}`}>
             <div className="mobile-menu__header">
               <div className="site-brand">
-                <span className="site-brand__icon">DP</span>
+                <span className="site-brand__icon overflow-hidden bg-white p-0">
+                  <img
+                    src="/media/img/logo.jpg"
+                    alt="Da Nang Paragliding logo"
+                    className="h-full w-full object-cover"
+                  />
+                </span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
                   <small>Đà Nẵng Paragliding</small>
                 </span>
               </div>
-              <button
-                type="button"
-                aria-label="Close navigation menu"
-                className="site-burger is-close"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Đóng
-              </button>
             </div>
 
             <nav className="mobile-menu__nav">
@@ -247,20 +245,22 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </nav>
 
             <div className="mobile-menu__footer">
-              <div className="locale-switcher">
+              <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className={locale === "vi" ? "is-active" : ""}
+                  className={`transition-opacity ${locale === "vi" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
                   onClick={() => setLocale("vi")}
+                  aria-label="Chuyển sang tiếng Việt"
                 >
-                  VI
+                  <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
                 </button>
                 <button
                   type="button"
-                  className={locale === "en" ? "is-active" : ""}
+                  className={`transition-opacity ${locale === "en" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
                   onClick={() => setLocale("en")}
+                  aria-label="Switch to English"
                 >
-                  EN
+                  <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
                 </button>
               </div>
 
