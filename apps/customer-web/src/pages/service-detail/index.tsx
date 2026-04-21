@@ -8,6 +8,13 @@ import { formatCurrency } from "@/shared/lib/format";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 
+import {
+  Eye,
+  ChevronDown,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react"
+
 const serviceFlowNotes = [
   "Khách sẽ được brief an toàn trước giờ bay và xác nhận sức khỏe tại điểm tập kết.",
   "Ảnh và video sẽ được đội ngũ media hỗ trợ bàn giao sau chuyến bay theo gói dịch vụ.",
@@ -41,6 +48,14 @@ export const ServiceDetailPage = () => {
     queryFn: () => customerApi.getService(slug),
     enabled: Boolean(slug)
   });
+
+  const [openSections, setOpenSections] = useState<string[]>(['overview', 'services', 'notes']);
+
+  const toggleSection = (section: string) => {
+    setOpenSections(prev => 
+      prev.includes(section) ? prev.filter(s => s !== section) : [...prev, section]
+    );
+  };
 
   const availabilityMonths = useMemo(() => {
     const currentDate = new Date(calendarState.year, calendarState.month - 1, 1);
@@ -132,85 +147,94 @@ export const ServiceDetailPage = () => {
             </div>
           </div >
           <div className="lg:col-span-2 space-y-6 lg:space-y-12">
-            <div>
-              <div>
-                <h2 className="detail-title">Tổng quan gói bay</h2>
-                <p className="detail-copy">{servicePackage.description}</p>
-                <div className="detail-highlight-grid">
-                  <article>
-                    <span>Thời lượng bay</span>
-                    <strong>{servicePackage.flight_duration_minutes} phút</strong>
-                  </article>
-                  <article>
-                    <span>Điểm cất cánh</span>
-                    <strong>{servicePackage.launch_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Điểm hạ cánh</span>
-                    <strong>{servicePackage.landing_site_name}</strong>
-                  </article>
-                  <article>
-                    <span>Tuổi tối thiểu</span>
-                    <strong>{servicePackage.min_child_age}+ tuổi</strong>
-                  </article>
+            <section className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none overflow-hidden">
+              <button 
+                onClick={() => toggleSection('overview')}
+                className="w-full lg:hidden flex items-center justify-between p-6 bg-stone-50"
+              >
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <Eye className="text-brand" /> Tổng quan
+                </h2>
+                <ChevronDown className={`transition-transform ${openSections.includes('overview') ? 'rotate-180' : ''}`} />
+              </button>
+
+              <div className={`${openSections.includes('overview') ? 'block' : 'hidden'} lg:block p-6 lg:p-0`}>
+                <h2 className="hidden lg:flex text-2xl font-bold mb-6 items-center gap-2">
+                  <Eye className="text-brand" /> Tổng quan
+                </h2>
+                <div className="prose prose-stone max-w-none text-stone-600 leading-relaxed">
+                  <p>
+                    {servicePackage.description}
+                  </p>
+                  <p>
+                    Bạn sẽ được bay cùng các phi công chuyên nghiệp, có chứng chỉ quốc tế và hàng ngàn giờ bay kinh nghiệm. Sự an toàn của bạn là ưu tiên hàng đầu của chúng tôi.
+                  </p>
                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="detail-section-grid">
-              <Card className="detail-section-card">
-                <Panel className="stack-sm">
-                  <Badge>Dịch vụ đi kèm</Badge>
-                  <h3>Những gì đã có trong gói</h3>
-                  <ul className="detail-list">
-                    {servicePackage.included_services.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </Panel>
-              </Card>
+            <section className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none overflow-hidden">
+              <button 
+                onClick={() => toggleSection('services')}
+                className="w-full lg:hidden flex items-center justify-between p-6 bg-stone-50"
+              >
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <CheckCircle2 className="text-emerald-500" /> Dịch vụ đi kèm
+                </h2>
+                <ChevronDown className={`transition-transform ${openSections.includes('services') ? 'rotate-180' : ''}`} />
+              </button>
 
-              <Card className="detail-section-card">
-                <Panel className="stack-sm">
-                  <Badge tone="success">Lưu ý</Badge>
-                  <h3>Điều kiện tham gia</h3>
-                  <ul className="detail-list">
-                    {servicePackage.participation_requirements.map((item) => (
-                      <li key={item}>{item}</li>
-                    ))}
-                  </ul>
-                </Panel>
-              </Card>
-            </div>
-
-            <div className="info-grid">
-              {serviceFlowNotes.map((item) => (
-                <Card key={item} className="info-card">
-                  <Panel className="stack-sm">
-                    <strong>Vận hành trong ngày bay</strong>
-                    <p>{item}</p>
-                  </Panel>
-                </Card>
-              ))}
-            </div>
-
-            <Card className="detail-section-card">
-              <Panel className="stack-sm">
-                <Badge>Chuẩn bị trước bay</Badge>
-                <h3>Checklist dành cho khách hàng</h3>
-                <ul className="detail-list">
-                  {servicePreparationChecklist.map((item) => (
-                    <li key={item}>{item}</li>
+              <div className={`${openSections.includes('services') ? 'block' : 'hidden'} lg:block p-6 lg:p-0`}>
+                <h2 className="hidden lg:flex text-2xl font-bold mb-6 items-center gap-2">
+                  <CheckCircle2 className="text-emerald-500" /> Dịch vụ đi kèm
+                </h2>
+                <div className="grid grid-cols-2 gap-3 md:gap-4">
+                  {[
+                    "Phi công chuyên nghiệp bay cùng",
+                    "Thiết bị bay nhập khẩu Châu Âu",
+                    "Bảo hiểm du lịch trọn gói",
+                    "Quay video GoPro 4K & Ảnh",
+                    "Nước uống & Khăn lạnh",
+                    "Xe đưa đón tại điểm tập kết",
+                    "Hướng dẫn kỹ thuật bay",
+                    "Chứng nhận hoàn thành chuyến bay",
+                    "Trang thiết bị bảo hộ an toàn"
+                  ].map((item, i) => (
+                    <div key={i} className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-white lg:bg-white rounded-2xl border border-stone-100 shadow-sm">
+                      <div className="w-6 h-6 md:w-8 md:h-8 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center shrink-0">
+                        <CheckCircle2 size={14} className="md:w-4 md:h-4" />
+                      </div>
+                      <span className="text-[10px] md:text-sm font-medium text-stone-700 leading-tight">{item}</span>
+                    </div>
                   ))}
-                </ul>
-              </Panel>
-            </Card>
+                </div>
+              </div>
+            </section>
+            
+            <section className="bg-white lg:bg-transparent rounded-3xl lg:rounded-none overflow-hidden">
+              <button 
+                onClick={() => toggleSection('notes')}
+                className="w-full lg:hidden flex items-center justify-between p-6 bg-stone-50"
+              >
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <AlertCircle className="text-amber-500" /> Lưu ý khi tham gia
+                </h2>
+                <ChevronDown className={`transition-transform ${openSections.includes('notes') ? 'rotate-180' : ''}`} />
+              </button>
 
-            <div className="detail-gallery detail-gallery--mosaic">
-              {servicePackage.gallery_images.map((image, index) => (
-                <img key={`${image}-${index}`} src={image} alt={`${servicePackage.name} ${index + 1}`} />
-              ))}
-            </div>
+              <div className={`${openSections.includes('notes') ? 'block' : 'hidden'} lg:block p-6 lg:p-0`}>
+                <h2 className="hidden lg:flex text-2xl font-bold mb-6 items-center gap-2">
+                  <AlertCircle className="text-amber-500" /> Lưu ý khi tham gia
+                </h2>
+                <ul className="space-y-3 text-stone-600 text-sm list-disc pl-5">
+                  <li>Sức khỏe tốt, không mắc các bệnh về tim mạch, huyết áp.</li>
+                  <li>Cân nặng từ 30kg đến 90kg.</li>
+                  <li>Trang phục gọn gàng, nên đi giày thể thao.</li>
+                  <li>Tuân thủ tuyệt đối hướng dẫn của phi công.</li>
+                  <li>Thời gian bay có thể thay đổi tùy thuộc vào điều kiện sức gió.</li>
+                </ul>
+              </div>
+            </section>
           </div>
         </Container>
       </section>
