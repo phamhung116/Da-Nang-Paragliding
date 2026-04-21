@@ -43,8 +43,8 @@ export const HomeHero = () => {
                 {t("hero_services")}
               </Button>
             </Link>
-            <Link to={routes.about}>
-              <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("hero_about")}</Button>
+            <Link to={routes.gallery}>
+              <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("nav_gallery")}</Button>
             </Link>
           </div>
         </motion.div>

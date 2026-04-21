@@ -119,7 +119,7 @@ export const HomePage = () => {
                 Với sứ mệnh mang đến trải nghiệm bay an toàn và đầy cảm xúc, 
                 chúng tôi đã đồng hành cùng hàng ngàn du khách chinh phục bầu trời Sơn Trà.
               </p>
-              <Link to={routes.about} className="btn-primary text-sm md:text-base px-6 py-3 md:px-8 md:py-4">
+              <Link to={routes.gallery} className="btn-primary text-sm md:text-base px-6 py-3 md:px-8 md:py-4">
                 Xem chi tiết về chúng tôi
               </Link>
             </motion.div>

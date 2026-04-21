@@ -72,7 +72,6 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     { to: routes.posts, label: t("nav_posts") },
     { to: routes.gallery, label: t("nav_gallery") },
     { to: routes.tracking, label: t("nav_tracking") },
-    { to: routes.about, label: t("nav_about") },
     { to: routes.contact, label: t("nav_contact") }
   ];
 

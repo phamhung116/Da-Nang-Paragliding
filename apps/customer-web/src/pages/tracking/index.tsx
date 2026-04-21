@@ -11,6 +11,10 @@ import { trackingLookupStorage } from "@/shared/lib/storage";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
+import {
+  ChevronRight,
+} from "lucide-react"
+
 type LookupForm = { query: string };
 
 const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
@@ -30,7 +34,9 @@ export const TrackingPage = () => {
   });
 
   const result = mutation.data;
-  const currentStep = result ? statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]) : -1;
+  const currentStepIndex = result
+    ? Math.max(0, statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]))
+    : 0;
 
   useEffect(() => {
     if (isAuthenticated && account?.email && mutation.status === "idle") {
@@ -40,74 +46,77 @@ export const TrackingPage = () => {
 
   return (
     <SiteLayout>
-      <section className="page-banner page-banner--tracking">
-        <div className="page-banner__image">
-          <img
-            src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1800&q=80"
-            alt="Tracking banner"
-          />
-          <div className="page-banner__overlay" />
+      <div className="max-w-4xl mx-auto px-4 py-40">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-black mb-4 uppercase tracking-tighter">Theo dõi hành trình</h2>
+          <p className="text-stone-500">Nhập email của bạn để xem trạng thái chuyến bay hiện tại.</p>
         </div>
-        <Container className="page-banner__content">
-          <Badge>Theo doi hanh trinh</Badge>
-          <h1>Theo doi booking va vi tri GPS.</h1>
-          <p>Khach da dang nhap se thay hanh trinh gan nhat ngay lap tuc.</p>
-        </Container>
-      </section>
-
-      <section className="section">
-        <Container className="stack">
-          <div className="info-grid">
-            {trackingSupportNotes.map((item) => (
-              <Card key={item} className="info-card">
-                <Panel className="stack-sm">
-                  <strong>Tra cuu tracking</strong>
-                  <p>{item}</p>
-                </Panel>
-              </Card>
-            ))}
-          </div>
-
-          {!isAuthenticated ? (
-            <Card className="tracking-search-card">
-              <Panel>
-                <form className="tracking-lookup" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
-                  <Field label="Email hoac so dien thoai">
-                    <Input {...register("query", { required: true })} />
-                  </Field>
-                  <Button>{mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}</Button>
-                </form>
-              </Panel>
-            </Card>
+        {!isAuthenticated ? (
+            <form className="max-w-md mx-auto space-y-4" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+              <Field label="Email hoac so dien thoai">
+                <Input
+                  className="w-full bg-stone-100 border-none rounded-2xl p-4 focus:ring-2 focus:ring-brand outline-none"
+                  placeholder="Nhập email đã đặt lịch..." 
+                  {...register("query", { required: true })} />
+              </Field>
+              <Button className="btn-primary w-full py-4">{mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}</Button>
+            </form>
           ) : null}
+        
+        <Container className="stack">
 
           {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 
           {result ? (
             <>
               <Card>
-                <Panel className="stack">
+                <Panel className="space-y-8">
+                  <button 
+                    type="button"
+                    onClick={() => mutation.reset()}
+                    className="flex items-center gap-2 text-stone-400 hover:text-brand transition-colors text-xs font-bold uppercase tracking-wider">
+                    
+                      <ChevronRight className="rotate-180" size={16} />
+                      Quay lại tra cứu
+                  </button>
+
                   <div className="tracking-status-header">
                     <div>
                       <Badge tone="success">{flightStatusLabels[result.booking.flight_status]}</Badge>
                       <h3>{result.booking.service_name}</h3>
                     </div>
                     <div className="tracking-contact-actions">
-                      <a href={`mailto:${result.booking.email}`}>Email khach</a>
+                      <p>{result.booking.email}</p>
                       <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Liên hệ doanh nghiệp</a>
                     </div>
                   </div>
 
-                  <div className="status-progress">
-                    {statusOrder.map((status, index) => (
-                      <div
-                        key={status}
-                        className={`status-progress__step ${index <= currentStep ? "is-active" : ""}`}
-                      >
-                        <span>{index + 1}</span>
-                        <strong>{flightStatusLabels[status]}</strong>
-                      </div>
-                    ))}
+                  <div className="relative pb-4 pt-8">
+                    <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-stone-100" />
+                    <div
+                      className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-brand transition-all duration-1000"
+                      style={{ width: `${(currentStepIndex / (statusOrder.length - 1)) * 100}%` }}
+                    />
+                    <div className="relative flex justify-between gap-2">
+                      {statusOrder.map((status, index) => (
+                        <div key={status} className="flex flex-1 flex-col items-center gap-2 text-center">
+                          <div
+                            className={`z-10 h-5 w-5 rounded-full border-4 transition-colors ${
+                              index <= currentStepIndex
+                                ? "border-white bg-brand shadow-lg shadow-brand/20"
+                                : "border-stone-200 bg-white"
+                            }`}
+                          />
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider ${
+                              index <= currentStepIndex ? "text-brand" : "text-stone-400"
+                            }`}
+                          >
+                            {flightStatusLabels[status]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="tracking-grid">
@@ -157,17 +166,9 @@ export const TrackingPage = () => {
                 </Card>
               )}
             </>
-          ) : (
-            <Card className="empty-state-card">
-              <Panel className="stack-sm">
-                <Badge>Tracking ready</Badge>
-                <strong>Nhap thong tin booking de hien thi timeline va vi tri GPS.</strong>
-                <p>Ngay sau khi customer dat lich thanh cong, booking co the duoc tra cuu lai tu trang nay.</p>
-              </Panel>
-            </Card>
-          )}
+          ) : null}
         </Container>
-      </section>
+      </div>
     </SiteLayout>
   );
 };
