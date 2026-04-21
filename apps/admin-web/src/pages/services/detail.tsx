@@ -16,10 +16,13 @@ const defaultHeroImage =
 const blankValues: ServicePackageWritePayload = {
   slug: "",
   name: "",
+  name_en: "",
   short_description: "",
+  short_description_en: "",
   description: "",
+  description_en: "",
   price: "0",
-  included_services: [],
+  included_feature_ids: [],
   hero_image: defaultHeroImage,
   launch_site_name: "Điểm cất cánh Sơn Trà",
   launch_lat: 16.1202,
@@ -47,7 +50,7 @@ export const ServiceDetailPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const form = useForm<ServicePackageWritePayload>({ defaultValues: blankValues });
-  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState<string[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const priceValue = form.watch("price");
   const heroImage = form.watch("hero_image");
@@ -64,14 +67,14 @@ export const ServiceDetailPage = () => {
   });
 
   const activeFeatures = useMemo(
-    () => (featuresQuery.data ?? []).filter((feature) => feature.active || selectedFeatures.includes(feature.name)),
-    [featuresQuery.data, selectedFeatures]
+    () => (featuresQuery.data ?? []).filter((feature) => feature.active || selectedFeatureIds.includes(feature.id)),
+    [featuresQuery.data, selectedFeatureIds]
   );
 
   useEffect(() => {
     if (isNew) {
       form.reset(blankValues);
-      setSelectedFeatures([]);
+      setSelectedFeatureIds([]);
       return;
     }
 
@@ -82,10 +85,13 @@ export const ServiceDetailPage = () => {
     form.reset({
       slug: serviceQuery.data.slug,
       name: serviceQuery.data.name,
+      name_en: serviceQuery.data.name_en,
       short_description: serviceQuery.data.short_description,
+      short_description_en: serviceQuery.data.short_description_en,
       description: serviceQuery.data.description,
+      description_en: serviceQuery.data.description_en,
       price: serviceQuery.data.price,
-      included_services: serviceQuery.data.included_services,
+      included_feature_ids: serviceQuery.data.included_feature_ids,
       hero_image: serviceQuery.data.hero_image,
       launch_site_name: serviceQuery.data.launch_site_name,
       launch_lat: serviceQuery.data.launch_lat,
@@ -96,7 +102,7 @@ export const ServiceDetailPage = () => {
       featured: serviceQuery.data.featured,
       active: serviceQuery.data.active
     });
-    setSelectedFeatures(serviceQuery.data.included_services);
+    setSelectedFeatureIds(serviceQuery.data.included_feature_ids);
   }, [form, isNew, serviceQuery.data]);
 
   const saveMutation = useMutation({
@@ -118,9 +124,9 @@ export const ServiceDetailPage = () => {
     }
   });
 
-  const toggleFeature = (featureName: string) => {
-    setSelectedFeatures((current) =>
-      current.includes(featureName) ? current.filter((item) => item !== featureName) : [...current, featureName]
+  const toggleFeature = (featureId: string) => {
+    setSelectedFeatureIds((current) =>
+      current.includes(featureId) ? current.filter((item) => item !== featureId) : [...current, featureId]
     );
   };
 
@@ -137,7 +143,7 @@ export const ServiceDetailPage = () => {
       ...values,
       slug: values.slug.trim() || slugify(values.name),
       price: String(values.price),
-      included_services: selectedFeatures
+      included_feature_ids: selectedFeatureIds
     });
   };
 
@@ -164,21 +170,37 @@ export const ServiceDetailPage = () => {
             <form className="service-editor-layout" onSubmit={form.handleSubmit(handleSubmit)}>
               <div className="admin-stack">
                 <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Tên gói dịch vụ">
+                  <Field label="Tên gói dịch vụ (VI)">
                     <Input {...form.register("name", { required: true })} />
                   </Field>
+                  <Field label="Tên gói dịch vụ (EN)">
+                    <Input {...form.register("name_en", { required: true })} />
+                  </Field>
+                </div>
+
+                <div className="inline-field-grid inline-field-grid--two">
                   <Field label="Giá">
                     <Input type="number" min={0} step={1000} {...form.register("price", { required: true })} />
                   </Field>
                 </div>
 
-                <Field label="Tổng quan">
-                  <Textarea rows={6} {...form.register("description", { required: true })} />
-                </Field>
+                <div className="inline-field-grid inline-field-grid--two">
+                  <Field label="Tổng quan (VI)">
+                    <Textarea rows={6} {...form.register("description", { required: true })} />
+                  </Field>
+                  <Field label="Tổng quan (EN)">
+                    <Textarea rows={6} {...form.register("description_en", { required: true })} />
+                  </Field>
+                </div>
 
-                <Field label="Mô tả ngắn">
-                  <Textarea rows={3} {...form.register("short_description", { required: true })} />
-                </Field>
+                <div className="inline-field-grid inline-field-grid--two">
+                  <Field label="Mô tả ngắn (VI)">
+                    <Textarea rows={3} {...form.register("short_description", { required: true })} />
+                  </Field>
+                  <Field label="Mô tả ngắn (EN)">
+                    <Textarea rows={3} {...form.register("short_description_en", { required: true })} />
+                  </Field>
+                </div>
 
                 <Card>
                   <Panel className="admin-stack">
@@ -193,16 +215,18 @@ export const ServiceDetailPage = () => {
                       {activeFeatures.map((feature) => (
                         <label
                           key={feature.id}
-                          className={`feature-option ${selectedFeatures.includes(feature.name) ? "is-selected" : ""}`}
+                          className={`feature-option ${selectedFeatureIds.includes(feature.id) ? "is-selected" : ""}`}
                         >
                           <input
                             type="checkbox"
-                            checked={selectedFeatures.includes(feature.name)}
-                            onChange={() => toggleFeature(feature.name)}
+                            checked={selectedFeatureIds.includes(feature.id)}
+                            onChange={() => toggleFeature(feature.id)}
                           />
                           <span>
                             <strong>{feature.name}</strong>
+                            <small>{feature.name_en}</small>
                             <small>{feature.description}</small>
+                            {feature.description_en ? <small>{feature.description_en}</small> : null}
                           </span>
                         </label>
                       ))}
@@ -218,7 +242,7 @@ export const ServiceDetailPage = () => {
                 <div className="post-publish-card">
                   <Badge>{formatCurrency(priceValue || 0)}</Badge>
                   <strong>{form.watch("name") || "Gói dịch vụ"}</strong>
-                  <p>{selectedFeatures.length} feature đã chọn.</p>
+                  <p>{selectedFeatureIds.length} feature đã chọn.</p>
                 </div>
 
                 <Field label="Slug">

@@ -70,7 +70,7 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Thieu thong tin dat lich</Badge>
+            <Badge tone="danger">Thiếu thông tin đặt lịch</Badge>
             <h2 className="detail-title">Hãy chọn một gói dịch vụ trước khi đặt lịch.</h2>
             <Link to={routes.services}>
               <Button variant="secondary">Quay lại danh sách dịch vụ</Button>
@@ -86,10 +86,10 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge>Bat buoc dang nhap</Badge>
+            <Badge>Bắt buộc đăng nhập</Badge>
             <h2 className="detail-title">Đăng nhập để tiếp tục đặt lịch</h2>
             <p className="detail-copy">
-              He thong se tu dong dien email, so dien thoai va luu lich su booking vao tai khoan cua ban.
+              Hệ thống sẽ tự động điền email, số điện thoại và lưu lịch sử booking vào tài khoản của bạn.
             </p>
             <Link to={`${routes.login}?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}>
               <Button>Đăng nhập ngay</Button>
@@ -106,19 +106,19 @@ export const BookingPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Thong tin hanh khach</Badge>
-              <h2>Hoan tat form booking</h2>
+              <Badge>Thông tin hành khách</Badge>
+              <h2>Hoàn tất form booking</h2>
             </div>
-            <p>Khach co the doi ngay, khung gio va xem weather theo gio ngay tren man hinh dat lich.</p>
+            <p>Khách có thể đổi ngày, khung giờ và xem weather theo giờ ngay trên màn hình đặt lịch.</p>
           </div>
 
           <Card>
             <Panel className="stack">
               <div className="booking-section-head">
                 <div>
-                  <Badge>Chon lai lich neu can</Badge>
-                  <h3>Lich bay va weather theo gio</h3>
-                  <p>O trong co the dat. O X da het pilot hoac bi khoa do dieu kien bay.</p>
+                  <Badge>Chọn lại lịch nếu cần</Badge>
+                  <h3>Lịch bay và weather theo giờ</h3>
+                  <p>Ô trống có thể đặt. Ô X đã hết pilot hoặc bị khóa do điều kiện bay.</p>
                 </div>
               </div>
               <BookingCalendar
@@ -136,7 +136,7 @@ export const BookingPage = () => {
             {bookingRules.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Booking rule</strong>
+                  <strong>Quy tắc booking</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -154,7 +154,7 @@ export const BookingPage = () => {
               <Panel className="calendar-selection-card">
                 <Badge tone="danger">Chưa chọn khung giờ</Badge>
                 <strong>Hãy chọn một ô còn trống trên lịch trước khi điền form đặt lịch.</strong>
-                <small>Thong tin thoi tiet theo gio se hien ngay ben duoi lich khi hover vao tung slot.</small>
+                <small>Thông tin thời tiết theo giờ sẽ hiện ngay bên dưới lịch khi hover vào từng slot.</small>
               </Panel>
             </Card>
           )}

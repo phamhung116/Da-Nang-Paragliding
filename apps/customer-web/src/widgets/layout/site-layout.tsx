@@ -2,57 +2,32 @@ import type { PropsWithChildren } from "react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button, Container } from "@paragliding/ui";
+import { Menu, UserRound, X } from "lucide-react";
+import { FaEnvelope, FaFacebook, FaLocationDot, FaPhone } from "react-icons/fa6";
+import { motion } from "motion/react";
+import { routes } from "@/shared/config/routes";
+import { businessInfo } from "@/shared/constants/business";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useI18n } from "@/shared/providers/i18n-provider";
-import { businessInfo } from "@/shared/constants/business";
-import { routes } from "@/shared/config/routes";
-import { motion } from 'motion/react';
 
-import {
-  FaFacebook,
-  FaPhone,
-  FaLocationDot,
-  FaEnvelope,
-} from "react-icons/fa6";
-
-import { 
-  Wind, 
-  UserRound,
-  Menu, 
-  X, 
-} from 'lucide-react';
-
-export const Banner = ({ title, subtitle, image }: { title: string, subtitle?: string, image: string }) => {
+export const Banner = ({ title, subtitle, image }: { title: string; subtitle?: string; image: string }) => {
   return (
-    <section className="relative h-[40vh] md:h-[50vh] flex items-center overflow-hidden mb-12 md:mb-20">
+    <section className="relative mb-12 flex h-[40vh] items-center overflow-hidden md:mb-20 md:h-[50vh]">
       <div className="absolute inset-0 z-0">
-        <img 
-          src={image} 
-          alt={title} 
-          className="w-full h-full object-cover"
-          referrerPolicy="no-referrer"
-        />
+        <img src={image} alt={title} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
       </div>
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-white">
-        <motion.div
-          initial={{ x: -50, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h1 className="text-4xl md:text-7xl font-black mb-4 tracking-tighter uppercase">
-            {title}
-          </h1>
-          {subtitle && (
-            <p className="text-lg md:text-xl text-stone-300 max-w-2xl font-medium leading-relaxed">
-              {subtitle}
-            </p>
-          )}
+      <div className="relative z-10 mx-auto w-full max-w-7xl px-4 text-white sm:px-6 lg:px-8">
+        <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.8 }}>
+          <h1 className="mb-4 text-4xl font-black uppercase tracking-tighter md:text-7xl">{title}</h1>
+          {subtitle ? (
+            <p className="max-w-2xl text-lg font-medium leading-relaxed text-stone-300 md:text-xl">{subtitle}</p>
+          ) : null}
         </motion.div>
       </div>
     </section>
   );
-}
+};
 
 type SiteLayoutProps = PropsWithChildren<{
   hideHeader?: boolean;
@@ -61,7 +36,7 @@ type SiteLayoutProps = PropsWithChildren<{
 
 export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }: SiteLayoutProps) => {
   const { account, isAuthenticated, logout } = useAuth();
-  const { locale, setLocale, t } = useI18n();
+  const { t } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -73,7 +48,6 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     { to: routes.posts, label: t("nav_posts") },
     { to: routes.gallery, label: t("nav_gallery") },
     { to: routes.tracking, label: t("nav_tracking") },
-    { to: routes.about, label: t("nav_about") },
     { to: routes.contact, label: t("nav_contact") }
   ];
 
@@ -118,55 +92,40 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
     <div className="site-shell">
       {!hideHeader ? (
         <>
-          <header className="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md border-b border-stone-200 nav-header">
-            <Container className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <header className="nav-header fixed top-0 z-50 w-full border-b border-stone-200 bg-white/80 backdrop-blur-md">
+            <Container className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <div className="flex h-20 items-center gap-4">
-                <button className="md:hidden text-stone-600"
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                >
+                <button className="text-stone-600 md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
                   {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>
 
-                <Link className="flex items-center gap-2 cursor-pointer" to={routes.home}>
-                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center text-white">
-                    <Wind size={24} />
+                <Link className="flex cursor-pointer items-center gap-2" to={routes.home}>
+                  <div className="h-10 w-10 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
+                    <img
+                      src="/media/img/logo.jpg"
+                      alt="Logo Da Nang Paragliding"
+                      className="h-full w-full object-cover"
+                    />
                   </div>
                   <div>
                     <h1 className="text-xl font-bold tracking-tight text-brand">ĐÀ NẴNG</h1>
-                    <p className="text-[10px] font-bold tracking-[0.2em] text-stone-500 uppercase -mt-1">Paragliding</p>
+                    <p className="-mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500">Paragliding</p>
                   </div>
                 </Link>
 
-                <nav className="hidden md:flex items-center gap-6 ml-auto">
+                <nav className="ml-auto hidden items-center gap-6 md:flex">
                   {navItems.map((item) => (
                     <NavLink
                       key={item.to}
                       to={item.to}
-                      className={({ isActive }) =>
-                        `nav-header-item ${isActive ? "is-active" : ""}`
-                      }
+                      className={({ isActive }) => `nav-header-item ${isActive ? "is-active" : ""}`}
                     >
                       {item.label}
                     </NavLink>
                   ))}
                 </nav>
 
-                <div className="flex shrink-0 items-center gap-2 ml-4 border-l border-stone-200 pl-4">
-                  <button
-                    type="button"
-                    className={`transition-opacity ${locale === 'vi' ? 'opacity-100': 'opacity-40 hover:opacity-100'}`}
-                    onClick={() => setLocale("vi")}
-                  >
-                    <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="w-6 h-4 object-cover rounded-sm shadow-sm" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`transition-opacity ${locale === 'en' ? 'opacity-100': 'opacity-40 hover:opacity-100'}`}
-                    onClick={() => setLocale("en")}
-                  >
-                    <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="w-6 h-4 object-cover rounded-sm shadow-sm" />
-                  </button>
-
+                <div className="ml-4 hidden shrink-0 items-center border-l border-stone-200 pl-4 md:flex">
                   {isAuthenticated ? (
                     <div className="site-profile" ref={profileMenuRef}>
                       <button
@@ -200,7 +159,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                     </div>
                   ) : (
                     <Link to={routes.login}>
-                      <UserRound color="#57534d"></UserRound>
+                      <UserRound color="#57534d" />
                     </Link>
                   )}
                 </div>
@@ -208,27 +167,23 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </Container>
           </header>
 
-          <div
-            className={`mobile-menu-backdrop ${mobileMenuOpen ? "is-open" : ""}`}
-            onClick={() => setMobileMenuOpen(false)}
-          />
+          <div className={`mobile-menu-backdrop ${mobileMenuOpen ? "is-open" : ""}`} onClick={() => setMobileMenuOpen(false)} />
+
           <aside className={`mobile-menu ${mobileMenuOpen ? "is-open" : ""}`}>
             <div className="mobile-menu__header">
               <div className="site-brand">
-                <span className="site-brand__icon">DP</span>
+                <span className="site-brand__icon overflow-hidden bg-white p-0">
+                  <img
+                    src="/media/img/logo.jpg"
+                    alt="Logo Da Nang Paragliding"
+                    className="h-full w-full object-cover"
+                  />
+                </span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
                   <small>Đà Nẵng Paragliding</small>
                 </span>
               </div>
-              <button
-                type="button"
-                aria-label="Close navigation menu"
-                className="site-burger is-close"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Đóng
-              </button>
             </div>
 
             <nav className="mobile-menu__nav">
@@ -245,23 +200,6 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </nav>
 
             <div className="mobile-menu__footer">
-              <div className="locale-switcher">
-                <button
-                  type="button"
-                  className={locale === "vi" ? "is-active" : ""}
-                  onClick={() => setLocale("vi")}
-                >
-                  VI
-                </button>
-                <button
-                  type="button"
-                  className={locale === "en" ? "is-active" : ""}
-                  onClick={() => setLocale("en")}
-                >
-                  EN
-                </button>
-              </div>
-
               {isAuthenticated ? (
                 <>
                   <Link to={routes.account} className="site-account-chip site-account-chip--mobile">
@@ -288,45 +226,63 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
       <main>{children}</main>
 
       {!hideFooter ? (
-        <footer className="bg-stone-900 text-white p-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
+        <footer className="mt-10 bg-stone-900 p-8 text-white">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
                   <span className="text-xl font-bold">Da Nang Paragliding</span>
                 </div>
-                <p className="text-stone-400 text-sm leading-relaxed">
+                <p className="text-sm leading-relaxed text-stone-400">
                   Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp của bán đảo Sơn Trà từ trên cao.
                 </p>
               </div>
+
               <div>
-                <h3 className="font-bold mb-6">Liên kết</h3>
-                <ul className="space-y-3 text-stone-400 text-sm">
+                <h3 className="mb-6 font-bold">Liên kết</h3>
+                <ul className="space-y-3 text-sm text-stone-400">
                   {navItems.map((item) => (
-                    <NavLink key={item.to} to={item.to} style={{display: "block"}}>
+                    <NavLink key={item.to} to={item.to} style={{ display: "block" }}>
                       {item.label}
                     </NavLink>
                   ))}
                 </ul>
               </div>
+
               <div>
-                <h3 className="font-bold mb-6">Liên hệ</h3>
-                <ul className="space-y-3 text-stone-400 text-sm">
-                  <li className="flex items-center gap-2"><FaLocationDot size={16} /> Bán đảo Sơn Trà, Đà Nẵng</li>
-                  <li className="flex items-center gap-2"><FaPhone size={16} /> +84 123 456 789</li>
-                  <li className="flex items-center gap-2"><FaEnvelope size={16} /> info@danangparagliding.vn</li>
-              </ul>
+                <h3 className="mb-6 font-bold">Liên hệ</h3>
+                <ul className="space-y-3 text-sm text-stone-400">
+                  <li className="flex items-center gap-2">
+                    <FaLocationDot size={16} /> Bán đảo Sơn Trà, Đà Nẵng
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaPhone size={16} /> +84 123 456 789
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <FaEnvelope size={16} /> info@danangparagliding.vn
+                  </li>
+                </ul>
               </div>
+
               <div>
-                <h3 className="font-bold mb-6">Theo dõi</h3>
+                <h3 className="mb-6 font-bold">Theo dõi</h3>
                 <div className="flex gap-4">
-                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://www.facebook.com/profile.php?id=100064087207931"><FaFacebook /></a></div>
-                  <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://zalo.me/0935101188" className="flex items-center justify-center w-full h-full"><img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{width: "50%"}}/></a></div>
+                  <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-stone-800 transition-colors hover:bg-brand">
+                    <a href="https://www.facebook.com/profile.php?id=100064087207931">
+                      <FaFacebook />
+                    </a>
+                  </div>
+                  <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-stone-800 transition-colors hover:bg-brand">
+                    <a href="https://zalo.me/0935101188" className="flex h-full w-full items-center justify-center">
+                      <img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{ width: "50%" }} />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
-            <div className="border-t border-stone-800 mt-16 pt-8 text-center text-stone-500 text-xs">
-              © 2024 Da Nang Paragliding. All rights reserved.
+
+            <div className="mt-16 border-t border-stone-800 pt-8 text-center text-xs text-stone-500">
+              © 2024 Da Nang Paragliding. Bảo lưu mọi quyền.
             </div>
           </div>
         </footer>

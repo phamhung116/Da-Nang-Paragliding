@@ -1,7 +1,6 @@
 import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
-const AboutPage = lazy(() => import("@/pages/about").then((module) => ({ default: module.AboutPage })));
 const AccountPage = lazy(() => import("@/pages/account").then((module) => ({ default: module.AccountPage })));
 const AccountBookingDetailPage = lazy(() =>
   import("@/pages/account/booking-detail").then((module) => ({ default: module.AccountBookingDetailPage }))
@@ -24,7 +23,7 @@ const page = (element: JSX.Element) => <Suspense fallback={null}>{element}</Susp
 export const AppRouter = () => (
   <Routes>
     <Route path="/" element={page(<HomePage />)} />
-    <Route path="/about" element={page(<AboutPage />)} />
+    <Route path="/about" element={<Navigate to="/gallery" replace />} />
     <Route path="/contact" element={page(<ContactPage />)} />
     <Route path="/login" element={page(<LoginPage />)} />
     <Route path="/verify-email" element={page(<VerifyEmailPage />)} />

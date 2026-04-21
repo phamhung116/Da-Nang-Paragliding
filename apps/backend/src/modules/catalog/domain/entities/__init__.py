@@ -10,11 +10,15 @@ class ServicePackage:
     id: str | None
     slug: str
     name: str
+    name_en: str
     short_description: str
+    short_description_en: str
     description: str
+    description_en: str
     price: Decimal
     flight_duration_minutes: int
-    included_services: list[str]
+    included_feature_ids: list[str]
+    included_features: list[ServiceFeature]
     participation_requirements: list[str]
     min_child_age: int
     hero_image: str
@@ -35,7 +39,9 @@ class ServicePackage:
 class ServiceFeature:
     id: str | None
     name: str
+    name_en: str
     description: str
+    description_en: str
     active: bool
     created_at: datetime | None = None
     updated_at: datetime | None = None

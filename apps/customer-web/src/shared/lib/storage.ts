@@ -4,7 +4,6 @@ const CHECKOUT_KEY = "customer_checkout_state";
 const TRACKING_LOOKUP_KEY = "customer_tracking_lookup";
 const AUTH_ACCOUNT_KEY = "customer_auth_account";
 const AUTH_SESSION_KEY = "customer_auth_session";
-const LANGUAGE_KEY = "customer_language";
 
 export const checkoutStorage = {
   get: <T,>() => {
@@ -38,9 +37,4 @@ export const authStorage = {
     authStorage.clearAccount();
     authStorage.clearSession();
   }
-};
-
-export const languageStorage = {
-  get: () => localStorage.getItem(LANGUAGE_KEY) ?? "vi",
-  set: (value: string) => localStorage.setItem(LANGUAGE_KEY, value)
 };

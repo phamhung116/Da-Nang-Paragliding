@@ -8,6 +8,7 @@ type ImageSourceFieldProps = {
   previewAlt: string;
   onChange: (nextValue: string) => void;
   placeholder?: string;
+  previewCaption?: string;
 };
 
 export const ImageSourceField = ({
@@ -15,7 +16,8 @@ export const ImageSourceField = ({
   value,
   previewAlt,
   onChange,
-  placeholder
+  placeholder,
+  previewCaption
 }: ImageSourceFieldProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -82,7 +84,12 @@ export const ImageSourceField = ({
         ) : null}
       </div>
       {error ? <p className="form-error">{error}</p> : null}
-      {value ? <img className="post-editor-sidebar__thumb" src={value} alt={previewAlt} /> : null}
+      {value ? (
+        <div className="image-source-field__preview">
+          <img className="post-editor-sidebar__thumb" src={value} alt={previewAlt} />
+          {previewCaption ? <p className="image-source-field__caption">{previewCaption}</p> : null}
+        </div>
+      ) : null}
       <input
         ref={fileInputRef}
         hidden

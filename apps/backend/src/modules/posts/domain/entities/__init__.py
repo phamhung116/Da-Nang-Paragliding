@@ -9,8 +9,11 @@ class Post:
     id: str | None
     slug: str
     title: str
+    title_en: str
     excerpt: str
+    excerpt_en: str
     content: str
+    content_en: str
     cover_image: str
     published: bool
     published_at: datetime | None = None

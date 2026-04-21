@@ -1,6 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { AvailabilityDay, AvailabilitySlot } from "@paragliding/api-client";
 import { Button } from "@paragliding/ui";
+import { formatDate, resolveLocaleTag } from "@/shared/lib/format";
+import { repairFlightConditionLabel } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 
 import {
   ChevronRight,
@@ -30,23 +33,6 @@ type BookingCalendarProps = {
   onMonthChange: (year: number, month: number) => void;
   onSelectSlot: (slot: { date: string; time: string }) => void;
 };
-
-const monthNames = [
-  "Thang 1",
-  "Thang 2",
-  "Thang 3",
-  "Thang 4",
-  "Thang 5",
-  "Thang 6",
-  "Thang 7",
-  "Thang 8",
-  "Thang 9",
-  "Thang 10",
-  "Thang 11",
-  "Thang 12"
-];
-
-const weekdayShort = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
 
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -83,6 +69,7 @@ export const BookingCalendar = ({
   onMonthChange,
   onSelectSlot
 }: BookingCalendarProps) => {
+  const { locale } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<SelectedSlot>(selectedSlot);
   const [showMonthMenu, setShowMonthMenu] = useState(false);
   const [showYearMenu, setShowYearMenu] = useState(false);
@@ -143,6 +130,17 @@ export const BookingCalendar = ({
     );
   }, [year]);
 
+  const monthNames = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(resolveLocaleTag(locale), { month: "long" });
+    return Array.from({ length: 12 }, (_unused, index) => formatter.format(new Date(2026, index, 1)));
+  }, [locale]);
+
+  const weekdayShort = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(resolveLocaleTag(locale), { weekday: "short" });
+    const sunday = new Date(2026, 0, 4);
+    return Array.from({ length: 7 }, (_unused, index) => formatter.format(addDays(sunday, index)));
+  }, [locale]);
+
   useEffect(() => {
     if (!calendarWeeks.length) {
       setWeekIndex(0);
@@ -201,8 +199,8 @@ export const BookingCalendar = ({
   const weather = weatherSource && hasRealWeather
     ? {
         temp: weatherSource.temperature_c,
-        condition: weatherSource.weather_condition || "Thoi tiet",
-        flight: weatherSource.flight_condition || "Đang cập nhật",
+        condition: weatherSource.weather_condition || "Thời tiết",
+        flight: repairFlightConditionLabel(weatherSource.flight_condition || "Đang cập nhật"),
         wind: weatherSource.wind_kph,
         uv: weatherSource.uv_index
       }
@@ -309,7 +307,7 @@ export const BookingCalendar = ({
               <table className="w-full min-w-[300px] table-fixed border-collapse">
                 <thead>
                   <tr>
-                    <th className="w-14 p-1" aria-label="Khung gio" />
+                    <th className="w-14 p-1" aria-label="Khung giờ" />
                     {activeWeek.map((day) => {
                       const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
 
@@ -415,7 +413,7 @@ export const BookingCalendar = ({
             <div className="p-4 bg-stone-50 rounded-2xl border border-stone-100 space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold text-stone-400 uppercase">
-                  Dự báo {activeSlot ? activeSlot + ' - ' : ''}Ngày {new Date(activeDate).getDate()}/{new Date(activeDate).getMonth() + 1}
+                  Dự báo {activeSlot ? `${activeSlot} - ` : ""}Ngày {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
                 </span>
                 <Sun size={16} className="text-yellow-500" />
               </div>

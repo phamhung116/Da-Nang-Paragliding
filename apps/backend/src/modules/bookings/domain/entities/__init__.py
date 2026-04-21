@@ -11,6 +11,7 @@ class Booking:
     code: str
     service_slug: str
     service_name: str
+    service_name_en: str
     launch_site_name: str
     flight_date: date
     flight_time: str

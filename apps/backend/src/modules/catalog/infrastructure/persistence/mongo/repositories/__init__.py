@@ -11,12 +11,56 @@ from modules.catalog.infrastructure.mappers import (
     to_feature_domain,
 )
 from modules.catalog.infrastructure.persistence.mongo.documents import ServiceFeatureDocument, ServicePackageDocument
-from shared.exceptions import NotFoundError
+from shared.exceptions import NotFoundError, ValidationError
 
 
 class MongoServicePackageRepository:
     def _base_queryset(self) -> QuerySet[ServicePackageDocument]:
         return ServicePackageDocument.objects.all()
+
+    def _resolve_feature_documents(self, values: list[object]) -> list[ServiceFeatureDocument]:
+        normalized = [str(value).strip() for value in values if str(value).strip()]
+        if not normalized:
+            return []
+
+        by_id = {str(document.id): document for document in ServiceFeatureDocument.objects.filter(id__in=normalized)}
+        unresolved = [value for value in normalized if value not in by_id]
+        by_name = {document.name: document for document in ServiceFeatureDocument.objects.filter(name__in=unresolved)}
+
+        resolved: list[ServiceFeatureDocument] = []
+        seen: set[str] = set()
+        for value in normalized:
+            document = by_id.get(value) or by_name.get(value)
+            if document is None:
+                continue
+            document_id = str(document.id)
+            if document_id in seen:
+                continue
+            seen.add(document_id)
+            resolved.append(document)
+        return resolved
+
+    def _resolve_service_features(self, document: ServicePackageDocument) -> tuple[list[str], list[ServiceFeature]]:
+        stored_feature_ids = list(getattr(document, "included_feature_ids", []) or [])
+        if not stored_feature_ids:
+            stored_feature_ids = list(getattr(document, "included_services", []) or [])
+        feature_documents = self._resolve_feature_documents(stored_feature_ids)
+        return [str(item.id) for item in feature_documents], [to_feature_domain(item) for item in feature_documents]
+
+    def _get_feature_documents_or_raise(self, feature_ids: list[str]) -> list[ServiceFeatureDocument]:
+        requested_ids: list[str] = []
+        seen: set[str] = set()
+        for value in feature_ids:
+            normalized = str(value).strip()
+            if not normalized or normalized in seen:
+                continue
+            seen.add(normalized)
+            requested_ids.append(normalized)
+
+        feature_documents = self._resolve_feature_documents(requested_ids)
+        if len(feature_documents) != len(requested_ids):
+            raise ValidationError("Co feature khong ton tai hoac da bi xoa.")
+        return feature_documents
 
     def list(self, *, featured_only: bool = False, active_only: bool = True) -> list[ServicePackage]:
         queryset = self._base_queryset()
@@ -24,31 +68,73 @@ class MongoServicePackageRepository:
             queryset = queryset.filter(featured=True)
         if active_only:
             queryset = queryset.filter(active=True)
-        return [to_domain(document) for document in queryset]
+
+        packages: list[ServicePackage] = []
+        for document in queryset:
+            included_feature_ids, included_features = self._resolve_service_features(document)
+            packages.append(
+                to_domain(
+                    document,
+                    included_feature_ids=included_feature_ids,
+                    included_features=included_features,
+                )
+            )
+        return packages
 
     def get_by_slug(self, slug: str) -> ServicePackage | None:
         document = self._base_queryset().filter(slug=slug).first()
-        return to_domain(document) if document else None
+        if document is None:
+            return None
+        included_feature_ids, included_features = self._resolve_service_features(document)
+        return to_domain(
+            document,
+            included_feature_ids=included_feature_ids,
+            included_features=included_features,
+        )
 
     def create(self, payload: ServicePackagePayload) -> ServicePackage:
-        document = ServicePackageDocument.objects.create(**to_document_defaults(payload))
-        return to_domain(document)
+        feature_documents = self._get_feature_documents_or_raise(payload.included_feature_ids)
+        included_feature_ids = [str(item.id) for item in feature_documents]
+        included_features = [to_feature_domain(item) for item in feature_documents]
+        document = ServicePackageDocument.objects.create(
+            **to_document_defaults(
+                payload,
+                included_services=[item.name for item in feature_documents],
+                included_feature_ids=included_feature_ids,
+            )
+        )
+        return to_domain(
+            document,
+            included_feature_ids=included_feature_ids,
+            included_features=included_features,
+        )
 
     def update(self, slug: str, payload: ServicePackagePayload) -> ServicePackage:
         document = self._base_queryset().filter(slug=slug).first()
         if document is None:
-            raise NotFoundError("Không tìm thấy gói dịch vụ.")
+            raise NotFoundError("Khong tim thay goi dich vu.")
 
-        for field, value in to_document_defaults(payload).items():
+        feature_documents = self._get_feature_documents_or_raise(payload.included_feature_ids)
+        included_feature_ids = [str(item.id) for item in feature_documents]
+        included_features = [to_feature_domain(item) for item in feature_documents]
+        for field, value in to_document_defaults(
+            payload,
+            included_services=[item.name for item in feature_documents],
+            included_feature_ids=included_feature_ids,
+        ).items():
             setattr(document, field, value)
 
         document.save()
-        return to_domain(document)
+        return to_domain(
+            document,
+            included_feature_ids=included_feature_ids,
+            included_features=included_features,
+        )
 
     def delete(self, slug: str) -> None:
         deleted, _ = self._base_queryset().filter(slug=slug).delete()
         if not deleted:
-            raise NotFoundError("Không tìm thấy gói dịch vụ.")
+            raise NotFoundError("Khong tim thay goi dich vu.")
 
     def list_features(self, *, active_only: bool = False) -> list[ServiceFeature]:
         queryset = ServiceFeatureDocument.objects.all()
@@ -67,7 +153,7 @@ class MongoServicePackageRepository:
     def update_feature(self, feature_id: str, payload: ServiceFeaturePayload) -> ServiceFeature:
         document = ServiceFeatureDocument.objects.filter(id=feature_id).first()
         if document is None:
-            raise NotFoundError("Không tìm thấy dịch vụ đi kèm.")
+            raise NotFoundError("Khong tim thay dich vu di kem.")
 
         for field, value in to_feature_document_defaults(payload).items():
             setattr(document, field, value)
@@ -77,5 +163,5 @@ class MongoServicePackageRepository:
     def delete_feature(self, feature_id: str) -> None:
         document = ServiceFeatureDocument.objects.filter(id=feature_id).first()
         if document is None:
-            raise NotFoundError("Không tìm thấy dịch vụ đi kèm.")
+            raise NotFoundError("Khong tim thay dich vu di kem.")
         document.delete()

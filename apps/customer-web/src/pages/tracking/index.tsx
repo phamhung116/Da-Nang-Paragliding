@@ -2,12 +2,15 @@ import { useMutation } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
+import { ChevronRight } from "lucide-react";
 import { customerApi } from "@/shared/config/api";
-import { useAuth } from "@/shared/providers/auth-provider";
 import { businessInfo } from "@/shared/constants/business";
 import { trackingSupportNotes } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { trackingLookupStorage } from "@/shared/lib/storage";
+import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
@@ -18,6 +21,7 @@ const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
+  const { locale } = useI18n();
   const { register, handleSubmit } = useForm<LookupForm>({
     defaultValues: {
       query: account?.email ?? trackingLookupStorage.get()
@@ -30,7 +34,9 @@ export const TrackingPage = () => {
   });
 
   const result = mutation.data;
-  const currentStep = result ? statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]) : -1;
+  const currentStepIndex = result
+    ? Math.max(0, statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]))
+    : 0;
 
   useEffect(() => {
     if (isAuthenticated && account?.email && mutation.status === "idle") {
@@ -40,28 +46,19 @@ export const TrackingPage = () => {
 
   return (
     <SiteLayout>
-      <section className="page-banner page-banner--tracking">
-        <div className="page-banner__image">
-          <img
-            src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1800&q=80"
-            alt="Tracking banner"
-          />
-          <div className="page-banner__overlay" />
-        </div>
-        <Container className="page-banner__content">
-          <Badge>Theo doi hanh trinh</Badge>
-          <h1>Theo doi booking va vi tri GPS.</h1>
-          <p>Khach da dang nhap se thay hanh trinh gan nhat ngay lap tuc.</p>
-        </Container>
-      </section>
-
       <section className="section">
         <Container className="stack">
+          <div className="stack-sm text-center">
+            <Badge>Theo dõi hành trình</Badge>
+            <h1>Theo dõi booking và vị trí GPS</h1>
+            <p>Khách đã đăng nhập sẽ thấy hành trình gần nhất ngay lập tức.</p>
+          </div>
+
           <div className="info-grid">
             {trackingSupportNotes.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Tra cuu tracking</strong>
+                  <strong>Tra cứu tracking</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -72,10 +69,16 @@ export const TrackingPage = () => {
             <Card className="tracking-search-card">
               <Panel>
                 <form className="tracking-lookup" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
-                  <Field label="Email hoac so dien thoai">
-                    <Input {...register("query", { required: true })} />
+                  <Field label="Email hoặc số điện thoại">
+                    <Input
+                      className="w-full rounded-2xl border-none bg-stone-100 p-4 outline-none focus:ring-2 focus:ring-brand"
+                      placeholder="Nhập email đã đặt lịch..."
+                      {...register("query", { required: true })}
+                    />
                   </Field>
-                  <Button>{mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}</Button>
+                  <Button className="btn-primary w-full py-4">
+                    {mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}
+                  </Button>
                 </form>
               </Panel>
             </Card>
@@ -83,42 +86,77 @@ export const TrackingPage = () => {
 
           {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 
+          {!result && mutation.isPending ? (
+            <Card className="empty-state-card">
+              <Panel className="stack-sm">
+                <Badge>Đang tra cứu</Badge>
+                <strong>Đang tra cứu booking...</strong>
+                <p>Hệ thống đang lấy timeline và vị trí GPS mới nhất.</p>
+              </Panel>
+            </Card>
+          ) : null}
+
           {result ? (
             <>
               <Card>
-                <Panel className="stack">
+                <Panel className="space-y-8">
+                  <button
+                    type="button"
+                    onClick={() => mutation.reset()}
+                    className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-400 transition-colors hover:text-brand"
+                  >
+                    <ChevronRight className="rotate-180" size={16} />
+                    Quay lại tra cứu
+                  </button>
+
                   <div className="tracking-status-header">
                     <div>
                       <Badge tone="success">{flightStatusLabels[result.booking.flight_status]}</Badge>
-                      <h3>{result.booking.service_name}</h3>
+                      <h3>{localizeBookingServiceName(result.booking, locale)}</h3>
                     </div>
                     <div className="tracking-contact-actions">
-                      <a href={`mailto:${result.booking.email}`}>Email khach</a>
+                      <a href={`mailto:${result.booking.email}`}>Email khách</a>
                       <a href={`tel:${businessInfo.phone.replace(/\s+/g, "")}`}>Liên hệ doanh nghiệp</a>
                     </div>
                   </div>
 
-                  <div className="status-progress">
-                    {statusOrder.map((status, index) => (
-                      <div
-                        key={status}
-                        className={`status-progress__step ${index <= currentStep ? "is-active" : ""}`}
-                      >
-                        <span>{index + 1}</span>
-                        <strong>{flightStatusLabels[status]}</strong>
-                      </div>
-                    ))}
+                  <div className="relative pb-4 pt-8">
+                    <div className="absolute left-0 right-0 top-1/2 h-1 -translate-y-1/2 bg-stone-100" />
+                    <div
+                      className="absolute left-0 top-1/2 h-1 -translate-y-1/2 bg-brand transition-all duration-1000"
+                      style={{ width: `${(currentStepIndex / (statusOrder.length - 1)) * 100}%` }}
+                    />
+                    <div className="relative flex justify-between gap-2">
+                      {statusOrder.map((status, index) => (
+                        <div key={status} className="flex flex-1 flex-col items-center gap-2 text-center">
+                          <div
+                            className={`z-10 h-5 w-5 rounded-full border-4 transition-colors ${
+                              index <= currentStepIndex
+                                ? "border-white bg-brand shadow-lg shadow-brand/20"
+                                : "border-stone-200 bg-white"
+                            }`}
+                          />
+                          <span
+                            className={`text-[9px] font-bold uppercase tracking-wider ${
+                              index <= currentStepIndex ? "text-brand" : "text-stone-400"
+                            }`}
+                          >
+                            {flightStatusLabels[status]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="tracking-grid">
                     <Card className="tracking-card">
                       <Panel className="stack-sm">
-                        <strong>Thong tin booking</strong>
-                        <p>Code: {result.booking.code}</p>
-                        <p>Phe duyet: {approvalStatusLabels[result.booking.approval_status]}</p>
-                        <p>Thanh toan: {paymentStatusLabels[result.booking.payment_status]}</p>
+                        <strong>Thông tin booking</strong>
+                        <p>Mã booking: {result.booking.code}</p>
+                        <p>Phê duyệt: {approvalStatusLabels[result.booking.approval_status]}</p>
+                        <p>Thanh toán: {paymentStatusLabels[result.booking.payment_status]}</p>
                         <p>
-                          Lich bay: {result.booking.flight_date} luc {result.booking.flight_time}
+                          Lịch bay: {result.booking.flight_date} lúc {result.booking.flight_time}
                         </p>
                         <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Đang cập nhật"}</p>
                       </Panel>
@@ -126,7 +164,7 @@ export const TrackingPage = () => {
 
                     <Card className="tracking-card">
                       <Panel className="stack-sm">
-                        <strong>Timeline</strong>
+                        <strong>Lịch sử hành trình</strong>
                         <div className="timeline">
                           {result.tracking.timeline.map((event, index) => (
                             <div className="timeline__item" key={`${String(event.recorded_at)}-${index}`}>
@@ -144,28 +182,30 @@ export const TrackingPage = () => {
               {mapVisibleStatuses.has(result.booking.flight_status) ? (
                 <Card>
                   <Panel className="stack">
-                    <strong>Ban do GPS</strong>
+                    <strong>Bản đồ GPS</strong>
                     <TrackingMap booking={result.booking} tracking={result.tracking} />
                   </Panel>
                 </Card>
               ) : (
                 <Card>
                   <Panel className="stack-sm">
-                    <strong>Ban do se hien thi khi hanh trinh bat dau.</strong>
-                    <p>Hien tai booking van dang cho xac nhan hoac cho toi gio khoi hanh.</p>
+                    <strong>Bản đồ sẽ hiển thị khi hành trình bắt đầu.</strong>
+                    <p>Hiện tại booking vẫn đang chờ xác nhận hoặc chờ tới giờ khởi hành.</p>
                   </Panel>
                 </Card>
               )}
             </>
-          ) : (
+          ) : null}
+
+          {!result && !mutation.isPending ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge>Tracking ready</Badge>
-                <strong>Nhap thong tin booking de hien thi timeline va vi tri GPS.</strong>
-                <p>Ngay sau khi customer dat lich thanh cong, booking co the duoc tra cuu lai tu trang nay.</p>
+                <Badge>Sẵn sàng tra cứu</Badge>
+                <strong>Nhập thông tin booking để hiển thị timeline và vị trí GPS.</strong>
+                <p>Ngay sau khi khách hàng đặt lịch thành công, booking có thể được tra cứu lại từ trang này.</p>
               </Panel>
             </Card>
-          )}
+          ) : null}
         </Container>
       </section>
     </SiteLayout>

@@ -8,6 +8,7 @@ class FlightTrackingSerializer(serializers.Serializer):
     booking_code = serializers.CharField()
     phone = serializers.CharField()
     service_name = serializers.CharField()
+    service_name_en = serializers.CharField()
     flight_status = serializers.CharField()
     pilot_name = serializers.CharField(allow_null=True, allow_blank=True)
     tracking_active = serializers.BooleanField()

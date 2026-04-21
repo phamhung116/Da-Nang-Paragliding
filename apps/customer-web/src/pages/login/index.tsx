@@ -5,7 +5,6 @@ import { Link, Navigate, useLocation } from "react-router-dom";
 import { Button, Card, Field, Input, Panel } from "@paragliding/ui";
 import type { EmailAuthStartPayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { routes } from "@/shared/config/routes";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -13,7 +12,6 @@ const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 export const LoginPage = () => {
   const location = useLocation();
-  const { locale, setLocale } = useI18n();
   const { startEmailAuth, claimEmailAuth, isAuthenticated } = useAuth();
   const [pollToken, setPollToken] = useState("");
   const [claimNotice, setClaimNotice] = useState("");
@@ -79,17 +77,6 @@ export const LoginPage = () => {
               <small>Da Nang Paragliding</small>
             </span>
           </Link>
-
-          <div className="auth-screen__actions">
-            <div className="locale-switcher">
-              <button type="button" className={locale === "vi" ? "is-active" : ""} onClick={() => setLocale("vi")}>
-                VI
-              </button>
-              <button type="button" className={locale === "en" ? "is-active" : ""} onClick={() => setLocale("en")}>
-                EN
-              </button>
-            </div>
-          </div>
         </div>
 
         <Card className="auth-luxe-card">
@@ -107,10 +94,10 @@ export const LoginPage = () => {
                   autoComplete="email"
                   placeholder="customer@danangparagliding.vn"
                   {...loginForm.register("email", {
-                    required: "Email la bat buoc.",
+                    required: "Email là bắt buộc.",
                     pattern: {
                       value: emailPattern,
-                      message: "Email khong hop le."
+                      message: "Email không hợp lệ."
                     },
                     setValueAs: (value) => normalizeEmail(String(value ?? ""))
                   })}
@@ -122,7 +109,7 @@ export const LoginPage = () => {
               {claimError ? <div className="auth-minimal-alert">{claimError}</div> : null}
               {loginSuccess ? (
                 <div className="auth-minimal-alert is-success">
-                  Link xac thuc da duoc gui. Neu ban mo link tren dien thoai, man hinh nay se tu dong vao tai khoan sau khi email duoc xac thuc.
+                  Link xác thực đã được gửi. Nếu bạn mở link trên điện thoại, màn hình này sẽ tự động vào tài khoản sau khi email được xác thực.
                 </div>
               ) : null}
               {claimNotice ? <div className="auth-minimal-alert is-success">{claimNotice}</div> : null}

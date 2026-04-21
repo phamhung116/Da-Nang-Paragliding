@@ -3,13 +3,17 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
+import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
+import { localizePostContent, localizePostTitle } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { WeatherShowcase } from "@/widgets/weather-showcase/weather-showcase";
 import { motion } from "motion/react";
 
 export const PostDetailPage = () => {
   const { slug = "" } = useParams();
+  const { locale } = useI18n();
   const { data } = useQuery({
     queryKey: ["post", slug],
     queryFn: () => customerApi.getPost(slug),
@@ -48,6 +52,9 @@ export const PostDetailPage = () => {
     );
   }
 
+  const postTitle = localizePostTitle(data, locale);
+  const postContent = localizePostContent(data, locale);
+
   return (
     <SiteLayout>
       <motion.div 
@@ -57,8 +64,8 @@ export const PostDetailPage = () => {
       className="pb-20"
       > 
         <Banner 
-          title={data.title} 
-          subtitle={new Date(data.published_at ?? data.created_at ?? "").toLocaleDateString("vi-VN")}
+          title={postTitle} 
+          subtitle={formatDate(data.published_at ?? data.created_at ?? "")}
           image={data.cover_image}
         />
 
@@ -69,17 +76,16 @@ export const PostDetailPage = () => {
                 <div className="mb-8 overflow-hidden rounded-[32px] shadow-xl">
                   <img 
                     src={data.cover_image} 
-                    alt={data.title} 
+                    alt={postTitle} 
                     className="w-full aspect-video object-cover"
                     referrerPolicy="no-referrer"
                   />
                 </div>
-                <h2 className="text-3xl font-bold text-stone-900 mb-6 leading-tight">{data.title}</h2>
-                <div className="text-stone-600 leading-relaxed space-y-6 text-lg">
-                  {data.content.split('\n').map((paragraph, i) => (
-                    <p key={i}>{paragraph}</p>
-                  ))}
-                </div>
+                <h2 className="text-3xl font-bold text-stone-900 mb-6 leading-tight">{postTitle}</h2>
+                <div
+                  className="text-stone-600 leading-relaxed space-y-6 text-lg"
+                  dangerouslySetInnerHTML={{ __html: postContent }}
+                />
               </div>
             </div>
             <div className="space-y-12">

@@ -42,8 +42,8 @@ def normalize_phone(phone: str) -> str:
     return "".join(character for character in phone if character.isdigit() or character == "+")
 
 
-IDEAL_FLIGHT_CONDITION = "Ly tuong"
-BAD_FLIGHT_CONDITION = "Khong ly tuong"
+IDEAL_FLIGHT_CONDITION = "Lý tưởng"
+BAD_FLIGHT_CONDITION = "Không lý tưởng"
 
 WEATHERAPI_BAD_CODES = {
     1063,
@@ -173,31 +173,31 @@ def flight_condition_for(
 
 
 OPEN_METEO_WEATHER_LABELS = {
-    0: "Troi quang",
-    1: "It may",
-    2: "May rai rac",
-    3: "Nhieu may",
-    45: "Suong mu",
-    48: "Suong mu dong bang",
-    51: "Mua phun nhe",
-    53: "Mua phun",
-    55: "Mua phun manh",
-    61: "Mua nhe",
-    63: "Mua vua",
-    65: "Mua lon",
-    80: "Mua rao nhe",
-    81: "Mua rao",
-    82: "Mua rao manh",
-    95: "Giong",
-    96: "Giong kem mua da",
-    99: "Giong kem mua da manh",
+    0: "Trời quang",
+    1: "Ít mây",
+    2: "Mây rải rác",
+    3: "Nhiều mây",
+    45: "Sương mù",
+    48: "Sương mù đóng băng",
+    51: "Mưa phùn nhẹ",
+    53: "Mưa phùn",
+    55: "Mưa phùn mạnh",
+    61: "Mưa nhẹ",
+    63: "Mưa vừa",
+    65: "Mưa lớn",
+    80: "Mưa rào nhẹ",
+    81: "Mưa rào",
+    82: "Mưa rào mạnh",
+    95: "Giông",
+    96: "Giông kèm mưa đá",
+    99: "Giông kèm mưa đá mạnh",
 }
 
 
 def _weather_label(weather_code: int | None) -> str:
     if weather_code is None:
-        return "Dang cap nhat"
-    return OPEN_METEO_WEATHER_LABELS.get(weather_code, "Dang cap nhat")
+        return "Đang cập nhật"
+    return OPEN_METEO_WEATHER_LABELS.get(weather_code, "Đang cập nhật")
 
 
 def _fetch_open_meteo_forecast(

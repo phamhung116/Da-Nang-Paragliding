@@ -2,10 +2,14 @@ export type ServicePackage = {
   id: string;
   slug: string;
   name: string;
+  name_en: string;
   short_description: string;
+  short_description_en: string;
   description: string;
+  description_en: string;
   price: string;
-  included_services: string[];
+  included_feature_ids: string[];
+  included_features: ServiceFeature[];
   hero_image: string;
   launch_site_name: string;
   launch_lat: number;
@@ -22,7 +26,9 @@ export type ServicePackage = {
 export type ServiceFeature = {
   id: string;
   name: string;
+  name_en: string;
   description: string;
+  description_en: string;
   active: boolean;
   created_at: string | null;
   updated_at: string | null;
@@ -62,6 +68,7 @@ export type Booking = {
   code: string;
   service_slug: string;
   service_name: string;
+  service_name_en: string;
   launch_site_name: string;
   flight_date: string;
   flight_time: string;
@@ -136,8 +143,11 @@ export type Post = {
   id: string;
   slug: string;
   title: string;
+  title_en: string;
   excerpt: string;
+  excerpt_en: string;
   content: string;
+  content_en: string;
   cover_image: string;
   published: boolean;
   published_at: string | null;
@@ -178,6 +188,7 @@ export type Tracking = {
   booking_code: string;
   phone: string;
   service_name: string;
+  service_name_en: string;
   flight_status: string;
   pilot_name: string | null;
   tracking_active: boolean;
@@ -245,6 +256,43 @@ export type ManagedAccountPayload = {
   is_active: boolean;
 };
 
-export type ServicePackageWritePayload = Omit<ServicePackage, "id" | "created_at" | "updated_at">;
-export type ServiceFeatureWritePayload = Omit<ServiceFeature, "id" | "created_at" | "updated_at">;
-export type PostWritePayload = Omit<Post, "id" | "published_at" | "created_at" | "updated_at">;
+export type ServicePackageWritePayload = {
+  slug: string;
+  name: string;
+  name_en: string;
+  short_description: string;
+  short_description_en: string;
+  description: string;
+  description_en: string;
+  price: string;
+  included_feature_ids: string[];
+  hero_image: string;
+  launch_site_name: string;
+  launch_lat: number;
+  launch_lng: number;
+  landing_site_name: string;
+  landing_lat: number;
+  landing_lng: number;
+  featured: boolean;
+  active: boolean;
+};
+
+export type ServiceFeatureWritePayload = {
+  name: string;
+  name_en: string;
+  description: string;
+  description_en: string;
+  active: boolean;
+};
+
+export type PostWritePayload = {
+  slug: string;
+  title: string;
+  title_en: string;
+  excerpt: string;
+  excerpt_en: string;
+  content: string;
+  content_en: string;
+  cover_image: string;
+  published: boolean;
+};

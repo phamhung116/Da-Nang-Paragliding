@@ -38,8 +38,11 @@ import { AdminLayout } from "@/widgets/layout/admin-layout";
 const blankValues: PostWritePayload = {
   slug: "",
   title: "",
+  title_en: "",
   excerpt: "",
+  excerpt_en: "",
   content: "",
+  content_en: "",
   cover_image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
   published: true
 };
@@ -75,6 +78,16 @@ const tinyMceToolbar = [
   "removeformat visualblocks code preview fullscreen help"
 ].join(" | ");
 
+const slugify = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\u0111/g, "d")
+    .replace(/\u0110/g, "D")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
 const normalizeUrl = (value: string) => {
   const trimmed = value.trim();
   if (!trimmed) return "";
@@ -97,7 +110,7 @@ const readBlobAsDataUrl = (blob: Blob) => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("Khong the doc file anh nay."));
+    reader.onerror = () => reject(new Error("Không thể đọc file ảnh này."));
     reader.readAsDataURL(blob);
   });
 };
@@ -125,40 +138,40 @@ const openSelectedTextLinkDialog = (editor: TinyMceCoreEditor) => {
   const selectedText = editor.selection.getContent({ format: "text" }).trim();
 
   if (!anchor && !selectedText) {
-    notifyEditor(editor, "Hay boi den doan text can gan link.");
+    notifyEditor(editor, "Hãy bôi đen đoạn text cần gắn link.");
     return;
   }
 
   if (!anchor && selectedContentContainsImage(editor)) {
-    notifyEditor(editor, "Link chi ap dung cho text dang duoc boi den, khong gan link truc tiep vao anh.");
+    notifyEditor(editor, "Link chỉ áp dụng cho text đang được bôi đen, không gắn link trực tiếp vào ảnh.");
     return;
   }
 
   editor.windowManager.open({
-    title: anchor ? "Sua lien ket" : "Chen lien ket",
+    title: anchor ? "Sửa liên kết" : "Chèn liên kết",
     body: {
       type: "panel",
       items: [
         {
           type: "input",
           name: "url",
-          label: "URL lien ket"
+          label: "URL liên kết"
         },
         {
           type: "checkbox",
           name: "newTab",
-          label: "Mo link trong tab moi"
+          label: "Mở link trong tab mới"
         }
       ]
     },
     buttons: [
       {
         type: "cancel",
-        text: "Huy"
+        text: "Hủy"
       },
       {
         type: "submit",
-        text: "Ap dung",
+        text: "Áp dụng",
         primary: true
       }
     ],
@@ -171,7 +184,7 @@ const openSelectedTextLinkDialog = (editor: TinyMceCoreEditor) => {
       const href = normalizeUrl(data.url);
 
       if (!href) {
-        notifyEditor(editor, "Nhap URL lien ket truoc khi ap dung.", "error");
+        notifyEditor(editor, "Nhập URL liên kết trước khi áp dụng.", "error");
         return;
       }
 
@@ -195,9 +208,9 @@ const openSelectedTextLinkDialog = (editor: TinyMceCoreEditor) => {
 
 const makeImageUploadHandler = (editor: TinyMceCoreEditor) => {
   return async (blobInfo: { blob: () => Blob; filename: () => string }) => {
-    const blob = blobInfo.blob();
+      const blob = blobInfo.blob();
     if (blob.size > maxInlineImageBytes) {
-      const message = `Anh chen truc tiep toi da ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`;
+      const message = `Ảnh chèn trực tiếp tối đa ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`;
       notifyEditor(editor, message, "error");
       throw new Error(message);
     }
@@ -205,17 +218,137 @@ const makeImageUploadHandler = (editor: TinyMceCoreEditor) => {
   };
 };
 
+const createTinyMceInit = (editorRef: { current: TinyMceCoreEditor | null }) => ({
+  height: 540,
+  min_height: 420,
+  menubar: "edit view format table tools",
+  plugins: tinyMcePlugins,
+  toolbar: tinyMceToolbar,
+  toolbar_mode: "sliding" as const,
+  contextmenu: "image table",
+  quickbars_selection_toolbar: "bold italic underline | selectedlink unlink | blockquote",
+  quickbars_insert_toolbar: "quickimage quicktable",
+  quickbars_image_toolbar: "alignleft aligncenter alignright | image",
+  block_formats: "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Quote=blockquote; Code=pre",
+  font_family_formats:
+    "Be Vietnam Pro='Be Vietnam Pro', sans-serif;Arial=arial,helvetica,sans-serif;Verdana=verdana,geneva,sans-serif;Tahoma=tahoma,arial,helvetica,sans-serif;Georgia=georgia,palatino,serif;Times New Roman='Times New Roman',times,serif;Courier New='Courier New',courier,monospace",
+  font_size_input_default_unit: "px",
+  font_size_formats: "10px 12px 14px 16px 18px 20px 24px 28px 32px 36px 42px 48px",
+  image_title: true,
+  image_caption: true,
+  image_advtab: true,
+  image_dimensions: true,
+  object_resizing: "img",
+  resize_img_proportional: true,
+  automatic_uploads: true,
+  paste_data_images: true,
+  images_file_types: "jpg,jpeg,png,gif,webp",
+  images_upload_handler: (blobInfo: { blob: () => Blob; filename: () => string }) => {
+    const editor = editorRef.current;
+    if (!editor) {
+      throw new Error("Editor chưa sẵn sàng.");
+    }
+    return makeImageUploadHandler(editor)(blobInfo);
+  },
+  file_picker_types: "image",
+  file_picker_callback: (callback: (value: string, meta?: Record<string, string>) => void, _value: string, meta: { filetype?: string }) => {
+    if (meta.filetype !== "image") {
+      return;
+    }
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/jpeg,image/png,image/gif,image/webp";
+    input.addEventListener("change", async () => {
+      const file = input.files?.[0];
+      const editor = editorRef.current;
+      if (!file || !editor) {
+        return;
+      }
+      if (file.size > maxInlineImageBytes) {
+        notifyEditor(editor, `Ảnh chèn trực tiếp tối đa ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`, "error");
+        return;
+      }
+      const dataUrl = await readBlobAsDataUrl(file);
+      callback(dataUrl, {
+        alt: file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ")
+      });
+    });
+    input.click();
+  },
+  convert_urls: false,
+  branding: false,
+  promotion: false,
+  content_style: `
+    @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
+    body {
+      margin: 0;
+      padding: 24px;
+      color: #2d1e27;
+      font-family: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-size: 16px;
+      line-height: 1.75;
+    }
+    p { margin: 0 0 1rem; }
+    h1, h2, h3 { margin: 1.2rem 0 0.65rem; line-height: 1.2; color: #2d1e27; }
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.55rem; }
+    h3 { font-size: 1.25rem; }
+    a { color: #8c1538; font-weight: 700; text-decoration: underline; text-underline-offset: 0.18em; }
+    blockquote {
+      margin: 1rem 0;
+      padding: 0.9rem 1rem;
+      border-left: 4px solid #c91842;
+      border-radius: 8px;
+      background: #fff7f9;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 1rem;
+      border-radius: 8px;
+      background: #211f22;
+      color: #fff7f9;
+      white-space: pre-wrap;
+    }
+    img { max-width: 100%; height: auto; border-radius: 8px; }
+    figure.image { display: table; margin: 1.25rem auto; }
+    figure.image img { display: block; margin: 0 auto; }
+    figure.image figcaption {
+      padding-top: 0.45rem;
+      color: #78646c;
+      font-size: 0.86rem;
+      line-height: 1.55;
+      text-align: center;
+    }
+  `,
+  setup: (editor: TinyMceCoreEditor) => {
+    editor.ui.registry.addButton("selectedlink", {
+      icon: "link",
+      tooltip: "Chèn/sửa link cho text đang bôi đen",
+      onAction: () => openSelectedTextLinkDialog(editor)
+    });
+    editor.addShortcut("Meta+K", "Chèn/sửa link", () => openSelectedTextLinkDialog(editor));
+    editor.addShortcut("Ctrl+K", "Chèn/sửa link", () => openSelectedTextLinkDialog(editor));
+  }
+});
+
 export const PostDetailPage = () => {
   const { slug = "" } = useParams();
   const isNew = slug === "new";
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const editorRef = useRef<TinyMceCoreEditor | null>(null);
+  const editorViRef = useRef<TinyMceCoreEditor | null>(null);
+  const editorEnRef = useRef<TinyMceCoreEditor | null>(null);
   const form = useForm<PostWritePayload>({ defaultValues: blankValues });
   const published = form.watch("published");
   const coverImage = form.watch("cover_image");
-  const [editorContent, setEditorContent] = useState("");
+  const titleVi = form.watch("title");
+  const [editorContentVi, setEditorContentVi] = useState("");
+  const [editorContentEn, setEditorContentEn] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isSlugCustomized, setIsSlugCustomized] = useState(false);
+  const titleViField = form.register("title");
+  const titleEnField = form.register("title_en");
+  const slugField = form.register("slug");
 
   const postQuery = useQuery({
     queryKey: ["admin-post", slug],
@@ -241,8 +374,8 @@ export const PostDetailPage = () => {
     }
   });
 
-  const updateEditorContent = (content: string) => {
-    setEditorContent(content);
+  const updateEditorContentVi = (content: string) => {
+    setEditorContentVi(content);
     form.setValue("content", content, {
       shouldDirty: true,
       shouldTouch: true,
@@ -250,9 +383,24 @@ export const PostDetailPage = () => {
     });
   };
 
+  const updateEditorContentEn = (content: string) => {
+    setEditorContentEn(content);
+    form.setValue("content_en", content, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true
+    });
+  };
+
   const handlePostSubmit = (values: PostWritePayload) => {
-    const nextContent = editorRef.current?.getContent() ?? editorContent;
-    saveMutation.mutate({ ...values, content: nextContent });
+    const nextContent = editorViRef.current?.getContent() ?? editorContentVi;
+    const nextContentEn = editorEnRef.current?.getContent() ?? editorContentEn;
+    saveMutation.mutate({
+      ...values,
+      slug: values.slug.trim() || slugify(values.title),
+      content: nextContent,
+      content_en: nextContentEn
+    });
   };
 
   const setCoverImage = (nextValue: string) => {
@@ -266,7 +414,9 @@ export const PostDetailPage = () => {
   useEffect(() => {
     if (isNew) {
       form.reset(blankValues);
-      setEditorContent("");
+      setEditorContentVi("");
+      setEditorContentEn("");
+      setIsSlugCustomized(false);
       return;
     }
 
@@ -274,15 +424,32 @@ export const PostDetailPage = () => {
       const nextValues = {
         slug: postQuery.data.slug,
         title: postQuery.data.title,
+        title_en: postQuery.data.title_en,
         excerpt: postQuery.data.excerpt,
+        excerpt_en: postQuery.data.excerpt_en,
         content: postQuery.data.content,
+        content_en: postQuery.data.content_en,
         cover_image: postQuery.data.cover_image,
         published: postQuery.data.published
       };
       form.reset(nextValues);
-      setEditorContent(postQuery.data.content);
+      setEditorContentVi(postQuery.data.content);
+      setEditorContentEn(postQuery.data.content_en);
+      setIsSlugCustomized(postQuery.data.slug !== slugify(postQuery.data.title));
     }
   }, [form, isNew, postQuery.data]);
+
+  useEffect(() => {
+    if (isSlugCustomized) {
+      return;
+    }
+
+    form.setValue("slug", slugify(titleVi), {
+      shouldDirty: false,
+      shouldTouch: false,
+      shouldValidate: true
+    });
+  }, [form, isSlugCustomized, titleVi]);
 
   return (
     <AdminLayout>
@@ -290,179 +457,109 @@ export const PostDetailPage = () => {
         <div className="portal-heading">
           <div className="portal-heading__text">
             <Badge>{published ? "PUBLISHED" : "DRAFT"}</Badge>
-            <h1>{isNew ? "Tao bai viet" : postQuery.data?.title ?? "Post detail"}</h1>
-            <p>Trang chi tiet bai viet chi tap trung vao noi dung va metadata cua bai viet nay.</p>
+            <h1>{isNew ? "Tạo bài viết" : postQuery.data?.title ?? "Post detail"}</h1>
+            <p>Trang chi tiết bài viết tập trung vào nội dung song ngữ và metadata của bài viết này.</p>
           </div>
           <Link to={routes.posts}>
-            <Button variant="secondary">Quay lai danh sach</Button>
+            <Button variant="secondary">Quay lại danh sách</Button>
           </Link>
         </div>
 
         <Card className="post-editor-card">
           <Panel className="admin-stack">
             <form className="post-editor-layout" onSubmit={form.handleSubmit(handlePostSubmit)}>
-              <div className="rich-text-editor">
-                <TinyMceReactEditor
-                  licenseKey="gpl"
-                  value={editorContent}
-                  onInit={(_event, editor) => {
-                    editorRef.current = editor;
-                  }}
-                  onEditorChange={updateEditorContent}
-                  init={{
-                    height: 720,
-                    min_height: 560,
-                    menubar: "edit view format table tools",
-                    plugins: tinyMcePlugins,
-                    toolbar: tinyMceToolbar,
-                    toolbar_mode: "sliding",
-                    contextmenu: "image table",
-                    quickbars_selection_toolbar: "bold italic underline | selectedlink unlink | blockquote",
-                    quickbars_insert_toolbar: "quickimage quicktable",
-                    quickbars_image_toolbar: "alignleft aligncenter alignright | image",
-                    block_formats: "Paragraph=p; Heading 1=h1; Heading 2=h2; Heading 3=h3; Quote=blockquote; Code=pre",
-                    font_family_formats:
-                      "Be Vietnam Pro='Be Vietnam Pro', sans-serif;Arial=arial,helvetica,sans-serif;Verdana=verdana,geneva,sans-serif;Tahoma=tahoma,arial,helvetica,sans-serif;Georgia=georgia,palatino,serif;Times New Roman='Times New Roman',times,serif;Courier New='Courier New',courier,monospace",
-                    font_size_input_default_unit: "px",
-                    font_size_formats: "10px 12px 14px 16px 18px 20px 24px 28px 32px 36px 42px 48px",
-                    image_title: true,
-                    image_caption: true,
-                    image_advtab: true,
-                    image_dimensions: true,
-                    object_resizing: "img",
-                    resize_img_proportional: true,
-                    automatic_uploads: true,
-                    paste_data_images: true,
-                    images_file_types: "jpg,jpeg,png,gif,webp",
-                    images_upload_handler: (blobInfo) => {
-                      const editor = editorRef.current;
-                      if (!editor) {
-                        throw new Error("Editor chua san sang.");
-                      }
-                      return makeImageUploadHandler(editor)(blobInfo);
-                    },
-                    file_picker_types: "image",
-                    file_picker_callback: (callback, _value, meta) => {
-                      if (meta.filetype !== "image") {
-                        return;
-                      }
-                      const input = document.createElement("input");
-                      input.type = "file";
-                      input.accept = "image/jpeg,image/png,image/gif,image/webp";
-                      input.addEventListener("change", async () => {
-                        const file = input.files?.[0];
-                        const editor = editorRef.current;
-                        if (!file || !editor) {
-                          return;
-                        }
-                        if (file.size > maxInlineImageBytes) {
-                          notifyEditor(editor, `Anh chen truc tiep toi da ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`, "error");
-                          return;
-                        }
-                        const dataUrl = await readBlobAsDataUrl(file);
-                        callback(dataUrl, {
-                          alt: file.name.replace(/\.[^.]+$/, "").replace(/[-_]+/g, " ")
-                        });
-                      });
-                      input.click();
-                    },
-                    convert_urls: false,
-                    branding: false,
-                    promotion: false,
-                    content_style: `
-                      @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap");
-                      body {
-                        margin: 0;
-                        padding: 24px;
-                        color: #2d1e27;
-                        font-family: "Be Vietnam Pro", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-                        font-size: 16px;
-                        line-height: 1.75;
-                      }
-                      p { margin: 0 0 1rem; }
-                      h1, h2, h3 { margin: 1.2rem 0 0.65rem; line-height: 1.2; color: #2d1e27; }
-                      h1 { font-size: 2rem; }
-                      h2 { font-size: 1.55rem; }
-                      h3 { font-size: 1.25rem; }
-                      a { color: #8c1538; font-weight: 700; text-decoration: underline; text-underline-offset: 0.18em; }
-                      blockquote {
-                        margin: 1rem 0;
-                        padding: 0.9rem 1rem;
-                        border-left: 4px solid #c91842;
-                        border-radius: 8px;
-                        background: #fff7f9;
-                      }
-                      pre {
-                        overflow-x: auto;
-                        padding: 1rem;
-                        border-radius: 8px;
-                        background: #211f22;
-                        color: #fff7f9;
-                        white-space: pre-wrap;
-                      }
-                      img { max-width: 100%; height: auto; border-radius: 8px; }
-                      figure.image { display: table; margin: 1.25rem auto; }
-                      figure.image img { display: block; margin: 0 auto; }
-                      figure.image figcaption {
-                        padding-top: 0.45rem;
-                        color: #78646c;
-                        font-size: 0.86rem;
-                        line-height: 1.55;
-                        text-align: center;
-                      }
-                    `,
-                    setup: (editor) => {
-                      editor.ui.registry.addButton("selectedlink", {
-                        icon: "link",
-                        tooltip: "Chen/sua link cho text dang boi den",
-                        onAction: () => openSelectedTextLinkDialog(editor)
-                      });
-                      editor.addShortcut("Meta+K", "Chen/sua link", () => openSelectedTextLinkDialog(editor));
-                      editor.addShortcut("Ctrl+K", "Chen/sua link", () => openSelectedTextLinkDialog(editor));
-                    }
-                  }}
-                />
+              <div className="admin-stack">
+                <div className="rich-text-editor">
+                  <div className="admin-card__header">
+                    <div>
+                      <h3>Nội dung bài viết (VI)</h3>
+                      <p>Phiên bản hiển thị cho khách khi đang dùng tiếng Việt.</p>
+                    </div>
+                  </div>
+                  <TinyMceReactEditor
+                    licenseKey="gpl"
+                    value={editorContentVi}
+                    onInit={(_event, editor) => {
+                      editorViRef.current = editor;
+                    }}
+                    onEditorChange={updateEditorContentVi}
+                    init={createTinyMceInit(editorViRef)}
+                  />
+                </div>
+
+                <div className="rich-text-editor">
+                  <div className="admin-card__header">
+                    <div>
+                      <h3>Post Content (EN)</h3>
+                      <p>Phiên bản hiển thị cho khách khi đang dùng tiếng Anh.</p>
+                    </div>
+                  </div>
+                  <TinyMceReactEditor
+                    licenseKey="gpl"
+                    value={editorContentEn}
+                    onInit={(_event, editor) => {
+                      editorEnRef.current = editor;
+                    }}
+                    onEditorChange={updateEditorContentEn}
+                    init={createTinyMceInit(editorEnRef)}
+                  />
+                </div>
               </div>
 
               <aside className="post-editor-sidebar">
                 <div className="post-publish-card">
-                  <Badge>{published ? "Da san sang" : "Ban nhap"}</Badge>
-                  <strong>{isNew ? "Bai viet moi" : "Xuat ban"}</strong>
-                  <p>Kiem tra noi dung lan cuoi truoc khi luu thay doi.</p>
+                  <Badge>{published ? "Đã sẵn sàng" : "Bản nháp"}</Badge>
+                  <strong>{isNew ? "Bài viết mới" : "Xuất bản"}</strong>
+                  <p>Kiểm tra nội dung lần cuối trước khi lưu thay đổi.</p>
                 </div>
-                <Field label="Tieu de">
-                  <Input {...form.register("title")} />
+                <Field label="Tiêu đề (VI)">
+                  <Input {...titleViField} />
+                </Field>
+                <Field label="Tiêu đề (EN)">
+                  <Input {...titleEnField} />
                 </Field>
                 <Field label="Slug">
-                  <Input {...form.register("slug")} disabled={!isNew} />
+                  <Input
+                    {...slugField}
+                    placeholder="Tự tạo nếu để trống"
+                    onChange={(event) => {
+                      setIsSlugCustomized(true);
+                      slugField.onChange(event);
+                    }}
+                  />
                 </Field>
-                <Field label="Tom tat ngan">
+                <Field label="Tóm tắt ngắn (VI)">
                   <Textarea {...form.register("excerpt")} />
+                </Field>
+                <Field label="Tóm tắt ngắn (EN)">
+                  <Textarea {...form.register("excerpt_en")} />
                 </Field>
                 <ImageSourceField
                   label="Thumbnail"
                   value={coverImage}
                   previewAlt="Post thumbnail preview"
                   placeholder="https://..."
+                  previewCaption={titleVi}
                   onChange={setCoverImage}
                 />
                 <input type="hidden" {...form.register("cover_image", { required: true })} />
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("published")} />
-                  <span>{published ? "Dang published" : "Luu draft"}</span>
+                  <span>{published ? "Đang published" : "Lưu draft"}</span>
                 </label>
                 <input type="hidden" {...form.register("content")} />
+                <input type="hidden" {...form.register("content_en")} />
                 {saveMutation.error instanceof Error ? <p className="form-error">{saveMutation.error.message}</p> : null}
                 {deleteMutation.error instanceof Error ? <p className="form-error">{deleteMutation.error.message}</p> : null}
                 <div className="post-editor-sidebar__actions">
-                  <Button disabled={saveMutation.isPending}>{saveMutation.isPending ? "Dang luu..." : "Luu bai viet"}</Button>
+                  <Button disabled={saveMutation.isPending}>{saveMutation.isPending ? "Đang lưu..." : "Lưu bài viết"}</Button>
                   {!isNew ? (
                     <Button
                       variant="secondary"
                       type="button"
                       onClick={() => setDeleteDialogOpen(true)}
                     >
-                      Xoa bai viet
+                      Xóa bài viết
                     </Button>
                   ) : null}
                 </div>
@@ -478,16 +575,16 @@ export const PostDetailPage = () => {
               setDeleteDialogOpen(open);
             }
           }}
-          title={`Xoa bai viet ${form.watch("title") || slug}`}
-          description="Bai viet sau khi xoa se bien mat khoi danh sach hien thi cho khach hang."
+          title={`Xóa bài viết ${form.watch("title") || slug}`}
+          description="Bài viết sau khi xóa sẽ biến mất khỏi danh sách hiển thị cho khách hàng."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
-                Dong
+                Đóng
               </Button>
               <Button type="button" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>
-                {deleteMutation.isPending ? "Dang xoa..." : "Xoa bai viet"}
+                {deleteMutation.isPending ? "Đang xóa..." : "Xóa bài viết"}
               </Button>
             </>
           }
