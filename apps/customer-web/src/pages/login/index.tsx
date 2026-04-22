@@ -7,6 +7,7 @@ import type { EmailAuthStartPayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { routes } from "@/shared/config/routes";
+import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const normalizeEmail = (value: string) => value.trim().toLowerCase();
@@ -67,73 +68,60 @@ export const LoginPage = () => {
   const loginSuccess = loginMutation.isSuccess;
 
   return (
-    <div className="auth-screen">
-      <div className="auth-screen__glow auth-screen__glow--left" />
-      <div className="auth-screen__glow auth-screen__glow--right" />
-      <div className="auth-screen__shell">
-        <div className="auth-screen__topbar">
-          <Link to={routes.home} className="auth-screen__brand">
-            <span className="auth-screen__brand-icon">SN</span>
-            <span className="auth-screen__brand-copy">
-              <strong>Da Nang Paragliding</strong>
-              <small>Da Nang Paragliding</small>
-            </span>
-          </Link>
+    <SiteLayout>
+      <div className="auth-screen">
+        <div className="auth-screen__glow auth-screen__glow--left" />
+        <div className="auth-screen__glow auth-screen__glow--right" />
+        <div className="auth-screen__shell">
+          
 
-          <div className="auth-screen__actions">
-            <div className="locale-switcher">
-              <button type="button" className={locale === "vi" ? "is-active" : ""} onClick={() => setLocale("vi")}>
-                VI
-              </button>
-              <button type="button" className={locale === "en" ? "is-active" : ""} onClick={() => setLocale("en")}>
-                EN
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <Card className="auth-luxe-card">
-          <Panel className="auth-luxe-panel">
-            <form className="auth-luxe-form" onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))}>
-              <div className="auth-email-sent auth-email-sent--compact">
-                <span className="auth-email-sent__icon">SN</span>
-                <h1>Đăng nhập bằng email</h1>
-                <p>Nhập email, Da Nang Paragliding sẽ gửi link xác thực. Không cần mật khẩu và không cần đăng ký riêng.</p>
-              </div>
-
-              <Field label="Email">
-                <Input
-                  type="email"
-                  autoComplete="email"
-                  placeholder="customer@danangparagliding.vn"
-                  {...loginForm.register("email", {
-                    required: "Email la bat buoc.",
-                    pattern: {
-                      value: emailPattern,
-                      message: "Email khong hop le."
-                    },
-                    setValueAs: (value) => normalizeEmail(String(value ?? ""))
-                  })}
-                />
-              </Field>
-              {loginForm.formState.errors.email ? <p className="form-error">{loginForm.formState.errors.email.message}</p> : null}
-
-              {loginError ? <div className="auth-minimal-alert">{loginError}</div> : null}
-              {claimError ? <div className="auth-minimal-alert">{claimError}</div> : null}
-              {loginSuccess ? (
-                <div className="auth-minimal-alert is-success">
-                  Link xac thuc da duoc gui. Neu ban mo link tren dien thoai, man hinh nay se tu dong vao tai khoan sau khi email duoc xac thuc.
+          <Card className="auth-luxe-card">
+            <Panel className="auth-luxe-panel">
+              <form className="auth-luxe-form" onSubmit={loginForm.handleSubmit((values) => loginMutation.mutate(values))}>
+                <div className="auth-email-sent auth-email-sent--compact">
+                  <img
+                    src="/media/img/logo.jpg"
+                    alt="Da Nang Paragliding logo"
+                    className="h-30 w-30 object-cover"
+                  />
+                  <h1>Đăng nhập bằng email</h1>
+                  <p>Nhập email, Da Nang Paragliding sẽ gửi link xác thực. Không cần mật khẩu và không cần đăng ký riêng.</p>
                 </div>
-              ) : null}
-              {claimNotice ? <div className="auth-minimal-alert is-success">{claimNotice}</div> : null}
 
-              <Button className="auth-luxe-submit" disabled={loginMutation.isPending}>
-                {loginMutation.isPending ? "Đang gửi link..." : "Gửi link xác thực"}
-              </Button>
-            </form>
-          </Panel>
-        </Card>
+                <Field label="Email">
+                  <Input
+                    type="email"
+                    autoComplete="email"
+                    placeholder="customer@danangparagliding.vn"
+                    {...loginForm.register("email", {
+                      required: "Email la bat buoc.",
+                      pattern: {
+                        value: emailPattern,
+                        message: "Email khong hop le."
+                      },
+                      setValueAs: (value) => normalizeEmail(String(value ?? ""))
+                    })}
+                  />
+                </Field>
+                {loginForm.formState.errors.email ? <p className="form-error">{loginForm.formState.errors.email.message}</p> : null}
+
+                {loginError ? <div className="auth-minimal-alert">{loginError}</div> : null}
+                {claimError ? <div className="auth-minimal-alert">{claimError}</div> : null}
+                {loginSuccess ? (
+                  <div className="auth-minimal-alert is-success">
+                    Link xac thuc da duoc gui. Neu ban mo link tren dien thoai, man hinh nay se tu dong vao tai khoan sau khi email duoc xac thuc.
+                  </div>
+                ) : null}
+                {claimNotice ? <div className="auth-minimal-alert is-success">{claimNotice}</div> : null}
+
+                <Button className="auth-luxe-submit" disabled={loginMutation.isPending}>
+                  {loginMutation.isPending ? "Đang gửi link..." : "Gửi link xác thực"}
+                </Button>
+              </form>
+            </Panel>
+          </Card>
+        </div>
       </div>
-    </div>
+    </SiteLayout>
   );
 };
