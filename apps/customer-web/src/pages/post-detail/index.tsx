@@ -5,15 +5,12 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
-import { localizePostContent, localizePostTitle } from "@/shared/lib/localized-content";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { WeatherShowcase } from "@/widgets/weather-showcase/weather-showcase";
 import { motion } from "motion/react";
 
 export const PostDetailPage = () => {
   const { slug = "" } = useParams();
-  const { locale } = useI18n();
   const { data } = useQuery({
     queryKey: ["post", slug],
     queryFn: () => customerApi.getPost(slug),
@@ -52,8 +49,8 @@ export const PostDetailPage = () => {
     );
   }
 
-  const postTitle = localizePostTitle(data, locale);
-  const postContent = localizePostContent(data, locale);
+  const postTitle = data.title;
+  const postContent = data.content;
 
   return (
     <SiteLayout>

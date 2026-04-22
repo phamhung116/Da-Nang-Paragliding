@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -110,7 +110,7 @@ const readBlobAsDataUrl = (blob: Blob) => {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result ?? ""));
-    reader.onerror = () => reject(new Error("Không thể đọc file ảnh này."));
+    reader.onerror = () => reject(new Error("KhÃ´ng thá»ƒ Ä‘á»c file áº£nh nÃ y."));
     reader.readAsDataURL(blob);
   });
 };
@@ -138,40 +138,40 @@ const openSelectedTextLinkDialog = (editor: TinyMceCoreEditor) => {
   const selectedText = editor.selection.getContent({ format: "text" }).trim();
 
   if (!anchor && !selectedText) {
-    notifyEditor(editor, "Hãy bôi đen đoạn text cần gắn link.");
+    notifyEditor(editor, "HÃ£y bÃ´i Ä‘en Ä‘oáº¡n text cáº§n gáº¯n link.");
     return;
   }
 
   if (!anchor && selectedContentContainsImage(editor)) {
-    notifyEditor(editor, "Link chỉ áp dụng cho text đang được bôi đen, không gắn link trực tiếp vào ảnh.");
+    notifyEditor(editor, "Link chá»‰ Ã¡p dá»¥ng cho text Ä‘ang Ä‘Æ°á»£c bÃ´i Ä‘en, khÃ´ng gáº¯n link trá»±c tiáº¿p vÃ o áº£nh.");
     return;
   }
 
   editor.windowManager.open({
-    title: anchor ? "Sửa liên kết" : "Chèn liên kết",
+    title: anchor ? "Sá»­a liÃªn káº¿t" : "ChÃ¨n liÃªn káº¿t",
     body: {
       type: "panel",
       items: [
         {
           type: "input",
           name: "url",
-          label: "URL liên kết"
+          label: "URL liÃªn káº¿t"
         },
         {
           type: "checkbox",
           name: "newTab",
-          label: "Mở link trong tab mới"
+          label: "Má»Ÿ link trong tab má»›i"
         }
       ]
     },
     buttons: [
       {
         type: "cancel",
-        text: "Hủy"
+        text: "Há»§y"
       },
       {
         type: "submit",
-        text: "Áp dụng",
+        text: "Ãp dá»¥ng",
         primary: true
       }
     ],
@@ -184,7 +184,7 @@ const openSelectedTextLinkDialog = (editor: TinyMceCoreEditor) => {
       const href = normalizeUrl(data.url);
 
       if (!href) {
-        notifyEditor(editor, "Nhập URL liên kết trước khi áp dụng.", "error");
+        notifyEditor(editor, "Nháº­p URL liÃªn káº¿t trÆ°á»›c khi Ã¡p dá»¥ng.", "error");
         return;
       }
 
@@ -210,7 +210,7 @@ const makeImageUploadHandler = (editor: TinyMceCoreEditor) => {
   return async (blobInfo: { blob: () => Blob; filename: () => string }) => {
       const blob = blobInfo.blob();
     if (blob.size > maxInlineImageBytes) {
-      const message = `Ảnh chèn trực tiếp tối đa ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`;
+      const message = `áº¢nh chÃ¨n trá»±c tiáº¿p tá»‘i Ä‘a ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`;
       notifyEditor(editor, message, "error");
       throw new Error(message);
     }
@@ -246,7 +246,7 @@ const createTinyMceInit = (editorRef: { current: TinyMceCoreEditor | null }) => 
   images_upload_handler: (blobInfo: { blob: () => Blob; filename: () => string }) => {
     const editor = editorRef.current;
     if (!editor) {
-      throw new Error("Editor chưa sẵn sàng.");
+      throw new Error("Editor chÆ°a sáºµn sÃ ng.");
     }
     return makeImageUploadHandler(editor)(blobInfo);
   },
@@ -265,7 +265,7 @@ const createTinyMceInit = (editorRef: { current: TinyMceCoreEditor | null }) => 
         return;
       }
       if (file.size > maxInlineImageBytes) {
-        notifyEditor(editor, `Ảnh chèn trực tiếp tối đa ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`, "error");
+        notifyEditor(editor, `áº¢nh chÃ¨n trá»±c tiáº¿p tá»‘i Ä‘a ${Math.round(maxInlineImageBytes / 1024 / 1024)}MB.`, "error");
         return;
       }
       const dataUrl = await readBlobAsDataUrl(file);
@@ -323,11 +323,11 @@ const createTinyMceInit = (editorRef: { current: TinyMceCoreEditor | null }) => 
   setup: (editor: TinyMceCoreEditor) => {
     editor.ui.registry.addButton("selectedlink", {
       icon: "link",
-      tooltip: "Chèn/sửa link cho text đang bôi đen",
+      tooltip: "ChÃ¨n/sá»­a link cho text Ä‘ang bÃ´i Ä‘en",
       onAction: () => openSelectedTextLinkDialog(editor)
     });
-    editor.addShortcut("Meta+K", "Chèn/sửa link", () => openSelectedTextLinkDialog(editor));
-    editor.addShortcut("Ctrl+K", "Chèn/sửa link", () => openSelectedTextLinkDialog(editor));
+    editor.addShortcut("Meta+K", "ChÃ¨n/sá»­a link", () => openSelectedTextLinkDialog(editor));
+    editor.addShortcut("Ctrl+K", "ChÃ¨n/sá»­a link", () => openSelectedTextLinkDialog(editor));
   }
 });
 
@@ -337,17 +337,14 @@ export const PostDetailPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const editorViRef = useRef<TinyMceCoreEditor | null>(null);
-  const editorEnRef = useRef<TinyMceCoreEditor | null>(null);
   const form = useForm<PostWritePayload>({ defaultValues: blankValues });
   const published = form.watch("published");
   const coverImage = form.watch("cover_image");
   const titleVi = form.watch("title");
   const [editorContentVi, setEditorContentVi] = useState("");
-  const [editorContentEn, setEditorContentEn] = useState("");
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [isSlugCustomized, setIsSlugCustomized] = useState(false);
   const titleViField = form.register("title");
-  const titleEnField = form.register("title_en");
   const slugField = form.register("slug");
 
   const postQuery = useQuery({
@@ -383,23 +380,15 @@ export const PostDetailPage = () => {
     });
   };
 
-  const updateEditorContentEn = (content: string) => {
-    setEditorContentEn(content);
-    form.setValue("content_en", content, {
-      shouldDirty: true,
-      shouldTouch: true,
-      shouldValidate: true
-    });
-  };
-
   const handlePostSubmit = (values: PostWritePayload) => {
     const nextContent = editorViRef.current?.getContent() ?? editorContentVi;
-    const nextContentEn = editorEnRef.current?.getContent() ?? editorContentEn;
     saveMutation.mutate({
       ...values,
       slug: values.slug.trim() || slugify(values.title),
       content: nextContent,
-      content_en: nextContentEn
+      title_en: values.title.trim(),
+      excerpt_en: values.excerpt.trim(),
+      content_en: nextContent
     });
   };
 
@@ -415,7 +404,6 @@ export const PostDetailPage = () => {
     if (isNew) {
       form.reset(blankValues);
       setEditorContentVi("");
-      setEditorContentEn("");
       setIsSlugCustomized(false);
       return;
     }
@@ -434,7 +422,6 @@ export const PostDetailPage = () => {
       };
       form.reset(nextValues);
       setEditorContentVi(postQuery.data.content);
-      setEditorContentEn(postQuery.data.content_en);
       setIsSlugCustomized(postQuery.data.slug !== slugify(postQuery.data.title));
     }
   }, [form, isNew, postQuery.data]);
@@ -457,11 +444,11 @@ export const PostDetailPage = () => {
         <div className="portal-heading">
           <div className="portal-heading__text">
             <Badge>{published ? "PUBLISHED" : "DRAFT"}</Badge>
-            <h1>{isNew ? "Tạo bài viết" : postQuery.data?.title ?? "Post detail"}</h1>
-            <p>Trang chi tiết bài viết tập trung vào nội dung song ngữ và metadata của bài viết này.</p>
+            <h1>{isNew ? "Táº¡o bÃ i viáº¿t" : postQuery.data?.title ?? "Post detail"}</h1>
+            <p>Chỉnh nội dung, thumbnail và metadata cho bài viết hiển thị trên customer web.</p>
           </div>
           <Link to={routes.posts}>
-            <Button variant="secondary">Quay lại danh sách</Button>
+            <Button variant="secondary">Quay láº¡i danh sÃ¡ch</Button>
           </Link>
         </div>
 
@@ -472,8 +459,8 @@ export const PostDetailPage = () => {
                 <div className="rich-text-editor">
                   <div className="admin-card__header">
                     <div>
-                      <h3>Nội dung bài viết (VI)</h3>
-                      <p>Phiên bản hiển thị cho khách khi đang dùng tiếng Việt.</p>
+                      <h3>Ná»™i dung bÃ i viáº¿t</h3>
+                      <p>Nội dung này sẽ được lưu nguyên định dạng khi publish, bao gồm canh lề, ảnh, caption và link.</p>
                     </div>
                   </div>
                   <TinyMceReactEditor
@@ -486,53 +473,29 @@ export const PostDetailPage = () => {
                     init={createTinyMceInit(editorViRef)}
                   />
                 </div>
-
-                <div className="rich-text-editor">
-                  <div className="admin-card__header">
-                    <div>
-                      <h3>Post Content (EN)</h3>
-                      <p>Phiên bản hiển thị cho khách khi đang dùng tiếng Anh.</p>
-                    </div>
-                  </div>
-                  <TinyMceReactEditor
-                    licenseKey="gpl"
-                    value={editorContentEn}
-                    onInit={(_event, editor) => {
-                      editorEnRef.current = editor;
-                    }}
-                    onEditorChange={updateEditorContentEn}
-                    init={createTinyMceInit(editorEnRef)}
-                  />
-                </div>
               </div>
 
               <aside className="post-editor-sidebar">
                 <div className="post-publish-card">
-                  <Badge>{published ? "Đã sẵn sàng" : "Bản nháp"}</Badge>
-                  <strong>{isNew ? "Bài viết mới" : "Xuất bản"}</strong>
-                  <p>Kiểm tra nội dung lần cuối trước khi lưu thay đổi.</p>
+                  <Badge>{published ? "ÄÃ£ sáºµn sÃ ng" : "Báº£n nhÃ¡p"}</Badge>
+                  <strong>{isNew ? "BÃ i viáº¿t má»›i" : "Xuáº¥t báº£n"}</strong>
+                  <p>Kiá»ƒm tra ná»™i dung láº§n cuá»‘i trÆ°á»›c khi lÆ°u thay Ä‘á»•i.</p>
                 </div>
-                <Field label="Tiêu đề (VI)">
+                <Field label="TiÃªu Ä‘á»">
                   <Input {...titleViField} />
-                </Field>
-                <Field label="Tiêu đề (EN)">
-                  <Input {...titleEnField} />
                 </Field>
                 <Field label="Slug">
                   <Input
                     {...slugField}
-                    placeholder="Tự tạo nếu để trống"
+                    placeholder="Tá»± táº¡o náº¿u Ä‘á»ƒ trá»‘ng"
                     onChange={(event) => {
                       setIsSlugCustomized(true);
                       slugField.onChange(event);
                     }}
                   />
                 </Field>
-                <Field label="Tóm tắt ngắn (VI)">
+                <Field label="TÃ³m táº¯t ngáº¯n">
                   <Textarea {...form.register("excerpt")} />
-                </Field>
-                <Field label="Tóm tắt ngắn (EN)">
-                  <Textarea {...form.register("excerpt_en")} />
                 </Field>
                 <ImageSourceField
                   label="Thumbnail"
@@ -545,21 +508,20 @@ export const PostDetailPage = () => {
                 <input type="hidden" {...form.register("cover_image", { required: true })} />
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("published")} />
-                  <span>{published ? "Đang published" : "Lưu draft"}</span>
+                  <span>{published ? "Äang published" : "LÆ°u draft"}</span>
                 </label>
                 <input type="hidden" {...form.register("content")} />
-                <input type="hidden" {...form.register("content_en")} />
                 {saveMutation.error instanceof Error ? <p className="form-error">{saveMutation.error.message}</p> : null}
                 {deleteMutation.error instanceof Error ? <p className="form-error">{deleteMutation.error.message}</p> : null}
                 <div className="post-editor-sidebar__actions">
-                  <Button disabled={saveMutation.isPending}>{saveMutation.isPending ? "Đang lưu..." : "Lưu bài viết"}</Button>
+                  <Button disabled={saveMutation.isPending}>{saveMutation.isPending ? "Äang lÆ°u..." : "LÆ°u bÃ i viáº¿t"}</Button>
                   {!isNew ? (
                     <Button
                       variant="secondary"
                       type="button"
                       onClick={() => setDeleteDialogOpen(true)}
                     >
-                      Xóa bài viết
+                      XÃ³a bÃ i viáº¿t
                     </Button>
                   ) : null}
                 </div>
@@ -575,16 +537,16 @@ export const PostDetailPage = () => {
               setDeleteDialogOpen(open);
             }
           }}
-          title={`Xóa bài viết ${form.watch("title") || slug}`}
-          description="Bài viết sau khi xóa sẽ biến mất khỏi danh sách hiển thị cho khách hàng."
+          title={`XÃ³a bÃ i viáº¿t ${form.watch("title") || slug}`}
+          description="BÃ i viáº¿t sau khi xÃ³a sáº½ biáº¿n máº¥t khá»i danh sÃ¡ch hiá»ƒn thá»‹ cho khÃ¡ch hÃ ng."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
-                Đóng
+                ÄÃ³ng
               </Button>
               <Button type="button" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>
-                {deleteMutation.isPending ? "Đang xóa..." : "Xóa bài viết"}
+                {deleteMutation.isPending ? "Äang xÃ³a..." : "XÃ³a bÃ i viáº¿t"}
               </Button>
             </>
           }
@@ -595,3 +557,4 @@ export const PostDetailPage = () => {
     </AdminLayout>
   );
 };
+

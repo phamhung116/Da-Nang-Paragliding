@@ -2,7 +2,7 @@ import { Badge } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
 import { formatDate } from "@/shared/lib/format";
 import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
-import { repairFlightConditionLabel } from "@/shared/lib/localized-content";
+import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
 import { useEffect, useMemo, useState } from "react";
 
 import { 

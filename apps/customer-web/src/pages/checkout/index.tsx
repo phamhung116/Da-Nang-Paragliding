@@ -7,9 +7,7 @@ import { customerApi } from "@/shared/config/api";
 import { checkoutGuidelines } from "@/shared/constants/customer-content";
 import { paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
-import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { checkoutStorage } from "@/shared/lib/storage";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 type CheckoutState = Awaited<ReturnType<typeof customerApi.createBooking>> & {
@@ -17,7 +15,6 @@ type CheckoutState = Awaited<ReturnType<typeof customerApi.createBooking>> & {
 };
 
 export const CheckoutPage = () => {
-  const { locale } = useI18n();
   const [checkoutState, setCheckoutState] = useState<CheckoutState | null>(() =>
     checkoutStorage.get<CheckoutState>()
   );
@@ -100,7 +97,7 @@ export const CheckoutPage = () => {
                 <div className="checkout-summary-card__list">
                   <div className="booking-summary-card__fact">
                     <span>Dịch vụ</span>
-                    <strong>{localizeBookingServiceName(booking, locale)}</strong>
+                    <strong>{booking.service_name}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
                     <span>Lịch bay</span>

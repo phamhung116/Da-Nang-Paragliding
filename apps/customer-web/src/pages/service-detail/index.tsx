@@ -5,14 +5,7 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { AlertCircle, CheckCircle2, ChevronDown, Eye } from "lucide-react";
 import { customerApi } from "@/shared/config/api";
 import { servicePreparationChecklist } from "@/shared/constants/customer-content";
-import {
-  localizeFeatureName,
-  localizeServiceDescription,
-  localizeServiceName,
-  localizeServiceShortDescription,
-} from "@/shared/lib/localized-content";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -37,7 +30,6 @@ const formatSelectedSlotLabel = (value: { date: string; time: string } | null) =
 
 export const ServiceDetailPage = () => {
   const { slug = "" } = useParams();
-  const { locale } = useI18n();
   const currentDate = useMemo(() => new Date(), []);
   const [calendarState, setCalendarState] = useState({
     year: currentDate.getFullYear(),
@@ -93,9 +85,9 @@ export const ServiceDetailPage = () => {
     );
   }
 
-  const serviceName = localizeServiceName(servicePackage, locale);
-  const serviceShortDescription = localizeServiceShortDescription(servicePackage, locale);
-  const serviceDescription = localizeServiceDescription(servicePackage, locale);
+  const serviceName = servicePackage.name;
+  const serviceShortDescription = servicePackage.short_description;
+  const serviceDescription = servicePackage.description;
   const includedFeatureCountLabel = `${servicePackage.included_features.length} mục`;
 
   return (
@@ -213,7 +205,7 @@ export const ServiceDetailPage = () => {
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={16} />
                       </div>
-                      <span className="text-sm font-medium text-stone-700">{localizeFeatureName(item, locale)}</span>
+                      <span className="text-sm font-medium text-stone-700">{item.name}</span>
                     </div>
                   ))}
                 </div>

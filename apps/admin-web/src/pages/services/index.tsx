@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
@@ -72,17 +72,17 @@ export const ServicesPage = () => {
           <div className="portal-heading__text">
             <Badge>Service management</Badge>
             <h1>Services</h1>
-            <p>Quản lý gói dịch vụ và danh sách dịch vụ đi kèm để dùng lại khi tạo hoặc chỉnh sửa gói.</p>
+            <p>Quáº£n lÃ½ gÃ³i dá»‹ch vá»¥ vÃ  danh sÃ¡ch dá»‹ch vá»¥ Ä‘i kÃ¨m Ä‘á»ƒ dÃ¹ng láº¡i khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i.</p>
           </div>
-          <Button onClick={() => navigate("/services/new")}>Tạo gói dịch vụ</Button>
+          <Button onClick={() => navigate("/services/new")}>Táº¡o gÃ³i dá»‹ch vá»¥</Button>
         </div>
 
         <Card className="admin-list-card">
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Danh sách gói dịch vụ</h3>
-                <p>Click vào từng gói để chỉnh sửa thông tin, giá và features đi kèm.</p>
+                <h3>Danh sÃ¡ch gÃ³i dá»‹ch vá»¥</h3>
+                <p>Click vÃ o tá»«ng gÃ³i Ä‘á»ƒ chá»‰nh sá»­a thÃ´ng tin, giÃ¡ vÃ  features Ä‘i kÃ¨m.</p>
               </div>
             </div>
             <DataTable<ServicePackage>
@@ -92,11 +92,10 @@ export const ServicesPage = () => {
               columns={[
                 {
                   key: "service",
-                  title: "Gói dịch vụ",
+                  title: "GÃ³i dá»‹ch vá»¥",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
-                      <small>{row.name_en}</small>
                       <span>{row.slug}</span>
                       <small>{row.short_description}</small>
                     </div>
@@ -104,17 +103,17 @@ export const ServicesPage = () => {
                 },
                 {
                   key: "price",
-                  title: "Giá",
+                  title: "GiÃ¡",
                   render: (row) => formatCurrency(row.price)
                 },
                 {
                   key: "features",
                   title: "Features",
-                  render: (row) => `${row.included_features.length} dịch vụ`
+                  render: (row) => `${row.included_features.length} dá»‹ch vá»¥`
                 },
                 {
                   key: "status",
-                  title: "Trạng thái",
+                  title: "Tráº¡ng thÃ¡i",
                   render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "ACTIVE" : "INACTIVE"}</Badge>
                 },
                 {
@@ -128,7 +127,7 @@ export const ServicesPage = () => {
                         navigate(`/services/${row.slug}`);
                       }}
                     >
-                      Xem chi tiết
+                      Xem chi tiáº¿t
                     </Button>
                   )
                 }
@@ -141,40 +140,43 @@ export const ServicesPage = () => {
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Dịch vụ đi kèm - features</h3>
-                <p>Tạo feature một lần rồi chọn nhiều feature khi tạo hoặc chỉnh sửa gói dịch vụ.</p>
+                <h3>Dá»‹ch vá»¥ Ä‘i kÃ¨m - features</h3>
+                <p>Táº¡o feature má»™t láº§n rá»“i chá»n nhiá»u feature khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i dá»‹ch vá»¥.</p>
               </div>
             </div>
 
-            <form className="admin-form admin-form--compact" onSubmit={featureForm.handleSubmit((values) => saveFeatureMutation.mutate(values))}>
+            <form
+              className="admin-form admin-form--compact"
+              onSubmit={featureForm.handleSubmit((values) =>
+                saveFeatureMutation.mutate({
+                  ...values,
+                  name_en: values.name.trim(),
+                  description_en: values.description.trim()
+                })
+              )}
+            >
               <div className="inline-field-grid inline-field-grid--two">
-                <Field label="Tên feature (VI)">
+                <Field label="TÃªn feature">
                   <Input {...featureForm.register("name", { required: true })} />
-                </Field>
-                <Field label="Tên feature (EN)">
-                  <Input {...featureForm.register("name_en", { required: true })} />
                 </Field>
               </div>
               <div className="inline-field-grid inline-field-grid--two">
-                <Field label="Mô tả ngắn (VI)">
+                <Field label="MÃ´ táº£ ngáº¯n">
                   <Textarea {...featureForm.register("description")} />
-                </Field>
-                <Field label="Mô tả ngắn (EN)">
-                  <Textarea {...featureForm.register("description_en")} />
                 </Field>
               </div>
               <label className="admin-checkbox">
                 <input type="checkbox" {...featureForm.register("active")} />
-                <span>Đang sử dụng</span>
+                <span>Äang sá»­ dá»¥ng</span>
               </label>
               {saveFeatureMutation.error instanceof Error ? <p className="form-error">{saveFeatureMutation.error.message}</p> : null}
               <div className="table-actions--inline">
                 <Button disabled={saveFeatureMutation.isPending}>
-                  {saveFeatureMutation.isPending ? "Đang lưu..." : featureEditing ? "Lưu feature" : "Tạo feature"}
+                  {saveFeatureMutation.isPending ? "Äang lÆ°u..." : featureEditing ? "LÆ°u feature" : "Táº¡o feature"}
                 </Button>
                 {featureEditing ? (
                   <Button type="button" variant="secondary" onClick={() => setFeatureEditing(null)}>
-                    Hủy sửa
+                    Há»§y sá»­a
                   </Button>
                 ) : null}
               </div>
@@ -190,15 +192,13 @@ export const ServicesPage = () => {
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
-                      <span>{row.name_en}</span>
-                      <small>{row.description || "Không có mô tả"}</small>
-                      {row.description_en ? <small>{row.description_en}</small> : null}
+                      <small>{row.description || "KhÃ´ng cÃ³ mÃ´ táº£"}</small>
                     </div>
                   )
                 },
                 {
                   key: "active",
-                  title: "Trạng thái",
+                  title: "Tráº¡ng thÃ¡i",
                   render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "ACTIVE" : "INACTIVE"}</Badge>
                 },
                 {
@@ -207,10 +207,10 @@ export const ServicesPage = () => {
                   render: (row) => (
                     <div className="table-actions--inline">
                       <Button variant="secondary" onClick={() => setFeatureEditing(row)}>
-                        Sửa
+                        Sá»­a
                       </Button>
                       <Button variant="secondary" onClick={() => setFeaturePendingDelete(row)}>
-                        Xóa
+                        XÃ³a
                       </Button>
                     </div>
                   )
@@ -227,13 +227,13 @@ export const ServicesPage = () => {
               setFeaturePendingDelete(null);
             }
           }}
-          title={`Xóa feature ${featurePendingDelete?.name ?? ""}`}
-          description="Feature sẽ biến mất khỏi danh sách chọn khi tạo hoặc chỉnh sửa gói dịch vụ."
+          title={`XÃ³a feature ${featurePendingDelete?.name ?? ""}`}
+          description="Feature sáº½ biáº¿n máº¥t khá»i danh sÃ¡ch chá»n khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i dá»‹ch vá»¥."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setFeaturePendingDelete(null)}>
-                Đóng
+                ÄÃ³ng
               </Button>
               <Button
                 type="button"
@@ -244,7 +244,7 @@ export const ServicesPage = () => {
                   }
                 }}
               >
-                {deleteFeatureMutation.isPending ? "Đang xóa..." : "Xóa feature"}
+                {deleteFeatureMutation.isPending ? "Äang xÃ³a..." : "XÃ³a feature"}
               </Button>
             </>
           }
@@ -255,3 +255,4 @@ export const ServicesPage = () => {
     </AdminLayout>
   );
 };
+

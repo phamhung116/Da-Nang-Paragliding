@@ -6,10 +6,8 @@ import type { BookingCreatePayload } from "@paragliding/api-client";
 import { Button, Card, Field, Input, Panel, Textarea } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
-import { localizeFeatureName, localizeServiceName } from "@/shared/lib/localized-content";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
 
 type BookingFormProps = {
   serviceSlug: string;
@@ -44,7 +42,6 @@ const DEPOSIT_PERCENT = 40;
 
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
-  const { locale } = useI18n();
   const { account } = useAuth();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const accountNeedsContactDetails = !account?.phone || account.phone.startsWith("EMAIL");
@@ -103,7 +100,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
     }
   });
 
-  const localizedServiceName = servicePackage ? localizeServiceName(servicePackage, locale) : serviceSlug;
+  const serviceName = servicePackage?.name ?? serviceSlug;
 
   return (
     <div className="booking-form-layout">
@@ -112,10 +109,10 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
       <Card>
         <Panel className="booking-summary-card">
           <h3>Tóm tắt booking</h3>
-          <div className="booking-summary-card__fact">
-            <span>Dịch vụ</span>
-            <strong>{localizedServiceName}</strong>
-          </div>
+            <div className="booking-summary-card__fact">
+              <span>Dịch vụ</span>
+              <strong>{serviceName}</strong>
+            </div>
           <div className="booking-summary-card__fact">
             <span>Ngày bay</span>
             <strong>{selectedDate}</strong>
@@ -145,7 +142,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <span>Dịch vụ đi kèm</span>
               <ul>
                 {servicePackage.included_features.map((feature) => (
-                  <li key={feature.id}>{localizeFeatureName(feature, locale)}</li>
+                  <li key={feature.id}>{feature.name}</li>
                 ))}
               </ul>
             </div>

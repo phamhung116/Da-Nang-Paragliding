@@ -3,8 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge, Card, Container, Panel } from "@paragliding/ui";
 import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { customerApi } from "@/shared/config/api";
-import { localizePostTitle, localizeServiceName } from "@/shared/lib/localized-content";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
 type MediaKind = "image" | "video";
@@ -68,7 +66,6 @@ const getDisplayName = (filepath: string) => {
 };
 
 export const GalleryPage = () => {
-  const { locale } = useI18n();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -99,12 +96,12 @@ export const GalleryPage = () => {
       ...staticGalleryImages.map((image) => ({ kind: "image" as const, name: image.title, src: image.src })),
       ...services.map((service) => ({
         kind: "image" as const,
-        name: localizeServiceName(service, locale),
+        name: service.name,
         src: service.hero_image
       })),
       ...posts.map((post) => ({
         kind: "image" as const,
-        name: localizePostTitle(post, locale),
+        name: post.title,
         src: post.cover_image
       }))
     ];
@@ -117,7 +114,7 @@ export const GalleryPage = () => {
       seen.add(item.src);
       return true;
     });
-  }, [locale, posts, services]);
+  }, [posts, services]);
 
   const mediaItems = useMemo(() => {
     const seen = new Set<string>();

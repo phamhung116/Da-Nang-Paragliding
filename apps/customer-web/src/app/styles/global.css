@@ -2421,7 +2421,6 @@
 .post-detail__content {
   color: var(--muted);
   line-height: 1.9;
-  white-space: pre-line;
 }
 
 .post-detail__content a {
@@ -2437,35 +2436,41 @@
   border-radius: var(--radius-md);
 }
 
+.post-detail__content figure.image,
 .post-detail__content figure.post-image {
   margin: 1.5rem 0;
   display: grid;
   gap: 0.65rem;
 }
 
+.post-detail__content figure.image.image-style-align-left,
 .post-detail__content figure.post-image--left {
   justify-items: start;
   text-align: left;
 }
 
+.post-detail__content figure.image.image-style-align-center,
 .post-detail__content figure.post-image--center {
   justify-items: center;
   text-align: center;
 }
 
+.post-detail__content figure.image.image-style-align-right,
 .post-detail__content figure.post-image--right {
   justify-items: end;
   text-align: right;
 }
 
+.post-detail__content figure.image img,
 .post-detail__content figure.post-image img {
   display: block;
 }
 
+.post-detail__content figure.image figcaption,
 .post-detail__content figure.post-image figcaption {
   color: var(--muted);
   font-size: 0.92rem;
-  text-align: center;
+  text-align: inherit;
 }
 
 .post-detail__content blockquote {

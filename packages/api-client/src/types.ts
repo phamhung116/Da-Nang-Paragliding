@@ -259,11 +259,11 @@ export type ManagedAccountPayload = {
 export type ServicePackageWritePayload = {
   slug: string;
   name: string;
-  name_en: string;
+  name_en?: string;
   short_description: string;
-  short_description_en: string;
+  short_description_en?: string;
   description: string;
-  description_en: string;
+  description_en?: string;
   price: string;
   included_feature_ids: string[];
   hero_image: string;
@@ -279,20 +279,20 @@ export type ServicePackageWritePayload = {
 
 export type ServiceFeatureWritePayload = {
   name: string;
-  name_en: string;
+  name_en?: string;
   description: string;
-  description_en: string;
+  description_en?: string;
   active: boolean;
 };
 
 export type PostWritePayload = {
   slug: string;
   title: string;
-  title_en: string;
+  title_en?: string;
   excerpt: string;
-  excerpt_en: string;
+  excerpt_en?: string;
   content: string;
-  content_en: string;
+  content_en?: string;
   cover_image: string;
   published: boolean;
 };

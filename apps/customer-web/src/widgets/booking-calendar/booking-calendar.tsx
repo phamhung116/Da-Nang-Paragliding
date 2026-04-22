@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AvailabilityDay, AvailabilitySlot } from "@paragliding/api-client";
 import { Button } from "@paragliding/ui";
 import { formatDate, resolveLocaleTag } from "@/shared/lib/format";
-import { repairFlightConditionLabel } from "@/shared/lib/localized-content";
+import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
 import { useI18n } from "@/shared/providers/i18n-provider";
 
 import {

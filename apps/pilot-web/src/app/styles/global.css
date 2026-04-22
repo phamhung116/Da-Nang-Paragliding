@@ -437,10 +437,6 @@ body {
   border-radius: 28px;
 }
 
-.pilot-post-detail__content {
-  white-space: pre-line;
-}
-
 .pilot-post-detail__content a {
   color: var(--accent);
   font-weight: 800;
@@ -454,35 +450,41 @@ body {
   border-radius: 8px;
 }
 
+.pilot-post-detail__content figure.image,
 .pilot-post-detail__content figure.post-image {
   margin: 1.35rem 0;
   display: grid;
   gap: 0.55rem;
 }
 
+.pilot-post-detail__content figure.image.image-style-align-left,
 .pilot-post-detail__content figure.post-image--left {
   justify-items: start;
   text-align: left;
 }
 
+.pilot-post-detail__content figure.image.image-style-align-center,
 .pilot-post-detail__content figure.post-image--center {
   justify-items: center;
   text-align: center;
 }
 
+.pilot-post-detail__content figure.image.image-style-align-right,
 .pilot-post-detail__content figure.post-image--right {
   justify-items: end;
   text-align: right;
 }
 
+.pilot-post-detail__content figure.image img,
 .pilot-post-detail__content figure.post-image img {
   display: block;
 }
 
+.pilot-post-detail__content figure.image figcaption,
 .pilot-post-detail__content figure.post-image figcaption {
   color: var(--muted);
   font-size: 0.9rem;
-  text-align: center;
+  text-align: inherit;
 }
 
 .pilot-post-detail__content blockquote {

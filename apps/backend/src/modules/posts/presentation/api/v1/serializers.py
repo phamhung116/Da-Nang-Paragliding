@@ -36,11 +36,11 @@ class PostReadSerializer(serializers.Serializer):
 class PostWriteSerializer(serializers.Serializer):
     slug = serializers.SlugField(max_length=140)
     title = serializers.CharField(max_length=220)
-    title_en = serializers.CharField(max_length=220)
+    title_en = serializers.CharField(max_length=220, required=False, allow_blank=True)
     excerpt = serializers.CharField()
-    excerpt_en = serializers.CharField()
+    excerpt_en = serializers.CharField(required=False, allow_blank=True)
     content = serializers.CharField()
-    content_en = serializers.CharField()
+    content_en = serializers.CharField(required=False, allow_blank=True)
     cover_image = serializers.CharField()
     published = serializers.BooleanField(default=True)
 
@@ -55,14 +55,17 @@ class PostWriteSerializer(serializers.Serializer):
 
     def to_payload(self) -> PostPayload:
         data = self.validated_data
+        title = data["title"].strip()
+        excerpt = data["excerpt"].strip()
+        content = data["content"]
         return PostPayload(
             slug=data["slug"],
-            title=data["title"].strip(),
-            title_en=data["title_en"].strip(),
-            excerpt=data["excerpt"].strip(),
-            excerpt_en=data["excerpt_en"].strip(),
-            content=data["content"],
-            content_en=data["content_en"],
+            title=title,
+            title_en=str(data.get("title_en") or title).strip(),
+            excerpt=excerpt,
+            excerpt_en=str(data.get("excerpt_en") or excerpt).strip(),
+            content=content,
+            content_en=str(data.get("content_en") or content),
             cover_image=data["cover_image"],
             published=data.get("published", True),
         )

@@ -7,15 +7,12 @@ import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
-import { localizeBookingServiceName } from "@/shared/lib/localized-content";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 
 export const AccountBookingDetailPage = () => {
   const { code = "" } = useParams();
-  const { locale } = useI18n();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
@@ -107,7 +104,7 @@ export const AccountBookingDetailPage = () => {
                         ? "Da huy"
                         : flightStatusLabels[booking.flight_status] ?? booking.flight_status}
                     </Badge>
-                    <h3>{localizeBookingServiceName(booking, locale)}</h3>
+                    <h3>{booking.service_name}</h3>
                   </div>
                   <Badge>{paymentStatusLabels[booking.payment_status] ?? booking.payment_status}</Badge>
                 </div>

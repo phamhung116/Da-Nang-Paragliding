@@ -9,8 +9,6 @@ import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
 import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
-import { localizePostTitle } from "@/shared/lib/localized-content";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { HomeHero } from "@/widgets/hero/home-hero";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
@@ -33,7 +31,6 @@ const toYouTubeEmbedUrl = (value: string) => {
 };
 
 export const HomePage = () => {
-  const { locale } = useI18n();
   const video1YoutubeWatchUrl = "https://www.youtube.com/watch?v=r8uhrlAQ-Tk";
   const video1YoutubeEmbedUrl = toYouTubeEmbedUrl(video1YoutubeWatchUrl);
   const { data: services = [] } = useQuery({
@@ -248,7 +245,7 @@ export const HomePage = () => {
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                       src={post.cover_image}
-                      alt={localizePostTitle(post, locale)}
+                      alt={post.title}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
@@ -257,7 +254,7 @@ export const HomePage = () => {
                       {formatDate(post.published_at ?? post.created_at ?? "")}
                     </p>
                     <h3 className="line-clamp-2 text-base font-bold leading-tight text-stone-900 transition-colors group-hover:text-brand md:text-xl">
-                      {localizePostTitle(post, locale)}
+                      {post.title}
                     </h3>
                   </div>
                 </article>

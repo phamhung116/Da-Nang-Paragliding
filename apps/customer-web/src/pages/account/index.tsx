@@ -5,11 +5,9 @@ import { Link, Navigate } from "react-router-dom";
 import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
 import type { UpdateProfilePayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { customerApi } from "@/shared/config/api";
 import { accountSupportNotes } from "@/shared/constants/customer-content";
 import { routes } from "@/shared/config/routes";
-import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const normalizeFullName = (value: string) => value.trim().replace(/\s+/g, " ");
@@ -21,7 +19,6 @@ const normalizePhone = (value: string) => {
 
 export const AccountPage = () => {
   const { account, isAuthenticated, updateProfile } = useAuth();
-  const { locale } = useI18n();
 
   const form = useForm<UpdateProfilePayload>({
     defaultValues: {
@@ -162,7 +159,7 @@ export const AccountPage = () => {
                   <div className="account-bookings">
                     {bookings.map((booking) => (
                       <article key={booking.code} className="account-booking-card">
-                        <strong>{localizeBookingServiceName(booking, locale)}</strong>
+                        <strong>{booking.service_name}</strong>
                         <span>
                           {booking.flight_date} - {booking.flight_time}
                         </span>

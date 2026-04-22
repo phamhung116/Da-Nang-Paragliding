@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
@@ -24,10 +24,10 @@ const blankValues: ServicePackageWritePayload = {
   price: "0",
   included_feature_ids: [],
   hero_image: defaultHeroImage,
-  launch_site_name: "Điểm cất cánh Sơn Trà",
+  launch_site_name: "Äiá»ƒm cáº¥t cÃ¡nh SÆ¡n TrÃ ",
   launch_lat: 16.1202,
   launch_lng: 108.2894,
-  landing_site_name: "Bãi đáp Sơn Trà",
+  landing_site_name: "BÃ£i Ä‘Ã¡p SÆ¡n TrÃ ",
   landing_lat: 16.0941,
   landing_lng: 108.2475,
   featured: false,
@@ -38,8 +38,8 @@ const slugify = (value: string) =>
   value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/g, "d")
-    .replace(/Đ/g, "D")
+    .replace(/Ä‘/g, "d")
+    .replace(/Ä/g, "D")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
@@ -142,6 +142,9 @@ export const ServiceDetailPage = () => {
     saveMutation.mutate({
       ...values,
       slug: values.slug.trim() || slugify(values.name),
+      name_en: values.name.trim(),
+      short_description_en: values.short_description.trim(),
+      description_en: values.description.trim(),
       price: String(values.price),
       included_feature_ids: selectedFeatureIds
     });
@@ -157,11 +160,11 @@ export const ServiceDetailPage = () => {
         <div className="portal-heading">
           <div className="portal-heading__text">
             <Badge>{isNew ? "NEW SERVICE" : serviceQuery.data?.active ? "ACTIVE" : "INACTIVE"}</Badge>
-            <h1>{isNew ? "Tạo gói dịch vụ" : serviceQuery.data?.name ?? "Service detail"}</h1>
-            <p>Chỉnh tên gói, giá, ảnh đại diện và các feature đi kèm hiển thị cho khách hàng.</p>
+            <h1>{isNew ? "Táº¡o gÃ³i dá»‹ch vá»¥" : serviceQuery.data?.name ?? "Service detail"}</h1>
+            <p>Chá»‰nh tÃªn gÃ³i, giÃ¡, áº£nh Ä‘áº¡i diá»‡n vÃ  cÃ¡c feature Ä‘i kÃ¨m hiá»ƒn thá»‹ cho khÃ¡ch hÃ ng.</p>
           </div>
           <Link to={routes.services}>
-            <Button variant="secondary">Quay lại danh sách</Button>
+            <Button variant="secondary">Quay láº¡i danh sÃ¡ch</Button>
           </Link>
         </div>
 
@@ -170,35 +173,26 @@ export const ServiceDetailPage = () => {
             <form className="service-editor-layout" onSubmit={form.handleSubmit(handleSubmit)}>
               <div className="admin-stack">
                 <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Tên gói dịch vụ (VI)">
+                  <Field label="TÃªn gÃ³i dá»‹ch vá»¥">
                     <Input {...form.register("name", { required: true })} />
-                  </Field>
-                  <Field label="Tên gói dịch vụ (EN)">
-                    <Input {...form.register("name_en", { required: true })} />
                   </Field>
                 </div>
 
                 <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Giá">
+                  <Field label="GiÃ¡">
                     <Input type="number" min={0} step={1000} {...form.register("price", { required: true })} />
                   </Field>
                 </div>
 
                 <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Tổng quan (VI)">
+                  <Field label="Tá»•ng quan">
                     <Textarea rows={6} {...form.register("description", { required: true })} />
-                  </Field>
-                  <Field label="Tổng quan (EN)">
-                    <Textarea rows={6} {...form.register("description_en", { required: true })} />
                   </Field>
                 </div>
 
                 <div className="inline-field-grid inline-field-grid--two">
-                  <Field label="Mô tả ngắn (VI)">
+                  <Field label="MÃ´ táº£ ngáº¯n">
                     <Textarea rows={3} {...form.register("short_description", { required: true })} />
-                  </Field>
-                  <Field label="Mô tả ngắn (EN)">
-                    <Textarea rows={3} {...form.register("short_description_en", { required: true })} />
                   </Field>
                 </div>
 
@@ -206,10 +200,10 @@ export const ServiceDetailPage = () => {
                   <Panel className="admin-stack">
                     <div className="admin-card__header">
                       <div>
-                        <h3>Dịch vụ đi kèm</h3>
-                        <p>Chọn nhiều feature để đưa vào gói dịch vụ.</p>
+                        <h3>Dá»‹ch vá»¥ Ä‘i kÃ¨m</h3>
+                        <p>Chá»n nhiá»u feature Ä‘á»ƒ Ä‘Æ°a vÃ o gÃ³i dá»‹ch vá»¥.</p>
                       </div>
-                      <Link to={routes.services}>Quản lý feature</Link>
+                      <Link to={routes.services}>Quáº£n lÃ½ feature</Link>
                     </div>
                     <div className="feature-picker">
                       {activeFeatures.map((feature) => (
@@ -224,15 +218,13 @@ export const ServiceDetailPage = () => {
                           />
                           <span>
                             <strong>{feature.name}</strong>
-                            <small>{feature.name_en}</small>
                             <small>{feature.description}</small>
-                            {feature.description_en ? <small>{feature.description_en}</small> : null}
                           </span>
                         </label>
                       ))}
                     </div>
                     {!activeFeatures.length ? (
-                      <p className="row-muted">Chưa có feature. Hãy tạo feature ở trang danh sách Services.</p>
+                      <p className="row-muted">ChÆ°a cÃ³ feature. HÃ£y táº¡o feature á»Ÿ trang danh sÃ¡ch Services.</p>
                     ) : null}
                   </Panel>
                 </Card>
@@ -241,16 +233,16 @@ export const ServiceDetailPage = () => {
               <aside className="post-editor-sidebar">
                 <div className="post-publish-card">
                   <Badge>{formatCurrency(priceValue || 0)}</Badge>
-                  <strong>{form.watch("name") || "Gói dịch vụ"}</strong>
-                  <p>{selectedFeatureIds.length} feature đã chọn.</p>
+                  <strong>{form.watch("name") || "GÃ³i dá»‹ch vá»¥"}</strong>
+                  <p>{selectedFeatureIds.length} feature Ä‘Ã£ chá»n.</p>
                 </div>
 
                 <Field label="Slug">
-                  <Input {...form.register("slug")} disabled={!isNew} placeholder="Tự tạo nếu bỏ trống" />
+                  <Input {...form.register("slug")} disabled={!isNew} placeholder="Tá»± táº¡o náº¿u bá» trá»‘ng" />
                 </Field>
 
                 <ImageSourceField
-                  label="Ảnh đại diện"
+                  label="áº¢nh Ä‘áº¡i diá»‡n"
                   value={heroImage}
                   previewAlt="Service preview"
                   placeholder="https://..."
@@ -266,11 +258,11 @@ export const ServiceDetailPage = () => {
 
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("featured")} />
-                  <span>Gói nổi bật</span>
+                  <span>GÃ³i ná»•i báº­t</span>
                 </label>
                 <label className="admin-checkbox">
                   <input type="checkbox" {...form.register("active")} />
-                  <span>Đang mở bán</span>
+                  <span>Äang má»Ÿ bÃ¡n</span>
                 </label>
 
                 {saveMutation.error instanceof Error ? <p className="form-error">{saveMutation.error.message}</p> : null}
@@ -278,11 +270,11 @@ export const ServiceDetailPage = () => {
 
                 <div className="post-editor-sidebar__actions">
                   <Button disabled={saveMutation.isPending}>
-                    {saveMutation.isPending ? "Đang lưu..." : "Lưu gói dịch vụ"}
+                    {saveMutation.isPending ? "Äang lÆ°u..." : "LÆ°u gÃ³i dá»‹ch vá»¥"}
                   </Button>
                   {!isNew ? (
                     <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(true)}>
-                      Xóa gói dịch vụ
+                      XÃ³a gÃ³i dá»‹ch vá»¥
                     </Button>
                   ) : null}
                 </div>
@@ -298,16 +290,16 @@ export const ServiceDetailPage = () => {
               setDeleteDialogOpen(open);
             }
           }}
-          title={`Xóa gói dịch vụ ${form.watch("name") || slug}`}
-          description="Gói dịch vụ sau khi xóa sẽ không còn hiển thị ở customer web."
+          title={`XÃ³a gÃ³i dá»‹ch vá»¥ ${form.watch("name") || slug}`}
+          description="GÃ³i dá»‹ch vá»¥ sau khi xÃ³a sáº½ khÃ´ng cÃ²n hiá»ƒn thá»‹ á»Ÿ customer web."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
-                Đóng
+                ÄÃ³ng
               </Button>
               <Button type="button" disabled={deleteMutation.isPending} onClick={() => deleteMutation.mutate()}>
-                {deleteMutation.isPending ? "Đang xóa..." : "Xóa gói dịch vụ"}
+                {deleteMutation.isPending ? "Äang xÃ³a..." : "XÃ³a gÃ³i dá»‹ch vá»¥"}
               </Button>
             </>
           }
@@ -318,3 +310,4 @@ export const ServiceDetailPage = () => {
     </AdminLayout>
   );
 };
+

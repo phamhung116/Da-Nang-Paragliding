@@ -7,10 +7,8 @@ import { customerApi } from "@/shared/config/api";
 import { businessInfo } from "@/shared/constants/business";
 import { trackingSupportNotes } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
-import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { trackingLookupStorage } from "@/shared/lib/storage";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
@@ -21,7 +19,6 @@ const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
-  const { locale } = useI18n();
   const { register, handleSubmit } = useForm<LookupForm>({
     defaultValues: {
       query: account?.email ?? trackingLookupStorage.get()
@@ -112,7 +109,7 @@ export const TrackingPage = () => {
                   <div className="tracking-status-header">
                     <div>
                       <Badge tone="success">{flightStatusLabels[result.booking.flight_status]}</Badge>
-                      <h3>{localizeBookingServiceName(result.booking, locale)}</h3>
+                      <h3>{result.booking.service_name}</h3>
                     </div>
                     <div className="tracking-contact-actions">
                       <a href={`mailto:${result.booking.email}`}>Email khách</a>
