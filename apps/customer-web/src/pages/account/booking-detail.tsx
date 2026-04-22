@@ -6,15 +6,16 @@ import { useAuth } from "@/shared/providers/auth-provider";
 import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
-import { formatCurrency } from "@/shared/lib/format";
+import { formatCurrency, formatDateTime } from "@/shared/lib/format";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 
-const formatDateTime = (value: string | null) => (value ? new Date(value).toLocaleString("vi-VN") : "-");
-
 export const AccountBookingDetailPage = () => {
   const { code = "" } = useParams();
+  const { locale } = useI18n();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
@@ -88,11 +89,11 @@ export const AccountBookingDetailPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Chi tiet booking</Badge>
+              <Badge>Chi tiết booking</Badge>
               <h2>{booking?.code ?? code}</h2>
             </div>
             <Link to={routes.account}>
-              <Button variant="secondary">Quay lai tai khoan</Button>
+              <Button variant="secondary">Quay lại tài khoản</Button>
             </Link>
           </div>
 
@@ -106,30 +107,30 @@ export const AccountBookingDetailPage = () => {
                         ? "Da huy"
                         : flightStatusLabels[booking.flight_status] ?? booking.flight_status}
                     </Badge>
-                    <h3>{booking.service_name}</h3>
+                    <h3>{localizeBookingServiceName(booking, locale)}</h3>
                   </div>
                   <Badge>{paymentStatusLabels[booking.payment_status] ?? booking.payment_status}</Badge>
                 </div>
 
                 <div className="detail-list">
                   <div>
-                    <span>Ma booking</span>
+                    <span>Mã booking</span>
                     <strong>{booking.code}</strong>
                   </div>
                   <div>
-                    <span>Trang thai</span>
+                    <span>Trạng thái</span>
                     <strong>{approvalStatusLabels[booking.approval_status] ?? booking.approval_status}</strong>
                   </div>
                   <div>
-                    <span>Thoi gian tao booking</span>
+                    <span>Thời gian tạo booking</span>
                     <strong>{formatDateTime(booking.created_at)}</strong>
                   </div>
                   <div>
-                    <span>Ho va ten</span>
+                    <span>Họ và tên</span>
                     <strong>{booking.customer_name}</strong>
                   </div>
                   <div>
-                    <span>So dien thoai</span>
+                    <span>Số điện thoại</span>
                     <strong>{booking.phone}</strong>
                   </div>
                   <div>
@@ -137,21 +138,21 @@ export const AccountBookingDetailPage = () => {
                     <strong>{booking.email}</strong>
                   </div>
                   <div>
-                    <span>Lich bay</span>
+                    <span>Lịch bay</span>
                     <strong>
                       {booking.flight_date} - {booking.flight_time}
                     </strong>
                   </div>
                   <div>
-                    <span>So nguoi lon</span>
+                    <span>Số người lớn</span>
                     <strong>{booking.adults}</strong>
                   </div>
                   <div>
-                    <span>So tre em</span>
+                    <span>Số trẻ em</span>
                     <strong>{booking.children}</strong>
                   </div>
                   <div>
-                    <span>Ghi chu</span>
+                    <span>Ghi chú</span>
                     <strong>{booking.notes || "Không có ghi chú"}</strong>
                   </div>
                   <div>
@@ -159,7 +160,7 @@ export const AccountBookingDetailPage = () => {
                     <strong>{booking.assigned_pilot_name ?? "Đang cập nhật"}</strong>
                   </div>
                   <div>
-                    <span>Tong gia tri tour</span>
+                    <span>Tổng giá trị tour</span>
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                 </div>
@@ -170,7 +171,7 @@ export const AccountBookingDetailPage = () => {
                   </Button>
                 ) : (
                   <div className="booking-decision-card booking-decision-card--danger">
-                    <strong>Ly do huy</strong>
+                    <strong>Lý do hủy</strong>
                     <p>{booking.rejection_reason ?? "Không có lý do"}</p>
                   </div>
                 )}
@@ -192,7 +193,7 @@ export const AccountBookingDetailPage = () => {
               }
             }}
             title={`Huy booking ${booking?.code ?? code}`}
-            description="Huy truoc ngay bay 5 ngay: hoan 100% tien coc. Huy sau moc 5 ngay: khong hoan coc."
+            description="Hủy trước ngày bay 5 ngày: hoàn 100% tiền cọc. Hủy sau mốc 5 ngày: không hoàn cọc."
             icon="!"
             footer={
               <>
@@ -213,18 +214,18 @@ export const AccountBookingDetailPage = () => {
               </>
             }
           >
-            <Field label="Ly do huy">
-              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Nhap ly do huy booking" autoFocus />
+            <Field label="Lý do hủy">
+              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Nhập lý do hủy booking" autoFocus />
             </Field>
             {canRefundDeposit ? (
               <div className="inline-field-grid inline-field-grid--three">
-                <Field label="Ngan hang">
+                <Field label="Ngân hàng">
                   <Input value={refundBank} onChange={(event) => setRefundBank(event.target.value)} />
                 </Field>
-                <Field label="So tai khoan">
+                <Field label="Số tài khoản">
                   <Input value={refundAccountNumber} onChange={(event) => setRefundAccountNumber(event.target.value)} />
                 </Field>
-                <Field label="Chu tai khoan">
+                <Field label="Chủ tài khoản">
                   <Input value={refundAccountName} onChange={(event) => setRefundAccountName(event.target.value)} />
                 </Field>
               </div>

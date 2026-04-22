@@ -8,14 +8,29 @@ from modules.catalog.application.dto import ServiceFeaturePayload, ServicePackag
 from shared.media import validate_image_source
 
 
+class ServiceFeatureReadSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField()
+    name_en = serializers.CharField()
+    description = serializers.CharField()
+    description_en = serializers.CharField()
+    active = serializers.BooleanField()
+    created_at = serializers.DateTimeField(allow_null=True)
+    updated_at = serializers.DateTimeField(allow_null=True)
+
+
 class ServicePackageReadSerializer(serializers.Serializer):
     id = serializers.CharField()
     slug = serializers.CharField()
     name = serializers.CharField()
+    name_en = serializers.CharField()
     short_description = serializers.CharField()
+    short_description_en = serializers.CharField()
     description = serializers.CharField()
+    description_en = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    included_services = serializers.ListField(child=serializers.CharField())
+    included_feature_ids = serializers.ListField(child=serializers.CharField())
+    included_features = ServiceFeatureReadSerializer(many=True)
     hero_image = serializers.CharField()
     launch_site_name = serializers.CharField()
     launch_lat = serializers.FloatField()
@@ -32,10 +47,13 @@ class ServicePackageReadSerializer(serializers.Serializer):
 class ServicePackageWriteSerializer(serializers.Serializer):
     slug = serializers.SlugField(max_length=120)
     name = serializers.CharField(max_length=160)
+    name_en = serializers.CharField(max_length=160)
     short_description = serializers.CharField(max_length=255)
+    short_description_en = serializers.CharField(max_length=255)
     description = serializers.CharField()
+    description_en = serializers.CharField()
     price = serializers.DecimalField(max_digits=10, decimal_places=2)
-    included_services = serializers.ListField(child=serializers.CharField(), allow_empty=False)
+    included_feature_ids = serializers.ListField(child=serializers.CharField(), allow_empty=False)
     hero_image = serializers.CharField()
     launch_site_name = serializers.CharField(max_length=120)
     launch_lat = serializers.FloatField()
@@ -53,12 +71,15 @@ class ServicePackageWriteSerializer(serializers.Serializer):
         data = self.validated_data
         return ServicePackagePayload(
             slug=data["slug"],
-            name=data["name"],
-            short_description=data["short_description"],
-            description=data["description"],
+            name=data["name"].strip(),
+            name_en=data["name_en"].strip(),
+            short_description=data["short_description"].strip(),
+            short_description_en=data["short_description_en"].strip(),
+            description=data["description"].strip(),
+            description_en=data["description_en"].strip(),
             price=Decimal(data["price"]),
             flight_duration_minutes=0,
-            included_services=data["included_services"],
+            included_feature_ids=[str(value).strip() for value in data["included_feature_ids"]],
             participation_requirements=[],
             min_child_age=0,
             hero_image=data["hero_image"],
@@ -74,24 +95,19 @@ class ServicePackageWriteSerializer(serializers.Serializer):
         )
 
 
-class ServiceFeatureReadSerializer(serializers.Serializer):
-    id = serializers.CharField()
-    name = serializers.CharField()
-    description = serializers.CharField()
-    active = serializers.BooleanField()
-    created_at = serializers.DateTimeField(allow_null=True)
-    updated_at = serializers.DateTimeField(allow_null=True)
-
-
 class ServiceFeatureWriteSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=120)
+    name_en = serializers.CharField(max_length=120)
     description = serializers.CharField(max_length=255, allow_blank=True, required=False)
+    description_en = serializers.CharField(max_length=255, allow_blank=True, required=False)
     active = serializers.BooleanField(default=True)
 
     def to_payload(self) -> ServiceFeaturePayload:
         data = self.validated_data
         return ServiceFeaturePayload(
             name=data["name"].strip(),
+            name_en=data["name_en"].strip(),
             description=str(data.get("description") or "").strip(),
+            description_en=str(data.get("description_en") or "").strip(),
             active=data.get("active", True),
         )

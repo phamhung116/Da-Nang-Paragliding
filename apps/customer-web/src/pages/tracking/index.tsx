@@ -7,8 +7,10 @@ import { customerApi } from "@/shared/config/api";
 import { businessInfo } from "@/shared/constants/business";
 import { trackingSupportNotes } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { trackingLookupStorage } from "@/shared/lib/storage";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
@@ -19,6 +21,7 @@ const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
+  const { locale } = useI18n();
   const { register, handleSubmit } = useForm<LookupForm>({
     defaultValues: {
       query: account?.email ?? trackingLookupStorage.get()
@@ -86,7 +89,7 @@ export const TrackingPage = () => {
           {!result && mutation.isPending ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge>Tracking</Badge>
+                <Badge>Đang tra cứu</Badge>
                 <strong>Đang tra cứu booking...</strong>
                 <p>Hệ thống đang lấy timeline và vị trí GPS mới nhất.</p>
               </Panel>
@@ -109,7 +112,7 @@ export const TrackingPage = () => {
                   <div className="tracking-status-header">
                     <div>
                       <Badge tone="success">{flightStatusLabels[result.booking.flight_status]}</Badge>
-                      <h3>{result.booking.service_name}</h3>
+                      <h3>{localizeBookingServiceName(result.booking, locale)}</h3>
                     </div>
                     <div className="tracking-contact-actions">
                       <a href={`mailto:${result.booking.email}`}>Email khách</a>
@@ -149,7 +152,7 @@ export const TrackingPage = () => {
                     <Card className="tracking-card">
                       <Panel className="stack-sm">
                         <strong>Thông tin booking</strong>
-                        <p>Code: {result.booking.code}</p>
+                        <p>Mã booking: {result.booking.code}</p>
                         <p>Phê duyệt: {approvalStatusLabels[result.booking.approval_status]}</p>
                         <p>Thanh toán: {paymentStatusLabels[result.booking.payment_status]}</p>
                         <p>
@@ -161,7 +164,7 @@ export const TrackingPage = () => {
 
                     <Card className="tracking-card">
                       <Panel className="stack-sm">
-                        <strong>Timeline</strong>
+                        <strong>Lịch sử hành trình</strong>
                         <div className="timeline">
                           {result.tracking.timeline.map((event, index) => (
                             <div className="timeline__item" key={`${String(event.recorded_at)}-${index}`}>
@@ -197,9 +200,9 @@ export const TrackingPage = () => {
           {!result && !mutation.isPending ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge>Tracking ready</Badge>
+                <Badge>Sẵn sàng tra cứu</Badge>
                 <strong>Nhập thông tin booking để hiển thị timeline và vị trí GPS.</strong>
-                <p>Ngay sau khi customer đặt lịch thành công, booking có thể được tra cứu lại từ trang này.</p>
+                <p>Ngay sau khi khách hàng đặt lịch thành công, booking có thể được tra cứu lại từ trang này.</p>
               </Panel>
             </Card>
           ) : null}

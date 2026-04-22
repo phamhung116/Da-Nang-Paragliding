@@ -73,7 +73,7 @@ export const authTrustStats = [
 
 export const authJourneyHighlights = [
   "Tạo tài khoản một lần để đặt lịch nhanh hơn cho các lần bay sau.",
-  "Lưu lịch sử booking, QR đặt cọc và trạng thái chuyến bay theo từng mã code.",
+  "Lưu lịch sử booking, QR đặt cọc và trạng thái chuyến bay theo từng mã.",
   "Nhận email xác nhận và truy cập lại tracking ngay cả khi rời khỏi website."
 ];
 
@@ -91,12 +91,12 @@ export const authSupportNotes = [
 
 export const accountSupportNotes = [
   "Cập nhật đúng số điện thoại để doanh nghiệp liên hệ nhanh khi cần đổi lịch.",
-  "Mỗi booking sẽ lưu mã code, trạng thái thanh toán và tình trạng chuyến bay.",
-  "Nếu cần hỗ trợ gấp, khách có thể gọi trực tiếp trong khung giờ support."
+  "Mỗi booking sẽ lưu mã, trạng thái thanh toán và tình trạng chuyến bay.",
+  "Nếu cần hỗ trợ gấp, khách có thể gọi trực tiếp trong khung giờ hỗ trợ."
 ];
 
 export const bookingRules = [
-  "Không thể đặt vào ngày đầy hoặc slot đã full.",
+  "Không thể đặt vào ngày đầy hoặc slot đã kín.",
   "Số trẻ em phải phù hợp độ tuổi tối thiểu của gói bay.",
   "Sau khi gửi booking, slot sẽ được giữ theo logic thanh toán của hệ thống."
 ];
@@ -109,6 +109,6 @@ export const checkoutGuidelines = [
 
 export const trackingSupportNotes = [
   "Nhập đúng email hoặc số điện thoại đã dùng khi đặt lịch để lấy lại booking.",
-  "Tracking timeline hiển thị các mốc đang chờ, đang di chuyển, đang bay và đã hạ cánh.",
+  "Dòng thời gian theo dõi hiển thị các mốc đang chờ, đang di chuyển, đang bay và đã hạ cánh.",
   "Nếu không tìm thấy booking, hãy liên hệ doanh nghiệp để kiểm tra thông tin xác thực."
 ];

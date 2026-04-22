@@ -10,6 +10,7 @@ class FlightTracking:
     booking_code: str
     phone: str
     service_name: str
+    service_name_en: str
     flight_status: str
     pilot_name: str | None
     tracking_active: bool

@@ -3,28 +3,28 @@ import { aboutOperationalHighlights } from "@/shared/constants/customer-content"
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const guideTeam = [
-  "Pilot doi da duoc huan luyen va van hanh bay doi thuong mai.",
-  "Dieu phoi vien theo doi weather, slot va luu luong booking theo ngay.",
-  "Nhan su media ho tro giao anh va video sau chuyen bay."
+  "Pilot đôi đã được huấn luyện và vận hành bay đôi thương mại.",
+  "Điều phối viên theo dõi thời tiết, khung giờ và lưu lượng booking theo ngày.",
+  "Nhân sự media hỗ trợ giao ảnh và video sau chuyến bay."
 ];
 
 const safetyItems = [
-  "Checklist thiet bi truoc cat canh va sau ha canh.",
-  "Briefing an toan, can nang va dieu kien suc khoe duoc xac nhan truoc gio bay.",
-  "Thong tin route, weather va trang thai chuyen bay duoc cap nhat de khach theo doi lai de dang."
+  "Checklist thiết bị trước cất cánh và sau hạ cánh.",
+  "Briefing an toàn, cân nặng và điều kiện sức khỏe được xác nhận trước giờ bay.",
+  "Thông tin lộ trình, thời tiết và trạng thái chuyến bay được cập nhật để khách theo dõi lại dễ dàng."
 ];
 
 const values = [
   {
-    title: "Safety first",
-    description: "Quy trinh checklist, chon gio bay va pilot assignment duoc thuc hien truoc moi booking."
+    title: "An toàn ưu tiên",
+    description: "Quy trình checklist, chọn giờ bay và phân công phi công được thực hiện trước mỗi booking."
   },
   {
-    title: "Operational clarity",
-    description: "Khach, admin va pilot deu theo mot luong thong tin thong nhat tren he thong."
+    title: "Vận hành rõ ràng",
+    description: "Khách, admin và phi công đều theo một luồng thông tin thống nhất trên hệ thống."
   },
   {
-    title: "Memorable media",
+    title: "Khoảnh khắc đáng nhớ",
     description: "Hình ảnh và video chuyến bay là một phần của trải nghiệm, không phải phần phụ."
   }
 ];
@@ -35,16 +35,16 @@ export const AboutPage = () => (
       <div className="page-banner__image">
         <img
           src="https://images.unsplash.com/photo-1544625344-63189df1e401?auto=format&fit=crop&w=1800&q=80"
-          alt="About banner"
+          alt="Ảnh giới thiệu"
         />
         <div className="page-banner__overlay" />
       </div>
       <Container className="page-banner__content">
         <Badge>Giới thiệu</Badge>
-        <h1>Doanh nghiep du luon van hanh theo huong service-first va safety-first.</h1>
+        <h1>Doanh nghiệp dù lượn vận hành theo hướng dịch vụ rõ ràng và an toàn là ưu tiên.</h1>
         <p>
-          Customer side duoc ket noi truc tiep voi booking, tracking va quy trinh van hanh thuc te cua doi
-          ngu.
+          Phía khách hàng được kết nối trực tiếp với booking, tracking và quy trình vận hành thực tế của đội
+          ngũ.
         </p>
       </Container>
     </section>
@@ -52,11 +52,11 @@ export const AboutPage = () => (
     <section className="section">
       <Container className="about-story">
         <div className="about-story__copy">
-          <Badge>Cau chuyen doanh nghiep</Badge>
-          <h2 className="detail-title">Chung toi tap trung vao booking minh bach, lich ro rang va trai nghiem an toan.</h2>
+          <Badge>Câu chuyện doanh nghiệp</Badge>
+          <h2 className="detail-title">Chúng tôi tập trung vào booking minh bạch, lịch rõ ràng và trải nghiệm an toàn.</h2>
           <p className="detail-copy">
-            Toan bo flow duoc thiet ke de user co the xem lich trong, dat lich, thanh toan va theo doi hanh
-            trinh ma khong can phai cho qua nhieu thao tac thu cong.
+            Toàn bộ luồng được thiết kế để khách hàng có thể xem lịch trống, đặt lịch, thanh toán và theo dõi hành
+            trình mà không cần phải chờ qua nhiều thao tác thủ công.
           </p>
 
           <div className="about-value-grid">
@@ -74,11 +74,11 @@ export const AboutPage = () => (
         <div className="about-visual">
           <img
             src="https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=1000&q=80"
-            alt="Team"
+            alt="Đội ngũ vận hành"
           />
           <img
             src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1000&q=80"
-            alt="Flight"
+            alt="Chuyến bay"
           />
         </div>
       </Container>
@@ -89,7 +89,7 @@ export const AboutPage = () => (
         {aboutOperationalHighlights.map((item) => (
           <Card key={item} className="info-card">
             <Panel className="stack-sm">
-              <strong>Operational highlight</strong>
+              <strong>Điểm nổi bật vận hành</strong>
               <p>{item}</p>
             </Panel>
           </Card>
@@ -101,8 +101,8 @@ export const AboutPage = () => (
       <Container className="detail-section-grid">
         <Card className="detail-section-card">
           <Panel className="stack-sm">
-            <Badge>Doi ngu huong dan vien</Badge>
-            <h3>Nhung nguoi truc tiep van hanh chuyen bay</h3>
+            <Badge>Đội ngũ hướng dẫn viên</Badge>
+            <h3>Những người trực tiếp vận hành chuyến bay</h3>
             <ul className="detail-list">
               {guideTeam.map((item) => (
                 <li key={item}>{item}</li>
@@ -112,8 +112,8 @@ export const AboutPage = () => (
         </Card>
         <Card className="detail-section-card">
           <Panel className="stack-sm">
-            <Badge tone="success">Chung nhan an toan</Badge>
-            <h3>He thong checklist va thong tin dong bo</h3>
+            <Badge tone="success">Chứng nhận an toàn</Badge>
+            <h3>Hệ thống checklist và thông tin đồng bộ</h3>
             <ul className="detail-list">
               {safetyItems.map((item) => (
                 <li key={item}>{item}</li>

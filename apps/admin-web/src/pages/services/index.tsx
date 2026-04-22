@@ -12,7 +12,9 @@ import { DataTable } from "@/widgets/data-table/data-table";
 
 const blankFeature: ServiceFeatureWritePayload = {
   name: "",
+  name_en: "",
   description: "",
+  description_en: "",
   active: true
 };
 
@@ -36,7 +38,9 @@ export const ServicesPage = () => {
   useEffect(() => {
     featureForm.reset(featureEditing ? {
       name: featureEditing.name,
+      name_en: featureEditing.name_en,
       description: featureEditing.description,
+      description_en: featureEditing.description_en,
       active: featureEditing.active
     } : blankFeature);
   }, [featureEditing, featureForm]);
@@ -92,6 +96,7 @@ export const ServicesPage = () => {
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
+                      <small>{row.name_en}</small>
                       <span>{row.slug}</span>
                       <small>{row.short_description}</small>
                     </div>
@@ -105,7 +110,7 @@ export const ServicesPage = () => {
                 {
                   key: "features",
                   title: "Features",
-                  render: (row) => `${row.included_services.length} dịch vụ`
+                  render: (row) => `${row.included_features.length} dịch vụ`
                 },
                 {
                   key: "status",
@@ -143,11 +148,19 @@ export const ServicesPage = () => {
 
             <form className="admin-form admin-form--compact" onSubmit={featureForm.handleSubmit((values) => saveFeatureMutation.mutate(values))}>
               <div className="inline-field-grid inline-field-grid--two">
-                <Field label="Tên feature">
+                <Field label="Tên feature (VI)">
                   <Input {...featureForm.register("name", { required: true })} />
                 </Field>
-                <Field label="Mô tả ngắn">
+                <Field label="Tên feature (EN)">
+                  <Input {...featureForm.register("name_en", { required: true })} />
+                </Field>
+              </div>
+              <div className="inline-field-grid inline-field-grid--two">
+                <Field label="Mô tả ngắn (VI)">
                   <Textarea {...featureForm.register("description")} />
+                </Field>
+                <Field label="Mô tả ngắn (EN)">
+                  <Textarea {...featureForm.register("description_en")} />
                 </Field>
               </div>
               <label className="admin-checkbox">
@@ -177,7 +190,9 @@ export const ServicesPage = () => {
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
+                      <span>{row.name_en}</span>
                       <small>{row.description || "Không có mô tả"}</small>
+                      {row.description_en ? <small>{row.description_en}</small> : null}
                     </div>
                   )
                 },

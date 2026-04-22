@@ -37,7 +37,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const ensureCustomerRole = (account: Account) => {
   if (account.role !== "CUSTOMER") {
-    throw new Error("Tai khoan nay khong duoc phep dang nhap customer portal.");
+    throw new Error("Tài khoản này không được phép đăng nhập customer portal.");
   }
   return account;
 };

@@ -6,8 +6,10 @@ import type { BookingCreatePayload } from "@paragliding/api-client";
 import { Button, Card, Field, Input, Panel, Textarea } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
+import { localizeFeatureName, localizeServiceName } from "@/shared/lib/localized-content";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 
 type BookingFormProps = {
   serviceSlug: string;
@@ -42,6 +44,7 @@ const DEPOSIT_PERCENT = 40;
 
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
+  const { locale } = useI18n();
   const { account } = useAuth();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const accountNeedsContactDetails = !account?.phone || account.phone.startsWith("EMAIL");
@@ -100,6 +103,8 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
     }
   });
 
+  const localizedServiceName = servicePackage ? localizeServiceName(servicePackage, locale) : serviceSlug;
+
   return (
     <div className="booking-form-layout">
       {successMessage ? <div className="booking-toast">{successMessage}</div> : null}
@@ -109,7 +114,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
           <h3>Tóm tắt booking</h3>
           <div className="booking-summary-card__fact">
             <span>Dịch vụ</span>
-            <strong>{servicePackage?.name ?? serviceSlug}</strong>
+            <strong>{localizedServiceName}</strong>
           </div>
           <div className="booking-summary-card__fact">
             <span>Ngày bay</span>
@@ -135,12 +140,12 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
             <span>Cần trả trước</span>
             <strong>{formatCurrency(depositAmount)}</strong>
           </div>
-          {servicePackage?.included_services.length ? (
+          {servicePackage?.included_features.length ? (
             <div className="booking-summary-card__features">
               <span>Dịch vụ đi kèm</span>
               <ul>
-                {servicePackage.included_services.map((feature) => (
-                  <li key={feature}>{feature}</li>
+                {servicePackage.included_features.map((feature) => (
+                  <li key={feature.id}>{localizeFeatureName(feature, locale)}</li>
                 ))}
               </ul>
             </div>

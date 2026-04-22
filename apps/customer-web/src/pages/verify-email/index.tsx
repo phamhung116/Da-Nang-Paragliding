@@ -25,9 +25,9 @@ export const VerifyEmailPage = () => {
   }, [mutation, token]);
 
   const title = !token
-    ? "Link xac thuc khong hop le"
+    ? "Link xác thực không hợp lệ"
     : mutation.isSuccess
-      ? "Email da duoc xac thuc"
+      ? "Email đã được xác thực"
       : mutation.isError
         ? "Không thể xác thực email"
         : "Đang xác thực email";
@@ -55,21 +55,21 @@ export const VerifyEmailPage = () => {
               {!token ? (
                 <p>Token xác thực bị thiếu. Hãy mở đúng link mới nhất trong email Da Nang Paragliding.</p>
               ) : mutation.isSuccess ? (
-                <p>Tai khoan cua ban da san sang. He thong se chuyen ve trang chu trong giay lat.</p>
+                <p>Tài khoản của bạn đã sẵn sàng. Hệ thống sẽ chuyển về trang chủ trong giây lát.</p>
               ) : mutation.isError ? (
                 <p>{mutation.error instanceof Error ? mutation.error.message : "Link xac thuc da het han."}</p>
               ) : (
-                <p>Vui long doi trong khi chung toi kich hoat tai khoan cua ban.</p>
+                <p>Vui lòng đợi trong khi chúng tôi kích hoạt tài khoản của bạn.</p>
               )}
 
               <div className="auth-luxe-meta">
                 <Link to={routes.login}>Đăng nhập</Link>
-                <Link to={routes.home}>Ve trang chu</Link>
+                <Link to={routes.home}>Về trang chủ</Link>
               </div>
 
               {mutation.isError || !token ? (
                 <Link to={routes.login}>
-                  <Button className="auth-luxe-submit">Gui lai link xac thuc</Button>
+                  <Button className="auth-luxe-submit">Gửi lại link xác thực</Button>
                 </Link>
               ) : null}
             </div>

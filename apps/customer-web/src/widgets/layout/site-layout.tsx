@@ -36,7 +36,7 @@ type SiteLayoutProps = PropsWithChildren<{
 
 export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }: SiteLayoutProps) => {
   const { account, isAuthenticated, logout } = useAuth();
-  const { locale, setLocale, t } = useI18n();
+  const { t } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -103,7 +103,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   <div className="h-10 w-10 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
                     <img
                       src="/media/img/logo.jpg"
-                      alt="Da Nang Paragliding logo"
+                      alt="Logo Da Nang Paragliding"
                       className="h-full w-full object-cover"
                     />
                   </div>
@@ -125,22 +125,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   ))}
                 </nav>
 
-                <div className="ml-4 hidden shrink-0 items-center gap-2 border-l border-stone-200 pl-4 md:flex">
-                  <button
-                    type="button"
-                    className={`transition-opacity ${locale === "vi" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-                    onClick={() => setLocale("vi")}
-                  >
-                    <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
-                  </button>
-                  <button
-                    type="button"
-                    className={`transition-opacity ${locale === "en" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-                    onClick={() => setLocale("en")}
-                  >
-                    <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="h-4 w-6 rounded-sm object-cover shadow-sm" />
-                  </button>
-
+                <div className="ml-4 hidden shrink-0 items-center border-l border-stone-200 pl-4 md:flex">
                   {isAuthenticated ? (
                     <div className="site-profile" ref={profileMenuRef}>
                       <button
@@ -190,7 +175,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 <span className="site-brand__icon overflow-hidden bg-white p-0">
                   <img
                     src="/media/img/logo.jpg"
-                    alt="Da Nang Paragliding logo"
+                    alt="Logo Da Nang Paragliding"
                     className="h-full w-full object-cover"
                   />
                 </span>
@@ -215,25 +200,6 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </nav>
 
             <div className="mobile-menu__footer">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className={`transition-opacity ${locale === "vi" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-                  onClick={() => setLocale("vi")}
-                  aria-label="Chuyển sang tiếng Việt"
-                >
-                  <img src="https://flagcdn.com/w40/vn.png" alt="VN" className="h-6 w-10 rounded-sm object-cover shadow-sm" />
-                </button>
-                <button
-                  type="button"
-                  className={`transition-opacity ${locale === "en" ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
-                  onClick={() => setLocale("en")}
-                  aria-label="Switch to English"
-                >
-                  <img src="https://flagcdn.com/w40/gb.png" alt="UK" className="h-6 w-10 rounded-sm object-cover shadow-sm" />
-                </button>
-              </div>
-
               {isAuthenticated ? (
                 <>
                   <Link to={routes.account} className="site-account-chip site-account-chip--mobile">
@@ -316,7 +282,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </div>
 
             <div className="mt-16 border-t border-stone-800 pt-8 text-center text-xs text-stone-500">
-              © 2024 Da Nang Paragliding. All rights reserved.
+              © 2024 Da Nang Paragliding. Bảo lưu mọi quyền.
             </div>
           </div>
         </footer>

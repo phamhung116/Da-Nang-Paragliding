@@ -2,13 +2,14 @@ import { useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { Link, Navigate } from "react-router-dom";
-import { Badge, Button, Card, Container, Field, Input, Panel, Select } from "@paragliding/ui";
+import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
 import type { UpdateProfilePayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { customerApi } from "@/shared/config/api";
 import { accountSupportNotes } from "@/shared/constants/customer-content";
 import { routes } from "@/shared/config/routes";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const normalizeFullName = (value: string) => value.trim().replace(/\s+/g, " ");
@@ -20,7 +21,7 @@ const normalizePhone = (value: string) => {
 
 export const AccountPage = () => {
   const { account, isAuthenticated, updateProfile } = useAuth();
-  const { setLocale } = useI18n();
+  const { locale } = useI18n();
 
   const form = useForm<UpdateProfilePayload>({
     defaultValues: {
@@ -45,7 +46,7 @@ export const AccountPage = () => {
     form.reset({
       full_name: account.full_name ?? "",
       phone: account.phone ?? "",
-      preferred_language: account.preferred_language === "en" ? "en" : "vi"
+      preferred_language: "vi"
     });
   }, [account, form]);
 
@@ -55,12 +56,8 @@ export const AccountPage = () => {
       form.reset({
         full_name: nextAccount.full_name ?? "",
         phone: nextAccount.phone ?? "",
-        preferred_language: nextAccount.preferred_language === "en" ? "en" : "vi"
+        preferred_language: "vi"
       });
-
-      if (nextAccount.preferred_language === "en" || nextAccount.preferred_language === "vi") {
-        setLocale(nextAccount.preferred_language);
-      }
     }
   });
 
@@ -86,16 +83,16 @@ export const AccountPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Tai khoan</Badge>
-              <h2>Quan ly thong tin ca nhan va lich su booking</h2>
+              <Badge>Tài khoản</Badge>
+              <h2>Quản lý thông tin cá nhân và lịch sử booking</h2>
             </div>
-            <p>Customer co the cap nhat thong tin lien he de booking sau duoc dien nhanh va chinh xac hon.</p>
+            <p>Customer có thể cập nhật thông tin liên hệ để booking sau được điền nhanh và chính xác hơn.</p>
           </div>
 
           <div className="account-layout">
             <Card>
               <Panel className="stack">
-                <Badge>Ho so ca nhan</Badge>
+                <Badge>Hồ sơ cá nhân</Badge>
                 <h2 className="detail-title">{account?.full_name}</h2>
                 <p className="detail-copy">{account?.email}</p>
                 <form
@@ -104,29 +101,29 @@ export const AccountPage = () => {
                     updateProfileMutation.mutate({
                       full_name: normalizeFullName(values.full_name ?? ""),
                       phone: normalizePhone(values.phone ?? ""),
-                      preferred_language: values.preferred_language === "en" ? "en" : "vi"
+                      preferred_language: "vi"
                     })
                   )}
                 >
-                  <Field label="Ho va ten">
+                  <Field label="Họ và tên">
                     <Input
                       {...form.register("full_name", {
-                        required: "Ho va ten la bat buoc.",
+                        required: "Họ và tên là bắt buộc.",
                         validate: (value) =>
-                          normalizeFullName(value ?? "").length >= 2 || "Ho va ten phai co it nhat 2 ky tu."
+                          normalizeFullName(value ?? "").length >= 2 || "Họ và tên phải có ít nhất 2 ký tự."
                       })}
                     />
                   </Field>
                   {form.formState.errors.full_name ? (
                     <p className="form-error">{form.formState.errors.full_name.message}</p>
                   ) : null}
-                  <Field label="So dien thoai">
+                  <Field label="Số điện thoại">
                     <Input
                       {...form.register("phone", {
-                        required: "So dien thoai la bat buoc.",
+                        required: "Số điện thoại là bắt buộc.",
                         validate: (value) => {
                           const digits = normalizePhone(value ?? "").replace("+", "");
-                          return digits.length >= 9 && digits.length <= 15 || "So dien thoai khong hop le.";
+                          return digits.length >= 9 && digits.length <= 15 || "Số điện thoại không hợp lệ.";
                         }
                       })}
                     />
@@ -134,15 +131,9 @@ export const AccountPage = () => {
                   {form.formState.errors.phone ? (
                     <p className="form-error">{form.formState.errors.phone.message}</p>
                   ) : null}
-                  <Field label="Ngon ngu">
-                    <Select {...form.register("preferred_language")}>
-                      <option value="vi">Tieng Viet</option>
-                      <option value="en">English</option>
-                    </Select>
-                  </Field>
                   {updateProfileMutation.isSuccess ? (
                     <div className="account-form-status is-success" role="status" aria-live="polite">
-                      Da luu thong tin thanh cong.
+                      Đã lưu thông tin thành công.
                     </div>
                   ) : null}
                   {submitError ? (
@@ -159,7 +150,7 @@ export const AccountPage = () => {
 
             <Card>
               <Panel className="stack">
-                <Badge>Lich su booking</Badge>
+                <Badge>Lịch sử booking</Badge>
                 {bookings.length === 0 ? (
                   <div className="account-bookings">
                     <article className="account-booking-card">
@@ -171,14 +162,14 @@ export const AccountPage = () => {
                   <div className="account-bookings">
                     {bookings.map((booking) => (
                       <article key={booking.code} className="account-booking-card">
-                        <strong>{booking.service_name}</strong>
+                        <strong>{localizeBookingServiceName(booking, locale)}</strong>
                         <span>
                           {booking.flight_date} - {booking.flight_time}
                         </span>
                         <span>
                           {booking.payment_status} / {booking.flight_status}
                         </span>
-                        <span>Ma booking: {booking.code}</span>
+                        <span>Mã booking: {booking.code}</span>
                         <Link to={`/account/bookings/${booking.code}`}>
                           <Button variant="secondary">Xem chi tiet booking</Button>
                         </Link>
@@ -194,7 +185,7 @@ export const AccountPage = () => {
             {accountSupportNotes.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Ghi chu ho tro</strong>
+                  <strong>Ghi chú hỗ trợ</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>

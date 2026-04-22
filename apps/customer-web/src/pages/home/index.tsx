@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
@@ -7,14 +7,35 @@ import { motion } from "motion/react";
 import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
+import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
+import { localizePostTitle } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { HomeHero } from "@/widgets/hero/home-hero";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
 import { WeatherShowcase } from "@/widgets/weather-showcase/weather-showcase";
 
+const toYouTubeEmbedUrl = (value: string) => {
+  try {
+    const url = new URL(value);
+    const directId = url.hostname.includes("youtu.be") ? url.pathname.replace(/^\/+/, "") : "";
+    const videoId = directId || url.searchParams.get("v") || "";
+
+    if (!videoId) {
+      return value;
+    }
+
+    return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`;
+  } catch {
+    return value;
+  }
+};
+
 export const HomePage = () => {
-  const showcaseVideoRef = useRef<HTMLVideoElement | null>(null);
+  const { locale } = useI18n();
+  const video1YoutubeWatchUrl = "https://www.youtube.com/watch?v=r8uhrlAQ-Tk";
+  const video1YoutubeEmbedUrl = toYouTubeEmbedUrl(video1YoutubeWatchUrl);
   const { data: services = [] } = useQuery({
     queryKey: ["featured-services"],
     queryFn: () => customerApi.listServices()
@@ -38,42 +59,6 @@ export const HomePage = () => {
   const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
   const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
 
-  useEffect(() => {
-    const video = showcaseVideoRef.current;
-    if (!video) {
-      return;
-    }
-
-    video.muted = true;
-    video.loop = true;
-    video.playsInline = true;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry) {
-          return;
-        }
-
-        if (entry.isIntersecting) {
-          void video.play().catch(() => {
-            // Autoplay can still be blocked in some low-power browser contexts.
-          });
-          return;
-        }
-
-        video.pause();
-      },
-      { threshold: 0.5 }
-    );
-
-    observer.observe(video);
-
-    return () => {
-      observer.disconnect();
-      video.pause();
-    };
-  }, []);
-
   return (
     <SiteLayout>
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-20 pb-20">
@@ -83,7 +68,7 @@ export const HomePage = () => {
           <div className="absolute inset-0 z-0">
             <img
               src="/media/img/tour-bay-du-luon-tu-do-paragliding-hon-en-nha-trang-1.webp"
-              alt="Paragliding Background"
+              alt="Phông nền dù lượn"
               className="h-full w-full object-cover"
               referrerPolicy="no-referrer"
             />
@@ -213,17 +198,23 @@ export const HomePage = () => {
 
         <section className="mx-auto max-w-7xl px-0 pb-12 md:px-4 md:pb-20 sm:px-6 lg:px-8">
           <div className="group relative mx-auto aspect-video max-w-5xl overflow-hidden shadow-2xl md:rounded-[40px]">
-            <video
-              ref={showcaseVideoRef}
-              src="/media/video/video1.mp4"
-              autoPlay
-              controls
-              loop
-              muted
-              playsInline
-              preload="metadata"
-              className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+            <iframe
+              src={video1YoutubeEmbedUrl}
+              title="Video trải nghiệm dù lượn"
+              loading="lazy"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              className="h-full w-full transition-transform duration-700 group-hover:scale-105"
             />
+            <a
+              href={video1YoutubeWatchUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="absolute bottom-4 right-4 rounded-full bg-black/55 px-4 py-2 text-xs font-bold text-white backdrop-blur md:bottom-8 md:right-8"
+            >
+              Xem trên YouTube
+            </a>
             <div className="absolute bottom-4 left-4 text-left text-white md:bottom-8 md:left-8">
               <p className="mb-1 text-[10px] font-bold uppercase tracking-widest opacity-80 md:mb-2 md:text-xs">
                 Trải nghiệm thực tế
@@ -241,7 +232,7 @@ export const HomePage = () => {
               </p>
             </div>
             <Link to="/posts">
-              <Button className="group flex items-center gap-2 font-bold text-brand transition-all hover:gap-4">
+              <Button className="group flex items-center gap-2 font-bold text-white transition-all hover:gap-4 hover:text-white">
                 Xem tất cả bài viết
                 <ChevronRight size={20} className="transition-transform group-hover:translate-x-1" />
               </Button>
@@ -257,16 +248,16 @@ export const HomePage = () => {
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                       referrerPolicy="no-referrer"
                       src={post.cover_image}
-                      alt={post.title}
+                      alt={localizePostTitle(post, locale)}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
                   <div className="flex flex-1 flex-col justify-center">
                     <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-brand md:mb-2 md:text-[10px]">
-                      {new Date(post.published_at ?? post.created_at ?? "").toLocaleDateString("vi-VN")}
+                      {formatDate(post.published_at ?? post.created_at ?? "")}
                     </p>
                     <h3 className="line-clamp-2 text-base font-bold leading-tight text-stone-900 transition-colors group-hover:text-brand md:text-xl">
-                      {post.title}
+                      {localizePostTitle(post, locale)}
                     </h3>
                   </div>
                 </article>

@@ -110,6 +110,7 @@ class CreateBookingUseCase:
                 code=generate_booking_code(),
                 service_slug=service_package.slug,
                 service_name=service_package.name,
+                service_name_en=service_package.name_en or service_package.name,
                 launch_site_name=service_package.launch_site_name,
                 flight_date=request.flight_date,
                 flight_time=request.flight_time,
@@ -164,6 +165,7 @@ class CreateBookingUseCase:
             booking_code=booking.code,
             phone=booking.phone,
             service_name=booking.service_name,
+            service_name_en=booking.service_name_en,
             flight_status=booking.flight_status,
             pilot_name=None,
             current_location={

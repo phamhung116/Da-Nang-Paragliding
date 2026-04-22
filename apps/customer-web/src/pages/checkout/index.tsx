@@ -6,8 +6,10 @@ import type { PaymentTransaction } from "@paragliding/api-client";
 import { customerApi } from "@/shared/config/api";
 import { checkoutGuidelines } from "@/shared/constants/customer-content";
 import { paymentStatusLabels } from "@/shared/constants/status";
-import { formatCurrency } from "@/shared/lib/format";
+import { formatCurrency, formatDateTime } from "@/shared/lib/format";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { checkoutStorage } from "@/shared/lib/storage";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 type CheckoutState = Awaited<ReturnType<typeof customerApi.createBooking>> & {
@@ -15,6 +17,7 @@ type CheckoutState = Awaited<ReturnType<typeof customerApi.createBooking>> & {
 };
 
 export const CheckoutPage = () => {
+  const { locale } = useI18n();
   const [checkoutState, setCheckoutState] = useState<CheckoutState | null>(() =>
     checkoutStorage.get<CheckoutState>()
   );
@@ -67,11 +70,11 @@ export const CheckoutPage = () => {
           <div className="section-heading">
             <div>
               <Badge>{paymentStatusLabels[booking.payment_status] ?? booking.payment_status}</Badge>
-              <h2>Thanh toan va xac nhan booking</h2>
+              <h2>Thanh toán và xác nhận booking</h2>
             </div>
             <p>
-              Sau khi thanh toan thanh cong, booking se chuyen sang confirmed va customer co the vao tracking
-              page de xem hanh trinh.
+              Sau khi thanh toán thành công, booking sẽ chuyển sang confirmed và customer có thể vào tracking
+              page để xem hành trình.
             </p>
           </div>
 
@@ -79,7 +82,7 @@ export const CheckoutPage = () => {
             {checkoutGuidelines.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Huong dan thanh toan</strong>
+                  <strong>Hướng dẫn thanh toán</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -96,31 +99,31 @@ export const CheckoutPage = () => {
 
                 <div className="checkout-summary-card__list">
                   <div className="booking-summary-card__fact">
-                    <span>Service</span>
-                    <strong>{booking.service_name}</strong>
+                    <span>Dịch vụ</span>
+                    <strong>{localizeBookingServiceName(booking, locale)}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
-                    <span>Lich bay</span>
+                    <span>Lịch bay</span>
                     <strong>
                       {booking.flight_date} - {booking.flight_time}
                     </strong>
                   </div>
                   <div className="booking-summary-card__fact">
-                    <span>Tong gia tri</span>
+                    <span>Tổng giá trị</span>
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
-                    <span>Di chuyen</span>
-                    <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Tu den"}</strong>
+                    <span>Di chuyển</span>
+                    <strong>{booking.pickup_option === "pickup" ? "Xe đến đón" : "Tự đến"}</strong>
                   </div>
                   {booking.pickup_option === "pickup" ? (
                     <div className="booking-summary-card__fact">
-                      <span>Dia chi don</span>
+                      <span>Địa chỉ đón</span>
                       <strong>{booking.pickup_address ?? "Đang cập nhật"}</strong>
                     </div>
                   ) : null}
                   <div className="booking-summary-card__fact">
-                    <span>Trang thai</span>
+                    <span>Trạng thái</span>
                     <strong>{booking.approval_status}</strong>
                   </div>
                 </div>
@@ -129,25 +132,25 @@ export const CheckoutPage = () => {
 
             <Card className="checkout-action-card">
               <Panel className="stack">
-                <Badge>Dat coc bang QR</Badge>
+                <Badge>Đặt cọc bằng QR</Badge>
                     <p className="detail-copy">
-                      Thanh toan so tien tra truoc qua cong thanh toan. Sau khi nha cung cap tra ve trang thai
-                      PAID, booking se duoc confirm va email xac nhan se duoc gui cho khach.
+                      Thanh toán số tiền trả trước qua cổng thanh toán. Sau khi nhà cung cấp trả về trạng thái
+                      PAID, booking sẽ được confirm và email xác nhận sẽ được gửi cho khách.
                     </p>
                     <div className="checkout-qr">
                       <img src={paymentSession?.qr_code_url} alt={`QR ${booking.code}`} />
                       <div className="stack-sm">
                         <div className="booking-summary-card__fact">
-                          <span>So tien dat coc</span>
+                          <span>Số tiền đặt cọc</span>
                           <strong>{formatCurrency(paymentSession?.amount ?? "0")}</strong>
                         </div>
                         <div className="booking-summary-card__fact">
-                          <span>Noi dung chuyen khoan</span>
+                          <span>Nội dung chuyển khoản</span>
                           <strong>{paymentSession?.transfer_content}</strong>
                         </div>
                         <div className="booking-summary-card__fact">
-                          <span>Het han luc</span>
-                          <strong>{expiresAt?.toLocaleString("vi-VN")}</strong>
+                          <span>Hết hạn lúc</span>
+                          <strong>{formatDateTime(expiresAt)}</strong>
                         </div>
                       </div>
                     </div>
@@ -159,7 +162,7 @@ export const CheckoutPage = () => {
                     ) : null}
                     {paymentSession?.payment_url ? (
                       <a href={paymentSession.payment_url} target="_blank" rel="noreferrer">
-                        <Button>Mo cong thanh toan</Button>
+                        <Button>Mở cổng thanh toán</Button>
                       </a>
                     ) : null}
                     <Button
@@ -169,12 +172,12 @@ export const CheckoutPage = () => {
                       }
                     >
                       {booking.payment_status === "PAID"
-                        ? "Da thanh toan"
+                        ? "Đã thanh toán"
                         : isExpired
-                          ? "QR da het han"
+                          ? "QR đã hết hạn"
                         : paymentMutation.isPending
                             ? "Đang xử lý..."
-                            : "Kiem tra trang thai thanh toan"}
+                            : "Kiểm tra trạng thái thanh toán"}
                     </Button>
                     {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
                       <p className="calendar-selection-note">
@@ -183,7 +186,7 @@ export const CheckoutPage = () => {
                       </p>
                     ) : null}
                 <Link to="/tracking">
-                  <Button variant="secondary">Theo doi hanh trinh bay</Button>
+                  <Button variant="secondary">Theo dõi hành trình bay</Button>
                 </Link>
               </Panel>
             </Card>

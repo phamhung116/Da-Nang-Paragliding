@@ -9,6 +9,7 @@ class BookingDocument(models.Model):
     code = models.CharField(max_length=32, unique=True)
     service_slug = models.SlugField(max_length=120)
     service_name = models.CharField(max_length=160)
+    service_name_en = models.CharField(max_length=160, blank=True, default="")
     launch_site_name = models.CharField(max_length=120)
     flight_date = models.DateField()
     flight_time = models.CharField(max_length=5)

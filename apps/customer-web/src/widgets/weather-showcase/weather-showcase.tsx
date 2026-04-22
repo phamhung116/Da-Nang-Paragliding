@@ -1,6 +1,8 @@
 import { Badge } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
+import { formatDate } from "@/shared/lib/format";
 import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
+import { repairFlightConditionLabel } from "@/shared/lib/localized-content";
 import { useEffect, useMemo, useState } from "react";
 
 import { 
@@ -52,6 +54,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
     forecastPage * FORECAST_PAGE_SIZE,
     forecastPage * FORECAST_PAGE_SIZE + FORECAST_PAGE_SIZE
   );
+  const todayFlightCondition = repairFlightConditionLabel(today.flight_condition);
 
   useEffect(() => {
     setForecastPage(0);
@@ -76,7 +79,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
             <div>
               <h2 className="text-xl md:text-3xl font-bold mb-1 md:mb-2">Thời tiết hôm nay</h2>
               <p className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-sm md:text-base hidden md:block`}>
-                {new Date(today.date).toLocaleDateString("vi-VN", {
+                {formatDate(today.date, {
                   weekday: "long",
                   day: "2-digit",
                   month: "2-digit"
@@ -84,7 +87,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               </p>
             </div>
             <div className="bg-emerald-500/20 text-emerald-400 px-3 py-1.5 md:px-4 md:py-2 rounded-full text-[10px] md:text-sm font-bold border border-emerald-500/30">
-              <Badge tone={getWeatherTone(today.flight_condition)}>Điều kiện bay: {today.flight_condition}</Badge>
+              <Badge tone={getWeatherTone(today.flight_condition)}>Điều kiện bay: {todayFlightCondition}</Badge>
             </div>
           </div>
 
@@ -132,7 +135,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
              <div className="flex flex-col">
                <span className="text-sm md:text-lg font-medium">{today.weather_condition || "Đang cập nhật"}</span>
                <span className={`${isDark ? 'text-stone-400' : 'text-stone-500'} text-[10px] md:text-sm`}>
-                 Tam nhin: {today.visibility_km} km
+                 Tầm nhìn: {today.visibility_km} km
                </span>
              </div>
              <Sun size={24} className="ml-auto text-yellow-400 md:w-12 md:h-12" />
@@ -156,13 +159,13 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
             {visibleForecast.map((item) => (
               <article key={item.date} className={`flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-xl ${isDark ? 'hover:bg-white/5' : 'hover:bg-stone-100'} transition-colors`}>
                 <span className="w-14 md:w-16 font-medium text-[10px] md:text-sm">
-                  {new Date(item.date).toLocaleDateString("vi-VN", {
-                      weekday: "short",
-                      day: "2-digit",
-                      month: "2-digit"
-                    })}
+                  {formatDate(item.date, {
+                    weekday: "short",
+                    day: "2-digit",
+                    month: "2-digit"
+                  })}
                 </span>
-                <Badge tone={getWeatherTone(item.flight_condition)}>{item.flight_condition}</Badge>
+                <Badge tone={getWeatherTone(item.flight_condition)}>{repairFlightConditionLabel(item.flight_condition)}</Badge>
                 <div className="flex-1 grid grid-cols-3 gap-1 md:gap-2">
                   <div className="flex items-center gap-1">
                     <Wind size={10} className="text-stone-400" />

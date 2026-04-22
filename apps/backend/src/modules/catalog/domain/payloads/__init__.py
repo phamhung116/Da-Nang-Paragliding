@@ -8,11 +8,14 @@ from decimal import Decimal
 class ServicePackagePayload:
     slug: str
     name: str
+    name_en: str
     short_description: str
+    short_description_en: str
     description: str
+    description_en: str
     price: Decimal
     flight_duration_minutes: int
-    included_services: list[str]
+    included_feature_ids: list[str]
     participation_requirements: list[str]
     min_child_age: int
     hero_image: str
@@ -30,5 +33,7 @@ class ServicePackagePayload:
 @dataclass(slots=True)
 class ServiceFeaturePayload:
     name: str
+    name_en: str
     description: str
+    description_en: str
     active: bool

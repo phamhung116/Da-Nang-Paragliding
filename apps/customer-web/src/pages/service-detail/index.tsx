@@ -5,7 +5,14 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { AlertCircle, CheckCircle2, ChevronDown, Eye } from "lucide-react";
 import { customerApi } from "@/shared/config/api";
 import { servicePreparationChecklist } from "@/shared/constants/customer-content";
-import { formatCurrency } from "@/shared/lib/format";
+import {
+  localizeFeatureName,
+  localizeServiceDescription,
+  localizeServiceName,
+  localizeServiceShortDescription,
+} from "@/shared/lib/localized-content";
+import { formatCurrency, formatDate } from "@/shared/lib/format";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -25,11 +32,12 @@ const formatSelectedSlotLabel = (value: { date: string; time: string } | null) =
     return "Chưa chọn khung giờ";
   }
 
-  return `${value.time} - ${parseDateKey(value.date).toLocaleDateString("vi-VN")}`;
+  return `${value.time} - ${formatDate(parseDateKey(value.date))}`;
 };
 
 export const ServiceDetailPage = () => {
   const { slug = "" } = useParams();
+  const { locale } = useI18n();
   const currentDate = useMemo(() => new Date(), []);
   const [calendarState, setCalendarState] = useState({
     year: currentDate.getFullYear(),
@@ -85,11 +93,16 @@ export const ServiceDetailPage = () => {
     );
   }
 
+  const serviceName = localizeServiceName(servicePackage, locale);
+  const serviceShortDescription = localizeServiceShortDescription(servicePackage, locale);
+  const serviceDescription = localizeServiceDescription(servicePackage, locale);
+  const includedFeatureCountLabel = `${servicePackage.included_features.length} mục`;
+
   return (
     <SiteLayout>
       <Banner
-        title={servicePackage.name}
-        subtitle="Trải nghiệm bay lượn tuyệt vời nhất tại Đà Nẵng."
+        title={serviceName}
+        subtitle={serviceShortDescription}
         image={servicePackage.hero_image}
       />
 
@@ -157,7 +170,7 @@ export const ServiceDetailPage = () => {
                 <h2 className="mb-6 hidden items-center gap-2 text-2xl font-bold lg:flex">
                   <Eye className="text-brand" /> Tổng quan
                 </h2>
-                <p className="detail-copy">{servicePackage.description}</p>
+                <p className="detail-copy">{serviceDescription}</p>
                 <div className="detail-highlight-grid">
                   <article>
                     <span>Giá gói</span>
@@ -165,7 +178,7 @@ export const ServiceDetailPage = () => {
                   </article>
                   <article>
                     <span>Dịch vụ đi kèm</span>
-                    <strong>{servicePackage.included_services.length} mục</strong>
+                    <strong>{includedFeatureCountLabel}</strong>
                   </article>
                   <article>
                     <span>Đặt lịch</span>
@@ -192,15 +205,15 @@ export const ServiceDetailPage = () => {
                   <CheckCircle2 className="text-emerald-500" /> Dịch vụ đi kèm
                 </h2>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
-                  {servicePackage.included_services.map((item) => (
+                  {servicePackage.included_features.map((item) => (
                     <div
-                      key={item}
+                      key={item.id}
                       className="flex items-center gap-3 rounded-2xl border border-stone-100 bg-white p-4 shadow-sm"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={16} />
                       </div>
-                      <span className="text-sm font-medium text-stone-700">{item}</span>
+                      <span className="text-sm font-medium text-stone-700">{localizeFeatureName(item, locale)}</span>
                     </div>
                   ))}
                 </div>

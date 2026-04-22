@@ -2,11 +2,15 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
+import { localizePostExcerpt, localizePostTitle } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { motion } from "motion/react"
 import { ChevronRight } from "lucide-react";
+import { formatDate } from "@/shared/lib/format";
 
 export const PostsPage = () => {
+  const { locale } = useI18n();
   const { data: posts = [] } = useQuery({
     queryKey: ["posts"],
     queryFn: () => customerApi.listPosts()
@@ -33,20 +37,20 @@ export const PostsPage = () => {
               {remainingPosts.map((post) => (
                 <Card key={post.slug} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-stone-100 flex flex-row md:flex-col group hover:shadow-xl transition-all duration-500 min-h-[140px] md:min-h-0 cursor-pointer">
                   <div className="w-32 md:w-full aspect-square md:aspect-auto md:h-48 overflow-hidden flex-shrink-0">
-                    <img className="post-card__image" src={post.cover_image} alt={post.title} />
+                    <img className="post-card__image" src={post.cover_image} alt={localizePostTitle(post, locale)} />
                   </div>
                   <div className="p-4 md:p-6 flex-grow flex flex-col justify-center md:justify-start">
                     <p className="text-[8px] md:text-[10px] font-bold text-brand uppercase mb-1 md:mb-2">
-                      {new Date(post.published_at ?? post.created_at ?? "").toLocaleDateString("vi-VN")}
+                      {formatDate(post.published_at ?? post.created_at ?? "")}
                     </p>
                     <h3 className="text-sm md:text-lg font-bold mb-1 md:mb-3 text-stone-900 leading-tight line-clamp-2">
-                      {post.title}
+                      {localizePostTitle(post, locale)}
                     </h3>
                     <p className="text-[10px] md:text-sm text-stone-500 mb-2 md:mb-6 line-clamp-2 md:line-clamp-3">
-                      {post.excerpt}
+                      {localizePostExcerpt(post, locale)}
                     </p>
                     <Link to={`/posts/${post.slug}`}>
-                      <Button className="mt-auto text-[10px] md:text-sm font-bold text-brand flex items-center gap-1 hover:gap-2 transition-all">
+                      <Button className="mt-auto flex items-center gap-1 text-[10px] font-bold !text-white transition-all hover:gap-2 hover:!text-white md:text-sm">
                         Đọc bài viết
                       </Button>
                     </Link>

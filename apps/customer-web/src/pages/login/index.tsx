@@ -5,7 +5,6 @@ import { Link, Navigate, useLocation } from "react-router-dom";
 import { Button, Card, Field, Input, Panel } from "@paragliding/ui";
 import type { EmailAuthStartPayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
 import { routes } from "@/shared/config/routes";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -14,7 +13,6 @@ const normalizeEmail = (value: string) => value.trim().toLowerCase();
 
 export const LoginPage = () => {
   const location = useLocation();
-  const { locale, setLocale } = useI18n();
   const { startEmailAuth, claimEmailAuth, isAuthenticated } = useAuth();
   const [pollToken, setPollToken] = useState("");
   const [claimNotice, setClaimNotice] = useState("");

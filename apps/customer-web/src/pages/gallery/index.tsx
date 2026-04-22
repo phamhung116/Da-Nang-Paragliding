@@ -3,6 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge, Card, Container, Panel } from "@paragliding/ui";
 import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { customerApi } from "@/shared/config/api";
+import { localizePostTitle, localizeServiceName } from "@/shared/lib/localized-content";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
 type MediaKind = "image" | "video";
@@ -16,19 +18,19 @@ type MediaItem = {
 const staticGalleryImages = [
   {
     src: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80",
-    title: "Tracking banner"
+    title: "Ảnh theo dõi hành trình"
   },
   {
     src: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
-    title: "Sunrise flight"
+    title: "Chuyến bay bình minh"
   },
   {
     src: "https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&w=1200&q=80",
-    title: "Son Tra forest"
+    title: "Rừng Sơn Trà"
   },
   {
     src: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
-    title: "Golden hour"
+    title: "Hoàng hôn vàng"
   }
 ];
 
@@ -66,6 +68,7 @@ const getDisplayName = (filepath: string) => {
 };
 
 export const GalleryPage = () => {
+  const { locale } = useI18n();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -94,8 +97,16 @@ export const GalleryPage = () => {
   const remoteImageItems = useMemo<MediaItem[]>(() => {
     const items: MediaItem[] = [
       ...staticGalleryImages.map((image) => ({ kind: "image" as const, name: image.title, src: image.src })),
-      ...services.map((service) => ({ kind: "image" as const, name: service.name, src: service.hero_image })),
-      ...posts.map((post) => ({ kind: "image" as const, name: post.title, src: post.cover_image }))
+      ...services.map((service) => ({
+        kind: "image" as const,
+        name: localizeServiceName(service, locale),
+        src: service.hero_image
+      })),
+      ...posts.map((post) => ({
+        kind: "image" as const,
+        name: localizePostTitle(post, locale),
+        src: post.cover_image
+      }))
     ];
 
     const seen = new Set<string>();
@@ -106,7 +117,7 @@ export const GalleryPage = () => {
       seen.add(item.src);
       return true;
     });
-  }, [posts, services]);
+  }, [locale, posts, services]);
 
   const mediaItems = useMemo(() => {
     const seen = new Set<string>();

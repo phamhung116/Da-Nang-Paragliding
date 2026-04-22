@@ -18,6 +18,7 @@ class BookingReadSerializer(serializers.Serializer):
     code = serializers.CharField()
     service_slug = serializers.CharField()
     service_name = serializers.CharField()
+    service_name_en = serializers.CharField()
     launch_site_name = serializers.CharField()
     flight_date = serializers.DateField()
     flight_time = serializers.CharField()

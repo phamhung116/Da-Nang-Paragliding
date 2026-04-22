@@ -7,7 +7,7 @@ export const businessInfo = {
   address: "Cong vien Bien Dong, duong Vo Nguyen Giap, phuong Phuoc My, Son Tra, Da Nang",
   intro:
     "Khám phá vẻ đẹp tuyệt mỹ của bán đảo Sơn Trà từ góc nhìn của loài chim. An toàn, chuyên nghiệp và đầy cảm xúc.",
-  supportHours: "05:30 - 19:00 moi ngay",
+  supportHours: "05:30 - 19:00 mỗi ngày",
   meetingPoint: "Bai dap Son Tra, Da Nang",
   mapLatitude: 16.0687,
   mapLongitude: 108.245,
