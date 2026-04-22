@@ -177,10 +177,6 @@ export const ServiceDetailPage = () => {
                     <strong>{formatCurrency(servicePackage.price)}</strong>
                   </article>
                   <article>
-                    <span>Dịch vụ đi kèm</span>
-                    <strong>{includedFeatureCountLabel}</strong>
-                  </article>
-                  <article>
                     <span>Đặt lịch</span>
                     <strong>{formatSelectedSlotLabel(selectedSlot)}</strong>
                   </article>
@@ -237,28 +233,13 @@ export const ServiceDetailPage = () => {
                   <AlertCircle className="text-amber-500" /> Lưu ý khi tham gia
                 </h2>
 
-                <div className="info-grid">
-                  {serviceFlowNotes.map((item) => (
-                    <Card key={item} className="info-card">
-                      <Panel className="stack-sm">
-                        <strong>Vận hành trong ngày bay</strong>
-                        <p>{item}</p>
-                      </Panel>
-                    </Card>
-                  ))}
-                </div>
-
-                <Card className="detail-section-card">
-                  <Panel className="stack-sm">
-                    <Badge>Chuẩn bị trước bay</Badge>
-                    <h3>Checklist dành cho khách hàng</h3>
-                    <ul className="detail-list">
-                      {servicePreparationChecklist.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </Panel>
-                </Card>
+                <ul className="space-y-3 text-stone-600 text-sm list-disc pl-5">
+                  <li>Sức khỏe tốt, không mắc các bệnh về tim mạch, huyết áp.</li>
+                  <li>Cân nặng từ 30kg đến 90kg.</li>
+                  <li>Trang phục gọn gàng, nên đi giày thể thao.</li>
+                  <li>Tuân thủ tuyệt đối hướng dẫn của phi công.</li>
+                  <li>Thời gian bay có thể thay đổi tùy thuộc vào điều kiện sức gió.</li>
+                </ul>
               </div>
             </section>
           </div>
