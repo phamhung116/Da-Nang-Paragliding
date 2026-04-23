@@ -5,7 +5,7 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import type { PaymentTransaction } from "@paragliding/api-client";
 import { customerApi } from "@/shared/config/api";
 import { checkoutGuidelines } from "@/shared/constants/customer-content";
-import { paymentStatusLabels } from "@/shared/constants/status";
+import { approvalStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
 import { checkoutStorage } from "@/shared/lib/storage";
 import { SiteLayout } from "@/widgets/layout/site-layout";
@@ -47,8 +47,8 @@ export const CheckoutPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Chưa có booking</Badge>
-            <p>Hãy tạo booking trước khi vào trang thanh toán.</p>
+            <Badge tone="danger">Chưa có lịch đặt</Badge>
+            <p>Hãy tạo lịch đặt trước khi vào trang thanh toán.</p>
             <Link to="/services">
               <Button variant="secondary">Chọn gói dịch vụ</Button>
             </Link>
@@ -67,11 +67,11 @@ export const CheckoutPage = () => {
           <div className="section-heading">
             <div>
               <Badge>{paymentStatusLabels[booking.payment_status] ?? booking.payment_status}</Badge>
-              <h2>Thanh toán và xác nhận booking</h2>
+              <h2>Thanh toán và xác nhận lịch đặt</h2>
             </div>
             <p>
-              Sau khi thanh toán thành công, booking sẽ chuyển sang confirmed và customer có thể vào tracking
-              page để xem hành trình.
+              Sau khi thanh toán thành công, lịch đặt sẽ chuyển sang đã xác nhận và khách hàng có thể vào trang theo dõi
+              để xem hành trình.
             </p>
           </div>
 
@@ -121,7 +121,7 @@ export const CheckoutPage = () => {
                   ) : null}
                   <div className="booking-summary-card__fact">
                     <span>Trạng thái</span>
-                    <strong>{booking.approval_status}</strong>
+                    <strong>{approvalStatusLabels[booking.approval_status] ?? booking.approval_status}</strong>
                   </div>
                 </div>
               </Panel>
@@ -132,7 +132,7 @@ export const CheckoutPage = () => {
                 <Badge>Đặt cọc bằng QR</Badge>
                     <p className="detail-copy">
                       Thanh toán số tiền trả trước qua cổng thanh toán. Sau khi nhà cung cấp trả về trạng thái
-                      PAID, booking sẽ được confirm và email xác nhận sẽ được gửi cho khách.
+                      đã thanh toán, lịch đặt sẽ được xác nhận và email xác nhận sẽ được gửi cho khách.
                     </p>
                     <div className="checkout-qr">
                       <img src={paymentSession?.qr_code_url} alt={`QR ${booking.code}`} />
@@ -178,7 +178,7 @@ export const CheckoutPage = () => {
                     </Button>
                     {paymentMutation.isSuccess && booking.payment_status !== "PAID" ? (
                       <p className="calendar-selection-note">
-                        Hệ thống chưa nhận được trạng thái PAID từ cổng thanh toán. Hãy kiểm tra lại sau khi
+                        Hệ thống chưa nhận được trạng thái đã thanh toán từ cổng thanh toán. Hãy kiểm tra lại sau khi
                         thanh toán xong.
                       </p>
                     ) : null}

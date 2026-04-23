@@ -20,7 +20,7 @@ const dictionary = {
   hero_title_line_2: "mây trời Sơn Trà",
   hero_services: "Xem gói dịch vụ",
   hero_about: "Tìm hiểu thêm",
-  hero_tracking: "Tra cứu booking"
+  hero_tracking: "Tra cứu lịch đặt"
 } as const;
 
 type I18nContextValue = {
@@ -72,7 +72,7 @@ const exactRepairs = new Map<string, string>([
   ["dat lich", "Đặt lịch"],
   ["xem chi tiet", "Xem chi tiết"],
   ["doc bai viet", "Đọc bài viết"],
-  ["ma booking", "Mã booking"]
+  ["ma booking", "Mã đặt lịch"]
 ]);
 
 export const repairVietnameseText = (value: string) => {

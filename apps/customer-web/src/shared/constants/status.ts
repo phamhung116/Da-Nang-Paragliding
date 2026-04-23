@@ -1,7 +1,7 @@
 export const flightStatusLabels: Record<string, string> = {
   WAITING_CONFIRMATION: "Chờ xác nhận",
   WAITING: "Đang chờ",
-  PICKING_UP: "Đang di chuyển đến điểm đón",
+  PICKING_UP: "Phi công đang đến điểm đón",
   EN_ROUTE: "Đang di chuyển đến điểm bay",
   FLYING: "Đang bay",
   LANDED: "Đã hạ cánh"

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
-import { customerApi } from "@/shared/config/api";
+import { postsQueryOptions } from "@/shared/lib/query-options";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { motion } from "motion/react"
 import { ChevronRight } from "lucide-react";
@@ -9,10 +9,8 @@ import { formatDate } from "@/shared/lib/format";
 
 export const PostsPage = () => {
   const { data: posts = [] } = useQuery({
-    queryKey: ["posts"],
-    queryFn: () => customerApi.listPosts()
+    ...postsQueryOptions()
   });
-  const remainingPosts = posts.slice(0);
 
   return (
     <SiteLayout>
@@ -29,12 +27,12 @@ export const PostsPage = () => {
         />
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {remainingPosts.length > 0 ? (
+          {posts.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-              {remainingPosts.map((post) => (
+              {posts.map((post) => (
                 <Card key={post.slug} className="bg-white rounded-[24px] overflow-hidden shadow-sm border border-stone-100 flex flex-row md:flex-col group hover:shadow-xl transition-all duration-500 min-h-[140px] md:min-h-0 cursor-pointer">
                   <div className="w-32 md:w-full aspect-square md:aspect-auto md:h-48 overflow-hidden flex-shrink-0">
-                    <img className="post-card__image" src={post.cover_image} alt={post.title} />
+                    <img className="post-card__image" src={post.cover_image} alt={post.title} loading="lazy" decoding="async" />
                   </div>
                   <div className="p-4 md:p-6 flex-grow flex flex-col justify-center md:justify-start">
                     <p className="text-[8px] md:text-[10px] font-bold text-brand uppercase mb-1 md:mb-2">

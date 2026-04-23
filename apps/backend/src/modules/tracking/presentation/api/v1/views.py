@@ -58,7 +58,11 @@ class AdminFlightStatusUpdateApi(APIView):
         serializer.is_valid(raise_exception=True)
 
         try:
-            result = update_flight_status_use_case().execute(code, serializer.validated_data["status"])
+            result = update_flight_status_use_case().execute(
+                code,
+                serializer.validated_data["status"],
+                serializer.to_location_or_none("Cập nhật hành trình"),
+            )
             return success(
                 {
                     "booking": BookingReadSerializer(serialize_entity(result["booking"])).data,
@@ -82,6 +86,7 @@ class PilotFlightStatusUpdateApi(APIView):
                 code,
                 request.user.phone,
                 serializer.validated_data["status"],
+                serializer.to_location_or_none("GPS trực tiếp của phi công"),
             )
             return success(
                 {
@@ -105,7 +110,7 @@ class PilotTrackingStartApi(APIView):
             result = start_pilot_tracking_use_case().execute(
                 code,
                 request.user.phone,
-                serializer.to_location("Bat dau hanh trinh"),
+                serializer.to_location("Bắt đầu hành trình"),
             )
             return success(
                 {
@@ -129,7 +134,7 @@ class PilotTrackingPingApi(APIView):
             result = append_pilot_tracking_point_use_case().execute(
                 code,
                 request.user.phone,
-                serializer.to_location("Vi tri hien tai"),
+                serializer.to_location("Vị trí hiện tại"),
             )
             return success(
                 {
@@ -153,7 +158,7 @@ class PilotTrackingStopApi(APIView):
             result = stop_pilot_tracking_use_case().execute(
                 code,
                 request.user.phone,
-                serializer.to_location("Da ha canh"),
+                serializer.to_location("Đã hạ cánh"),
             )
             return success(
                 {

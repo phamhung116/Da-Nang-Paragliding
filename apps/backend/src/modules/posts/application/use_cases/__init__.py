@@ -20,7 +20,7 @@ class GetPostUseCase:
     def execute(self, slug: str):
         post = self.repository.get_by_slug(slug)
         if post is None:
-            raise NotFoundError("Khong tim thay bai viet.")
+            raise NotFoundError("Không tìm thấy bài viết.")
         return post
 
 

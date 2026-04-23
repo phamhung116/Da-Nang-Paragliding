@@ -3,9 +3,8 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { AlertCircle, CheckCircle2, ChevronDown, Eye } from "lucide-react";
-import { customerApi } from "@/shared/config/api";
-import { servicePreparationChecklist } from "@/shared/constants/customer-content";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
+import { availabilityQueryOptions, serviceQueryOptions } from "@/shared/lib/query-options";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -39,8 +38,7 @@ export const ServiceDetailPage = () => {
   const [openSections, setOpenSections] = useState<string[]>(["overview", "services", "notes"]);
 
   const { data: servicePackage } = useQuery({
-    queryKey: ["service", slug],
-    queryFn: () => customerApi.getService(slug),
+    ...serviceQueryOptions(slug),
     enabled: Boolean(slug)
   });
 
@@ -57,8 +55,7 @@ export const ServiceDetailPage = () => {
 
   const availabilityQueries = useQueries({
     queries: availabilityMonths.map(({ year, month }) => ({
-      queryKey: ["availability", slug, year, month],
-      queryFn: () => customerApi.getAvailability(slug, year, month),
+      ...availabilityQueryOptions(slug, year, month),
       enabled: Boolean(slug)
     }))
   });
@@ -137,7 +134,7 @@ export const ServiceDetailPage = () => {
                 <Card className="empty-state-card">
                   <Panel className="stack-sm">
                     <Badge tone="danger">Chưa mở lịch</Badge>
-                    <strong>Tháng này chưa có slot khả dụng cho gói bay này.</strong>
+                    <strong>Tháng này chưa có khung giờ khả dụng cho gói bay này.</strong>
                     <p>Bạn có thể đổi sang tháng khác hoặc liên hệ doanh nghiệp để được hỗ trợ.</p>
                   </Panel>
                 </Card>

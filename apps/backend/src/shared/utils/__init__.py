@@ -499,36 +499,75 @@ def _int_at(values: Any, index: int) -> int | None:
         return None
 
 
-def geocode_address(address: str) -> dict[str, float]:
+def geocode_address_candidates(address: str, *, limit: int = 5) -> list[dict[str, object]]:
     normalized = address.strip()
     if not normalized:
-        return {}
-    cache_key = f"geocode:nominatim:v1:{normalized.lower()}"
+        return []
+    safe_limit = min(max(int(limit), 1), 8)
+    cache_key = f"geocode:nominatim:v2:{normalized.lower()}:{safe_limit}"
     cached = cache.get(cache_key)
-    if isinstance(cached, dict):
+    if isinstance(cached, list):
         return cached
 
-    query = urlencode({"q": f"{normalized}, Da Nang, Vietnam", "format": "json", "limit": 1})
+    query = urlencode(
+        {
+            "q": f"{normalized}, Da Nang, Vietnam",
+            "format": "json",
+            "limit": safe_limit,
+            "addressdetails": 1,
+            "countrycodes": "vn",
+            "viewbox": "107.95,16.25,108.45,15.85",
+            "bounded": 0,
+        }
+    )
     try:
         request = Request(
             f"https://nominatim.openstreetmap.org/search?{query}",
-            headers={"User-Agent": "DaNangParagliding/1.0 booking pickup geocoder"},
+            headers={"User-Agent": "DaNangParagliding/1.0 dat-lich-diem-don-geocoder"},
         )
         with urlopen(request, timeout=4) as response:
             payload = json.loads(response.read().decode("utf-8"))
     except Exception:
-        return {}
+        return []
 
     if not isinstance(payload, list) or not payload:
+        return []
+
+    candidates: list[dict[str, object]] = []
+    seen: set[tuple[float, float]] = set()
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        lat = _float_value(item.get("lat"))
+        lng = _float_value(item.get("lon"))
+        if not lat or not lng:
+            continue
+        coord_key = (round(lat, 6), round(lng, 6))
+        if coord_key in seen:
+            continue
+        seen.add(coord_key)
+        candidates.append(
+            {
+                "name": str(item.get("display_name") or normalized),
+                "lat": lat,
+                "lng": lng,
+            }
+        )
+
+    if not candidates:
+        return []
+    cache.set(cache_key, candidates, 60 * 60 * 24 * 14)
+    return candidates
+
+
+def geocode_address(address: str) -> dict[str, float]:
+    candidates = geocode_address_candidates(address, limit=1)
+    if not candidates:
         return {}
-    result = {
-        "lat": _float_value(payload[0].get("lat")),
-        "lng": _float_value(payload[0].get("lon")),
+    return {
+        "lat": float(candidates[0]["lat"]),
+        "lng": float(candidates[0]["lng"]),
     }
-    if not result["lat"] or not result["lng"]:
-        return {}
-    cache.set(cache_key, result, 60 * 60 * 24 * 14)
-    return result
 
 
 def serialize_entity(entity: Any) -> Any:

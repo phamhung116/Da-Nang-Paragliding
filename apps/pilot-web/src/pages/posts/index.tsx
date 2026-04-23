@@ -15,9 +15,9 @@ export const PostsPage = () => {
       <div className="pilot-stack">
         <div className="pilot-heading">
           <div>
-            <Badge>Briefing posts</Badge>
-            <h1>Operational reading</h1>
-            <p>Read published notes from admin before flight day. Pilot workspace stays read only.</p>
+            <Badge>Bài hướng dẫn</Badge>
+            <h1>Tài liệu vận hành</h1>
+            <p>Đọc ghi chú đã xuất bản từ quản trị viên trước ngày bay. Khu vực phi công chỉ dùng để xem nội dung.</p>
           </div>
         </div>
 
@@ -30,7 +30,7 @@ export const PostsPage = () => {
                 <h3>{post.title}</h3>
                 <p>{post.excerpt}</p>
                 <Link to={`/posts/${post.slug}`}>
-                  <Button variant="secondary">Read post</Button>
+                  <Button variant="secondary">Đọc bài viết</Button>
                 </Link>
               </Panel>
             </Card>

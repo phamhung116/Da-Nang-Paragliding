@@ -13,7 +13,7 @@ export const HomeHero = () => {
       <div className="absolute inset-0 z-0">
         <img
           src="/media/img/banner.png"
-          alt="Paragliding in Da Nang"
+          alt="Dù lượn tại Đà Nẵng"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />

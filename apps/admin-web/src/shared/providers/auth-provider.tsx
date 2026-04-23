@@ -49,7 +49,7 @@ export const AdminAuthProvider = ({ children }: PropsWithChildren) => {
       async login(payload) {
         const result = await authApi.login(payload);
         if (result.account.role !== "ADMIN") {
-          throw new Error("Tai khoan nay khong co quyen admin.");
+          throw new Error("Tài khoản này không có quyền quản trị.");
         }
         adminAuthStorage.setSession(result.session);
         adminAuthStorage.setAccount(result.account);
@@ -76,7 +76,7 @@ export const AdminAuthProvider = ({ children }: PropsWithChildren) => {
 export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext);
   if (!context) {
-    throw new Error("useAdminAuth must be used inside AdminAuthProvider");
+    throw new Error("useAdminAuth phải được dùng bên trong AdminAuthProvider");
   }
   return context;
 };

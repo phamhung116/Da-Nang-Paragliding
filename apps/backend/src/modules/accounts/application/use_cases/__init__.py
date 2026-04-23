@@ -39,11 +39,11 @@ def _normalize_email(email: str) -> str:
 def _ensure_unique_account(account_repository, *, email: str, phone: str, exclude_id: str | None = None):
     existing_by_email = account_repository.get_by_email(email)
     if existing_by_email and existing_by_email.id != exclude_id:
-        raise ValidationError("Email da ton tai trong he thong.")
+        raise ValidationError("Email đã tồn tại trong hệ thống.")
 
     existing_by_phone = account_repository.get_by_phone(phone)
     if existing_by_phone and existing_by_phone.id != exclude_id:
-        raise ValidationError("So dien thoai da ton tai trong he thong.")
+        raise ValidationError("Số điện thoại đã tồn tại trong hệ thống.")
 
 
 def _now_utc():
@@ -119,7 +119,7 @@ class VerifyCustomerEmailUseCase:
             expires_after=timedelta(hours=self.verification_token_ttl_hours),
         )
         if account is None:
-            raise ValidationError("Link xac thuc email khong hop le hoac da het han.")
+            raise ValidationError("Liên kết xác thực email không hợp lệ hoặc đã hết hạn.")
 
         session = self.account_repository.create_session(
             account_id=account.id or "",
@@ -185,7 +185,7 @@ class StartCustomerEmailAuthUseCase:
         if account is None:
             account = self.account_repository.create(
                 AccountPayload(
-                    full_name=email.split("@")[0].replace(".", " ").title() or "Da Nang Paragliding Customer",
+                    full_name=email.split("@")[0].replace(".", " ").title() or "Khách hàng Dù lượn Đà Nẵng",
                     email=email,
                     phone=self._placeholder_phone(email),
                     role=ROLE_CUSTOMER,
@@ -249,11 +249,11 @@ class LoginUseCase:
     def execute(self, request: LoginRequest) -> dict[str, object]:
         account = self.account_repository.get_by_email(_normalize_email(request.email))
         if account is None or not self.account_repository.verify_password(account.id or "", request.password):
-            raise ValidationError("Thong tin dang nhap khong hop le.")
+            raise ValidationError("Thông tin đăng nhập không hợp lệ.")
         if not account.is_active:
-            raise ValidationError("Tai khoan da bi vo hieu hoa.")
+            raise ValidationError("Tài khoản đã bị vô hiệu hóa.")
         if account.role == ROLE_CUSTOMER and not account.email_verified:
-            raise ValidationError("Email chua duoc xac thuc. Vui long kiem tra hop thu va bam link xac thuc.")
+            raise ValidationError("Email chưa được xác thực. Vui lòng kiểm tra hộp thư và bấm liên kết xác thực.")
 
         session = self.account_repository.create_session(
             account_id=account.id or "",
@@ -277,7 +277,7 @@ class GetAccountByTokenUseCase:
     def execute(self, token: str) -> Account:
         account = self.account_repository.get_by_token(token)
         if account is None or not account.is_active:
-            raise NotFoundError("Khong tim thay phien dang nhap hop le.")
+            raise NotFoundError("Không tìm thấy phiên đăng nhập hợp lệ.")
         return account
 
 
@@ -288,7 +288,7 @@ class UpdateMyProfileUseCase:
     def execute(self, account_id: str, request: UpdateProfileRequest) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
 
         next_full_name = request.full_name.strip() if request.full_name else account.full_name
         next_phone = normalize_phone(request.phone) if request.phone else account.phone
@@ -315,9 +315,9 @@ class ChangeMyPasswordUseCase:
     def execute(self, account_id: str, request: ChangePasswordRequest) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         if not self.account_repository.verify_password(account.id or "", request.current_password):
-            raise ValidationError("Mat khau hien tai khong dung.")
+            raise ValidationError("Mật khẩu hiện tại không đúng.")
         updated_account = self.account_repository.update(
             account,
             password_hash=self.password_hasher.hash(request.new_password),
@@ -340,7 +340,7 @@ class ListAccountsUseCase:
 
     def execute(self, *, role: str | None = None, is_active: bool | None = None):
         if role and role not in ALL_ROLES:
-            raise ValidationError("Role filter khong hop le.")
+            raise ValidationError("Bộ lọc vai trò không hợp lệ.")
         return self.account_repository.list(role=role, is_active=is_active)
 
 
@@ -351,7 +351,7 @@ class GetManagedAccountUseCase:
     def execute(self, account_id: str) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         return account
 
 
@@ -362,9 +362,9 @@ class CreateManagedAccountUseCase:
 
     def execute(self, request: ManagedAccountRequest) -> Account:
         if request.role not in MANAGEABLE_ROLES:
-            raise ValidationError("Admin chi duoc tao Pilot hoac Admin.")
+            raise ValidationError("Quản trị viên chỉ được tạo tài khoản phi công hoặc quản trị viên.")
         if not request.password:
-            raise ValidationError("Mat khau la bat buoc khi tao tai khoan admin hoac pilot.")
+            raise ValidationError("Mật khẩu là bắt buộc khi tạo tài khoản quản trị hoặc phi công.")
         email = _normalize_email(request.email)
         phone = normalize_phone(request.phone)
         _ensure_unique_account(self.account_repository, email=email, phone=phone)
@@ -391,13 +391,13 @@ class UpdateManagedAccountUseCase:
     def execute(self, account_id: str, request: ManagedAccountRequest) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         if account.role == ROLE_CUSTOMER:
-            raise ValidationError("Khong the sua thong tin account customer tu admin.")
+            raise ValidationError("Không thể sửa thông tin tài khoản khách hàng từ khu vực quản trị.")
         if account.role == ROLE_PILOT and request.password:
-            raise ValidationError("Admin khong duoc thay doi mat khau account pilot.")
+            raise ValidationError("Quản trị viên không được thay đổi mật khẩu tài khoản phi công.")
         if request.role not in ALL_ROLES:
-            raise ValidationError("Role khong hop le.")
+            raise ValidationError("Vai trò không hợp lệ.")
 
         email = _normalize_email(request.email)
         phone = normalize_phone(request.phone)
@@ -432,7 +432,7 @@ class DisableAccountUseCase:
     def execute(self, account_id: str) -> Account:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         account.is_active = False
         return self.account_repository.update(account)
 
@@ -444,7 +444,7 @@ class DeleteManagedAccountUseCase:
     def execute(self, account_id: str) -> None:
         account = self.account_repository.get_by_id(account_id)
         if account is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         if account.role == ROLE_CUSTOMER:
-            raise ValidationError("Khong the xoa account customer tu admin.")
+            raise ValidationError("Không thể xóa tài khoản khách hàng từ khu vực quản trị.")
         self.account_repository.delete(account_id)

@@ -67,7 +67,7 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
       isAuthenticated: Boolean(account?.role === "PILOT"),
       completeHandoff(result) {
         if (result.account.role !== "PILOT") {
-          throw new Error("Tai khoan nay khong co quyen pilot.");
+          throw new Error("Tài khoản này không có quyền phi công.");
         }
         pilotAuthStorage.setSession(result.session);
         pilotAuthStorage.setAccount(result.account);
@@ -77,7 +77,7 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
       async login(payload) {
         const result = await authApi.login(payload);
         if (result.account.role !== "PILOT") {
-          throw new Error("Tai khoan nay khong co quyen pilot.");
+          throw new Error("Tài khoản này không có quyền phi công.");
         }
         pilotAuthStorage.setSession(result.session);
         pilotAuthStorage.setAccount(result.account);
@@ -105,7 +105,7 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
 export const usePilotAuth = () => {
   const context = useContext(PilotAuthContext);
   if (!context) {
-    throw new Error("usePilotAuth must be used inside PilotAuthProvider");
+    throw new Error("usePilotAuth phải được dùng bên trong PilotAuthProvider");
   }
   return context;
 };

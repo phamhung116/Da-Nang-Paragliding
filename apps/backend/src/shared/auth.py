@@ -17,7 +17,7 @@ class BearerTokenAuthentication(authentication.BaseAuthentication):
 
         token = parts[1].strip()
         if not token:
-            raise exceptions.AuthenticationFailed("Token khong hop le.")
+            raise exceptions.AuthenticationFailed("Token không hợp lệ.")
 
         from config.containers import get_account_by_token_use_case
 
@@ -29,7 +29,7 @@ class BearerTokenAuthentication(authentication.BaseAuthentication):
 
 
 class IsAuthenticatedAccount(permissions.BasePermission):
-    message = "Ban can dang nhap de thuc hien thao tac nay."
+    message = "Bạn cần đăng nhập để thực hiện thao tác này."
 
     def has_permission(self, request, view) -> bool:
         return bool(getattr(request, "user", None) and getattr(request.user, "is_authenticated", False))
@@ -37,7 +37,7 @@ class IsAuthenticatedAccount(permissions.BasePermission):
 
 class HasAccountRole(permissions.BasePermission):
     required_role = ""
-    message = "Ban khong du quyen truy cap tai nguyen nay."
+    message = "Bạn không đủ quyền truy cập tài nguyên này."
 
     def has_permission(self, request, view) -> bool:
         user = getattr(request, "user", None)

@@ -30,11 +30,11 @@ export const PostsPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge>Content management</Badge>
-            <h1>Posts</h1>
-            <p>Click vao mot bai viet de mo trang chi tiet va sua noi dung.</p>
+            <Badge>Quản lý nội dung</Badge>
+            <h1>Bài viết</h1>
+            <p>Bấm vào một bài viết để mở trang chi tiết và sửa nội dung.</p>
           </div>
-          <Button onClick={() => navigate("/posts/new")}>Tao bai viet</Button>
+          <Button onClick={() => navigate("/posts/new")}>Tạo bài viết</Button>
         </div>
 
         <Card className="admin-list-card">
@@ -46,7 +46,7 @@ export const PostsPage = () => {
               columns={[
                 {
                   key: "title",
-                  title: "Bai viet",
+                  title: "Bài viết",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.title}</strong>
@@ -57,12 +57,12 @@ export const PostsPage = () => {
                 },
                 {
                   key: "status",
-                  title: "Trang thai",
-                  render: (row) => <Badge tone={row.published ? "success" : "danger"}>{row.published ? "PUBLISHED" : "DRAFT"}</Badge>
+                  title: "Trạng thái",
+                  render: (row) => <Badge tone={row.published ? "success" : "danger"}>{row.published ? "Đã xuất bản" : "Bản nháp"}</Badge>
                 },
                 {
                   key: "date",
-                  title: "Ngay",
+                  title: "Ngày",
                   render: (row) => new Date(row.published_at ?? row.created_at ?? "").toLocaleDateString("vi-VN")
                 },
                 {
@@ -77,7 +77,7 @@ export const PostsPage = () => {
                           navigate(`/posts/${row.slug}`);
                         }}
                       >
-                        Xem chi tiet
+                        Xem chi tiết
                       </Button>
                       <Button
                         variant="secondary"
@@ -86,7 +86,7 @@ export const PostsPage = () => {
                           setPostPendingDelete(row);
                         }}
                       >
-                        Xoa
+                        Xóa
                       </Button>
                     </div>
                   )
@@ -103,13 +103,13 @@ export const PostsPage = () => {
               setPostPendingDelete(null);
             }
           }}
-          title={`Xoa bai viet ${postPendingDelete?.title ?? ""}`}
-          description="Bai viet sau khi xoa se bien mat khoi danh sach hien thi cho khach hang."
+          title={`Xóa bài viết ${postPendingDelete?.title ?? ""}`}
+          description="Bài viết sau khi xóa sẽ biến mất khỏi danh sách hiển thị cho khách hàng."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setPostPendingDelete(null)}>
-                Dong
+                Đóng
               </Button>
               <Button
                 type="button"
@@ -120,7 +120,7 @@ export const PostsPage = () => {
                   }
                 }}
               >
-                {deleteMutation.isPending ? "Dang xoa..." : "Xoa bai viet"}
+                {deleteMutation.isPending ? "Đang xóa..." : "Xóa bài viết"}
               </Button>
             </>
           }

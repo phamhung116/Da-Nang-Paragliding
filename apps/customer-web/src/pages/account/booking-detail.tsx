@@ -86,7 +86,7 @@ export const AccountBookingDetailPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Chi tiết booking</Badge>
+              <Badge>Chi tiết đặt lịch</Badge>
               <h2>{booking?.code ?? code}</h2>
             </div>
             <Link to={routes.account}>
@@ -101,7 +101,7 @@ export const AccountBookingDetailPage = () => {
                   <div>
                     <Badge tone={cancelledStatuses.has(booking.approval_status) ? "danger" : "success"}>
                       {cancelledStatuses.has(booking.approval_status)
-                        ? "Da huy"
+                        ? "Đã hủy"
                         : flightStatusLabels[booking.flight_status] ?? booking.flight_status}
                     </Badge>
                     <h3>{booking.service_name}</h3>
@@ -111,7 +111,7 @@ export const AccountBookingDetailPage = () => {
 
                 <div className="detail-list">
                   <div>
-                    <span>Mã booking</span>
+                    <span>Mã đặt lịch</span>
                     <strong>{booking.code}</strong>
                   </div>
                   <div>
@@ -119,7 +119,7 @@ export const AccountBookingDetailPage = () => {
                     <strong>{approvalStatusLabels[booking.approval_status] ?? booking.approval_status}</strong>
                   </div>
                   <div>
-                    <span>Thời gian tạo booking</span>
+                    <span>Thời gian tạo đặt lịch</span>
                     <strong>{formatDateTime(booking.created_at)}</strong>
                   </div>
                   <div>
@@ -153,7 +153,7 @@ export const AccountBookingDetailPage = () => {
                     <strong>{booking.notes || "Không có ghi chú"}</strong>
                   </div>
                   <div>
-                    <span>Pilot phu trach</span>
+                    <span>Phi công phụ trách</span>
                     <strong>{booking.assigned_pilot_name ?? "Đang cập nhật"}</strong>
                   </div>
                   <div>
@@ -164,7 +164,7 @@ export const AccountBookingDetailPage = () => {
 
                 {!cancelledStatuses.has(booking.approval_status) ? (
                   <Button variant="secondary" onClick={() => setCancelModalOpen(true)}>
-                    Huy booking
+                    Hủy lịch đặt
                   </Button>
                 ) : (
                   <div className="booking-decision-card booking-decision-card--danger">
@@ -176,7 +176,7 @@ export const AccountBookingDetailPage = () => {
             </Card>
           ) : (
             <Card>
-              <Panel>Đang tải booking hoặc booking không tồn tại trong tài khoản này.</Panel>
+              <Panel>Đang tải lịch đặt hoặc lịch đặt không tồn tại trong tài khoản này.</Panel>
             </Card>
           )}
 
@@ -189,13 +189,13 @@ export const AccountBookingDetailPage = () => {
                 closeCancelDialog();
               }
             }}
-            title={`Huy booking ${booking?.code ?? code}`}
+            title={`Hủy lịch đặt ${booking?.code ?? code}`}
             description="Hủy trước ngày bay 5 ngày: hoàn 100% tiền cọc. Hủy sau mốc 5 ngày: không hoàn cọc."
             icon="!"
             footer={
               <>
                 <Button type="button" variant="secondary" onClick={closeCancelDialog}>
-                  Dong
+                  Đóng
                 </Button>
                 <Button
                   type="button"
@@ -206,13 +206,13 @@ export const AccountBookingDetailPage = () => {
                   }
                   onClick={cancelBooking}
                 >
-                  {cancelMutation.isPending ? "Đang hủy..." : "Hủy booking"}
+                  {cancelMutation.isPending ? "Đang hủy..." : "Hủy lịch đặt"}
                 </Button>
               </>
             }
           >
             <Field label="Lý do hủy">
-              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Nhập lý do hủy booking" autoFocus />
+              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Nhập lý do hủy lịch đặt" autoFocus />
             </Field>
             {canRefundDeposit ? (
               <div className="inline-field-grid inline-field-grid--three">

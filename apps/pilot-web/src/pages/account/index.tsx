@@ -11,6 +11,12 @@ type PasswordForm = ChangePasswordPayload & {
   confirm_password: string;
 };
 
+const roleLabels: Record<string, string> = {
+  PILOT: "Phi công",
+  ADMIN: "Quản trị viên",
+  CUSTOMER: "Khách hàng"
+};
+
 export const PilotAccountPage = () => {
   const navigate = useNavigate();
   const { account, logout } = usePilotAuth();
@@ -40,9 +46,9 @@ export const PilotAccountPage = () => {
       <div className="pilot-stack">
         <div className="pilot-heading">
           <div>
-            <Badge tone="success">Account</Badge>
-            <h1>Thong tin pilot</h1>
-            <p>Cap nhat mat khau dang nhap cho tai khoan pilot.</p>
+            <Badge tone="success">Tài khoản</Badge>
+            <h1>Thông tin phi công</h1>
+            <p>Cập nhật mật khẩu đăng nhập cho tài khoản phi công.</p>
           </div>
         </div>
 
@@ -50,7 +56,7 @@ export const PilotAccountPage = () => {
           <Panel className="pilot-stack">
             <div className="pilot-account-grid">
               <div>
-                <span>Ho va ten</span>
+                <span>Họ và tên</span>
                 <strong>{account?.full_name}</strong>
               </div>
               <div>
@@ -58,12 +64,12 @@ export const PilotAccountPage = () => {
                 <strong>{account?.email}</strong>
               </div>
               <div>
-                <span>So dien thoai</span>
+                <span>Số điện thoại</span>
                 <strong>{account?.phone}</strong>
               </div>
               <div>
-                <span>Role</span>
-                <strong>{account?.role}</strong>
+                <span>Vai trò</span>
+                <strong>{account?.role ? roleLabels[account.role] ?? account.role : "-"}</strong>
               </div>
             </div>
           </Panel>
@@ -71,13 +77,13 @@ export const PilotAccountPage = () => {
 
         <Card>
           <Panel className="pilot-stack">
-            <Badge>Doi mat khau</Badge>
+            <Badge>Đổi mật khẩu</Badge>
             <form className="pilot-password-form" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
-              <Field label="Mat khau hien tai">
+              <Field label="Mật khẩu hiện tại">
                 <Input
                   type="password"
                   {...form.register("current_password", {
-                    required: "Nhap mat khau hien tai."
+                    required: "Nhập mật khẩu hiện tại."
                   })}
                 />
               </Field>
@@ -85,14 +91,14 @@ export const PilotAccountPage = () => {
                 <p className="pilot-error">{form.formState.errors.current_password.message}</p>
               ) : null}
 
-              <Field label="Mat khau moi">
+              <Field label="Mật khẩu mới">
                 <Input
                   type="password"
                   {...form.register("new_password", {
-                    required: "Nhap mat khau moi.",
+                    required: "Nhập mật khẩu mới.",
                     minLength: {
                       value: 8,
-                      message: "Mat khau moi phai co it nhat 8 ky tu."
+                      message: "Mật khẩu mới phải có ít nhất 8 ký tự."
                     },
                     onChange: () => void form.trigger("confirm_password")
                   })}
@@ -100,12 +106,12 @@ export const PilotAccountPage = () => {
               </Field>
               {form.formState.errors.new_password ? <p className="pilot-error">{form.formState.errors.new_password.message}</p> : null}
 
-              <Field label="Xac nhan mat khau moi">
+              <Field label="Xác nhận mật khẩu mới">
                 <Input
                   type="password"
                   {...form.register("confirm_password", {
-                    required: "Xac nhan mat khau moi.",
-                    validate: (value) => value === form.getValues("new_password") || "Mat khau xac nhan khong khop."
+                    required: "Xác nhận mật khẩu mới.",
+                    validate: (value) => value === form.getValues("new_password") || "Mật khẩu xác nhận không khớp."
                   })}
                 />
               </Field>
@@ -113,11 +119,11 @@ export const PilotAccountPage = () => {
                 <p className="pilot-error">{form.formState.errors.confirm_password.message}</p>
               ) : null}
 
-              {mutation.isSuccess ? <p className="pilot-success">Da doi mat khau thanh cong.</p> : null}
+              {mutation.isSuccess ? <p className="pilot-success">Đã đổi mật khẩu thành công.</p> : null}
               {mutation.error instanceof Error ? <p className="pilot-error">{mutation.error.message}</p> : null}
 
               <Button disabled={mutation.isPending || !form.formState.isValid}>
-                {mutation.isPending ? "Dang luu..." : "Luu mat khau moi"}
+                {mutation.isPending ? "Đang lưu..." : "Lưu mật khẩu mới"}
               </Button>
             </form>
           </Panel>

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Badge, Card, Container, Panel } from "@paragliding/ui";
 import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
-import { customerApi } from "@/shared/config/api";
+import { postsQueryOptions, servicesQueryOptions } from "@/shared/lib/query-options";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
 type MediaKind = "image" | "video";
@@ -71,12 +71,10 @@ export const GalleryPage = () => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
   const { data: services = [] } = useQuery({
-    queryKey: ["gallery-services"],
-    queryFn: () => customerApi.listServices()
+    ...servicesQueryOptions()
   });
   const { data: posts = [] } = useQuery({
-    queryKey: ["gallery-posts"],
-    queryFn: () => customerApi.listPosts()
+    ...postsQueryOptions()
   });
 
   const localMediaItems = useMemo<MediaItem[]>(
@@ -202,7 +200,7 @@ export const GalleryPage = () => {
             <Card className="empty-state-card">
               <Panel className="stack-sm">
                 <Badge>Bộ sưu tập</Badge>
-                <strong>Chưa có media để hiển thị.</strong>
+                <strong>Chưa có ảnh hoặc video để hiển thị.</strong>
                 <p>Khi thêm ảnh hoặc video cho frontend, thư viện sẽ hiện tại đây.</p>
               </Panel>
             </Card>

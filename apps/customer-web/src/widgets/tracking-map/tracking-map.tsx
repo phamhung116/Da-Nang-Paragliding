@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import type { Booking, Tracking } from "@paragliding/api-client";
 
@@ -11,10 +11,11 @@ type MapPoint = {
   lat: number;
   lng: number;
   name: string;
+  segment?: string;
+  recordedAt?: string;
 };
 
-const basePoint = { lat: 16.1107, lng: 108.2554, name: "Chùa Bửu Đài Sơn" };
-const launchPoint = { lat: 16.1372, lng: 108.281, name: "Đỉnh Bàn Cờ" };
+const launchPoint = { lat: 16.1372, lng: 108.281, name: "Đỉnh Sơn Trà" };
 const landingPoint = { lat: 16.1107, lng: 108.2554, name: "Bãi biển trước Chùa Bửu Đài Sơn" };
 
 const parseMapPoint = (value: Record<string, unknown> | undefined, fallbackName: string): MapPoint | null => {
@@ -27,17 +28,32 @@ const parseMapPoint = (value: Record<string, unknown> | undefined, fallbackName:
   return {
     lat,
     lng,
-    name: String(value?.name ?? fallbackName)
+    name: String(value?.name ?? fallbackName),
+    segment: typeof value?.segment === "string" ? value.segment : undefined,
+    recordedAt: typeof value?.recorded_at === "string" ? value.recorded_at : undefined,
   };
 };
 
 const parseTrackedRoutePoints = (tracking: Tracking) =>
   tracking.route_points
-    .map((point) => parseMapPoint(point, "Điểm tracking"))
+    .map((point) => parseMapPoint(point, "Điểm theo dõi"))
     .filter((point): point is MapPoint => Boolean(point));
 
 const isSamePoint = (left: MapPoint, right: MapPoint) =>
   Math.abs(left.lat - right.lat) < 0.00001 && Math.abs(left.lng - right.lng) < 0.00001;
+
+const dedupePoints = (points: Array<MapPoint | null | undefined>) => {
+  const unique: MapPoint[] = [];
+  for (const point of points) {
+    if (!point) {
+      continue;
+    }
+    if (!unique.some((item) => isSamePoint(item, point))) {
+      unique.push(point);
+    }
+  }
+  return unique;
+};
 
 const normalizeName = (value: string) =>
   value
@@ -49,70 +65,85 @@ const normalizeName = (value: string) =>
 
 const isBaseLocationName = (value: string) => normalizeName(value).includes("chua buu dai son");
 
-const findPickupPoint = (booking: Booking, tracking: Tracking): MapPoint | null => {
+const findPickupPoint = (booking: Booking, trackedRoutePoints: MapPoint[]): MapPoint | null => {
   if (booking.pickup_option !== "pickup") {
     return null;
   }
 
-  const pickupAddress = booking.pickup_address?.trim();
-  const routePoints = parseTrackedRoutePoints(tracking);
+  if (typeof booking.pickup_lat === "number" && typeof booking.pickup_lng === "number") {
+    return {
+      lat: booking.pickup_lat,
+      lng: booking.pickup_lng,
+      name: booking.pickup_address?.trim() || "Điểm đón",
+    };
+  }
 
+  const pickupAddress = booking.pickup_address?.trim();
   if (pickupAddress) {
-    const matched = routePoints.find((point) => point.name.trim() === pickupAddress);
+    const matched = trackedRoutePoints.find((point) => point.name.trim() === pickupAddress);
     if (matched) {
       return matched;
     }
   }
 
-  return routePoints.find((point) => !isBaseLocationName(point.name)) ?? null;
+  return trackedRoutePoints.find((point) => !isBaseLocationName(point.name)) ?? null;
 };
 
-const resolveGroundRoute = (booking: Booking, tracking: Tracking, currentLocation: MapPoint) => {
-  const pickupPoint = findPickupPoint(booking, tracking);
+const getActiveSegmentPoints = (tracking: Tracking, flightStatus: string) => {
+  const trackedRoutePoints = parseTrackedRoutePoints(tracking);
+  const activeSegments = flightStatus === "LANDED" ? ["FLYING", "LANDED"] : [flightStatus];
+  const filtered = trackedRoutePoints.filter((point) => point.segment && activeSegments.includes(point.segment));
+  return filtered.length ? filtered : trackedRoutePoints;
+};
 
-  if (booking.flight_status === "PICKING_UP" && pickupPoint) {
-    const origin = isSamePoint(currentLocation, pickupPoint) ? basePoint : currentLocation;
-    return {
-      origin,
-      destination: pickupPoint,
-      markers: [origin, pickupPoint]
-    };
-  }
-
+const resolveActiveRoute = (booking: Booking, currentLocation: MapPoint, pickupPoint: MapPoint | null) => {
   if (booking.flight_status === "EN_ROUTE") {
-    const origin = isSamePoint(currentLocation, launchPoint) ? pickupPoint ?? basePoint : currentLocation;
     return {
-      origin,
+      origin: currentLocation,
       destination: launchPoint,
-      markers: [origin, launchPoint]
+      markers: dedupePoints([pickupPoint, currentLocation, launchPoint]),
+      useRoadRouting: true,
     };
   }
 
-  if (booking.flight_status === "FLYING" || booking.flight_status === "LANDED") {
+  if (booking.flight_status === "FLYING") {
+    return {
+      origin: launchPoint,
+      destination: currentLocation,
+      markers: dedupePoints([launchPoint, currentLocation]),
+      useRoadRouting: false,
+    };
+  }
+
+  if (booking.flight_status === "LANDED") {
     return {
       origin: launchPoint,
       destination: landingPoint,
-      markers: [launchPoint, landingPoint]
+      markers: dedupePoints([launchPoint, landingPoint]),
+      useRoadRouting: false,
     };
   }
 
   return {
     origin: null,
     destination: null,
-    markers: [currentLocation]
+    markers: dedupePoints([currentLocation]),
+    useRoadRouting: false,
   };
 };
 
 const routeKey = (origin: MapPoint | null, destination: MapPoint | null) =>
   origin && destination ? `${origin.lng},${origin.lat};${destination.lng},${destination.lat}` : "";
 
-const MapViewport = ({ points }: { points: MapPoint[] }) => {
+const MapViewport = ({ points, viewKey }: { points: MapPoint[]; viewKey: string }) => {
   const map = useMap();
+  const lastViewKeyRef = useRef("");
 
   useEffect(() => {
-    if (!points.length) {
+    if (!points.length || lastViewKeyRef.current === viewKey) {
       return;
     }
+    lastViewKeyRef.current = viewKey;
 
     if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], 13);
@@ -123,7 +154,7 @@ const MapViewport = ({ points }: { points: MapPoint[] }) => {
       points.map((point) => [point.lat, point.lng] as [number, number]),
       { padding: [32, 32] }
     );
-  }, [map, points]);
+  }, [map, points, viewKey]);
 
   return null;
 };
@@ -132,50 +163,52 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
   const currentLocation = parseMapPoint(tracking.current_location, "Điểm hiện tại") ?? {
     lat: 16.093,
     lng: 108.247,
-    name: "Đà Nẵng"
+    name: "Đà Nẵng",
   };
-  const trackedRoutePoints = useMemo(() => parseTrackedRoutePoints(tracking), [tracking]);
-  const hasTrackedSession = trackedRoutePoints.length > 0;
-  const { origin, destination, markers } = useMemo(
-    () => resolveGroundRoute(booking, tracking, currentLocation),
-    [booking, currentLocation, tracking]
+
+  const activeTrackedPoints = useMemo(
+    () => getActiveSegmentPoints(tracking, booking.flight_status),
+    [booking.flight_status, tracking]
   );
+  const pickupPoint = useMemo(
+    () => findPickupPoint(booking, parseTrackedRoutePoints(tracking)),
+    [booking, tracking]
+  );
+  const { origin, destination, markers, useRoadRouting } = useMemo(
+    () => resolveActiveRoute(booking, currentLocation, pickupPoint),
+    [booking, currentLocation, pickupPoint]
+  );
+
   const [roadRoute, setRoadRoute] = useState<Array<[number, number]>>([]);
-  const activeRouteKey = routeKey(origin, destination);
+  const activeRouteKey = useRoadRouting ? routeKey(origin, destination) : "";
   const fallbackRoute =
     origin && destination ? ([[origin.lat, origin.lng], [destination.lat, destination.lng]] as Array<[number, number]>) : [];
 
   const routePositions = useMemo(() => {
-    if (trackedRoutePoints.length > 1) {
-      return trackedRoutePoints.map((point) => [point.lat, point.lng] as [number, number]);
+    if (activeTrackedPoints.length > 1) {
+      return activeTrackedPoints.map((point) => [point.lat, point.lng] as [number, number]);
     }
 
-    if (hasTrackedSession) {
-      return [];
+    if (origin && destination) {
+      if (!useRoadRouting) {
+        return fallbackRoute;
+      }
+      return roadRoute.length ? roadRoute : fallbackRoute;
     }
 
-    return roadRoute.length ? roadRoute : fallbackRoute;
-  }, [fallbackRoute, hasTrackedSession, roadRoute, trackedRoutePoints]);
-
-  const markerPoints = useMemo(() => {
-    if (!trackedRoutePoints.length) {
-      return markers;
-    }
-
-    const first = trackedRoutePoints[0];
-    const last = trackedRoutePoints[trackedRoutePoints.length - 1];
-    return isSamePoint(first, last) ? [last] : [first, last];
-  }, [markers, trackedRoutePoints]);
+    return [];
+  }, [activeTrackedPoints, destination, fallbackRoute, origin, roadRoute, useRoadRouting]);
 
   const viewportPoints = useMemo(
-    () => routePositions.map(([lat, lng]) => ({ lat, lng, name: "Route" })).concat(markerPoints),
-    [markerPoints, routePositions]
+    () => routePositions.map(([lat, lng]) => ({ lat, lng, name: "Lộ trình" })).concat(markers),
+    [markers, routePositions]
   );
 
-  const center = markerPoints[markerPoints.length - 1] ?? currentLocation;
+  const center = markers[markers.length - 1] ?? currentLocation;
+  const viewKey = `${booking.code}:${booking.flight_status}:${pickupPoint?.lat ?? "none"}:${pickupPoint?.lng ?? "none"}`;
 
   useEffect(() => {
-    if (!activeRouteKey || hasTrackedSession) {
+    if (!activeRouteKey) {
       setRoadRoute([]);
       return;
     }
@@ -211,7 +244,7 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
       });
 
     return () => controller.abort();
-  }, [activeRouteKey, hasTrackedSession]);
+  }, [activeRouteKey]);
 
   return (
     <div className="tracking-map">
@@ -220,13 +253,16 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapViewport points={viewportPoints} />
+        <MapViewport points={viewportPoints} viewKey={viewKey} />
         {routePositions.length > 1 ? (
           <Polyline positions={routePositions} color="#e8702a" weight={5} opacity={0.9} />
         ) : null}
-        {markerPoints.map((point, index) => (
+        {markers.map((point, index) => (
           <CircleMarker key={`${point.lat}-${point.lng}-${index}`} center={[point.lat, point.lng]} radius={8}>
-            <Popup>{point.name}</Popup>
+            <Popup>
+              <strong>{point.name}</strong>
+              {point.recordedAt ? <div>{point.recordedAt}</div> : null}
+            </Popup>
           </CircleMarker>
         ))}
       </MapContainer>

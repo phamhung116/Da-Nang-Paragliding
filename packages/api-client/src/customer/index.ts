@@ -14,6 +14,7 @@ import type {
   PaymentSession,
   PaymentTransaction,
   Post,
+  PickupLocation,
   ResendVerificationResult,
   ServicePackage,
   Tracking,
@@ -81,6 +82,16 @@ export const createCustomerApi = (baseUrl: string, getAccessToken?: () => string
       http.request<{ booking: Booking; payment_session: PaymentSession }>("/bookings/", {
         method: "POST",
         body: JSON.stringify(payload)
+      }),
+    resolvePickupLocation: (address: string) =>
+      http.request<PickupLocation>("/bookings/pickup-location/resolve/", {
+        method: "POST",
+        body: JSON.stringify({ address })
+      }),
+    suggestPickupLocations: (address: string) =>
+      http.request<PickupLocation[]>("/bookings/pickup-location/suggest/", {
+        method: "POST",
+        body: JSON.stringify({ address })
       }),
     completePayment: (code: string) =>
       http.request<{ booking: Booking; transaction: PaymentTransaction | null }>(

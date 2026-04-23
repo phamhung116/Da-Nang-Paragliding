@@ -87,7 +87,7 @@ class PayOsPaymentGateway:
             "description": description,
             "items": [
                 {
-                    "name": f"Dat coc {description}",
+                    "name": f"Đặt cọc {description}",
                     "quantity": 1,
                     "price": amount_value,
                 }
@@ -109,14 +109,14 @@ class PayOsPaymentGateway:
         response = self._request(self.endpoint, method="POST", payload=payload)
         response_code = str(response.get("code") or "")
         if response_code and response_code != "00":
-            response_message = str(response.get("desc") or response.get("message") or "PayOS tu choi yeu cau.")
-            raise ValidationError(f"PayOS tu choi yeu cau: {response_message}")
+            response_message = str(response.get("desc") or response.get("message") or "PayOS từ chối yêu cầu.")
+            raise ValidationError(f"PayOS từ chối yêu cầu: {response_message}")
 
         data = response.get("data") or {}
         checkout_url = str(data.get("checkoutUrl") or "")
         qr_code = str(data.get("qrCode") or "")
         if not checkout_url:
-            raise ValidationError("PayOS khong tra ve link thanh toan.")
+            raise ValidationError("PayOS không trả về liên kết thanh toán.")
 
         return {
             "provider_name": "payos",
@@ -165,18 +165,18 @@ class PayOsPaymentGateway:
             logger.warning("PayOS HTTP error %s: %s; payload=%s", exc.code, detail[:500], safe_payload)
             error_message = self._payos_error_message(detail)
             if error_message:
-                raise ValidationError(f"PayOS tu choi yeu cau ({exc.code}): {error_message}") from exc
-            raise ValidationError(f"PayOS tu choi yeu cau ({exc.code}). Hay kiem tra lai PayOS credentials.") from exc
+                raise ValidationError(f"PayOS từ chối yêu cầu ({exc.code}): {error_message}") from exc
+            raise ValidationError(f"PayOS từ chối yêu cầu ({exc.code}). Hãy kiểm tra lại thông tin xác thực PayOS.") from exc
         except URLError as exc:
             logger.warning("PayOS connection error: %s", exc)
-            raise ValidationError("Khong ket noi duoc PayOS. Hay kiem tra network/DNS cua backend.") from exc
+            raise ValidationError("Không kết nối được PayOS. Hãy kiểm tra kết nối mạng/DNS của máy chủ.") from exc
         except json.JSONDecodeError as exc:
             logger.warning("PayOS returned invalid JSON: %s", exc)
-            raise ValidationError("PayOS tra ve phan hoi khong hop le.") from exc
+            raise ValidationError("PayOS trả về phản hồi không hợp lệ.") from exc
 
     def _ensure_configured(self) -> None:
         if not self.client_id or not self.api_key or not self.checksum_key:
-            raise ValidationError("Thieu cau hinh PayOS tren backend.")
+            raise ValidationError("Thiếu cấu hình PayOS trên máy chủ.")
 
     def _signature(self, data: dict[str, object]) -> str:
         data_string = "&".join(f"{key}={data[key]}" for key in sorted(data))

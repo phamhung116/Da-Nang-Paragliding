@@ -41,8 +41,8 @@ export const VerifyEmailPage = () => {
           <Link to={routes.home} className="auth-screen__brand">
             <span className="auth-screen__brand-icon">SN</span>
             <span className="auth-screen__brand-copy">
-              <strong>Da Nang Paragliding</strong>
-              <small>Da Nang Paragliding</small>
+              <strong>Dù lượn Đà Nẵng</strong>
+              <small>Dù lượn Đà Nẵng</small>
             </span>
           </Link>
         </div>
@@ -53,7 +53,7 @@ export const VerifyEmailPage = () => {
               <span className="auth-email-sent__icon">{mutation.isSuccess ? "OK" : "SN"}</span>
               <h1>{title}</h1>
               {!token ? (
-                <p>Token xác thực bị thiếu. Hãy mở đúng link mới nhất trong email Da Nang Paragliding.</p>
+                <p>Token xác thực bị thiếu. Hãy mở đúng liên kết mới nhất trong email Dù lượn Đà Nẵng.</p>
               ) : mutation.isSuccess ? (
                 <p>Tài khoản của bạn đã sẵn sàng. Hệ thống sẽ chuyển về trang chủ trong giây lát.</p>
               ) : mutation.isError ? (

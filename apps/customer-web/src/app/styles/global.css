@@ -2288,9 +2288,68 @@
 }
 
 .tracking-map {
-  height: 440px;
+    height: 440px;
+    overflow: hidden;
+    border-radius: var(--radius-lg);
+  }
+
+.pickup-location-map {
+  height: 320px;
   overflow: hidden;
   border-radius: var(--radius-lg);
+}
+
+.pickup-address-picker {
+  position: relative;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.pickup-address-picker__hint {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.pickup-address-picker__list {
+  display: grid;
+  gap: 0.45rem;
+  max-height: 260px;
+  overflow: auto;
+  padding: 0.45rem;
+  border: 1px solid rgba(31, 27, 22, 0.1);
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 18px 44px rgba(31, 27, 22, 0.1);
+}
+
+.pickup-address-picker__item {
+  display: grid;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 0.8rem 0.9rem;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.pickup-address-picker__item:hover,
+.pickup-address-picker__item:focus-visible {
+  background: var(--accent-soft);
+  outline: none;
+}
+
+.pickup-address-picker__item strong {
+  font-size: 0.94rem;
+}
+
+.pickup-address-picker__item span {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.45;
 }
 
 .timeline__item {
@@ -2603,7 +2662,11 @@
   }
 
   .tracking-map {
-    height: 320px;
+      height: 320px;
+    }
+
+  .pickup-location-map {
+    height: 280px;
   }
 
   .auth-switch,

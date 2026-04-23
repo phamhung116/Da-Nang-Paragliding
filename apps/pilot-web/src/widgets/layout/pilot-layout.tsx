@@ -5,14 +5,14 @@ import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { routes } from "@/shared/config/routes";
 
 const navItems = [
-  { to: routes.home, label: "Assigned flights" },
-  { to: routes.account, label: "Account" },
-  { to: routes.posts, label: "Posts" }
+  { to: routes.home, label: "Chuyến bay" },
+  { to: routes.account, label: "Tài khoản" },
+  { to: routes.posts, label: "Bài viết" }
 ];
 
 export const PilotLayout = ({ children }: PropsWithChildren) => {
   const { account, logout } = usePilotAuth();
-  const initials = (account?.full_name ?? "Pilot")
+  const initials = (account?.full_name ?? "Phi công")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
@@ -25,13 +25,13 @@ export const PilotLayout = ({ children }: PropsWithChildren) => {
         <div className="pilot-sidebar__brandmark">
           <span className="pilot-sidebar__icon">DP</span>
           <div className="pilot-sidebar__brand">
-            <span>Da Nang Paragliding</span>
-            <small>Pilot workspace</small>
+            <span>Dù lượn Đà Nẵng</span>
+            <small>Khu vực phi công</small>
           </div>
         </div>
         <div className="pilot-sidebar__copy">
-          <Badge tone="success">PILOT</Badge>
-          <p>Track assigned flights, update progress and review briefing notes from ops.</p>
+          <Badge tone="success">PHI CÔNG</Badge>
+          <p>Theo dõi chuyến bay được phân công, cập nhật tiến độ và đọc ghi chú vận hành.</p>
         </div>
         <nav className="pilot-sidebar__nav">
           {navItems.map((item) => (
@@ -46,8 +46,8 @@ export const PilotLayout = ({ children }: PropsWithChildren) => {
           <Container>
             <div className="pilot-topbar__inner">
               <div>
-                <strong>Pilot desk</strong>
-                <p>Assigned flights and briefing content for the active pilot account.</p>
+                <strong>Bảng điều phối phi công</strong>
+                <p>Chuyến bay được phân công và nội dung hướng dẫn cho tài khoản phi công đang hoạt động.</p>
               </div>
               <div className="pilot-topbar__actions">
                 <div className="pilot-topbar__profile">
@@ -58,7 +58,7 @@ export const PilotLayout = ({ children }: PropsWithChildren) => {
                   </div>
                 </div>
                 <Button variant="ghost" onClick={() => void logout()}>
-                  Sign out
+                  Đăng xuất
                 </Button>
               </div>
             </div>

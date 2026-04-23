@@ -15,7 +15,7 @@ export const PostDetailPage = () => {
   if (!data) {
     return (
       <PilotLayout>
-        <div className="pilot-stack">Loading post...</div>
+        <div className="pilot-stack">Đang tải bài viết...</div>
       </PilotLayout>
     );
   }

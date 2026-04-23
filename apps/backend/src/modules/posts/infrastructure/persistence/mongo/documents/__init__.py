@@ -22,6 +22,9 @@ class PostDocument(models.Model):
     class Meta:
         db_table = "posts"
         ordering = ["-published_at", "-created_at"]
+        indexes = [
+            models.Index(fields=["published", "-published_at", "-created_at"], name="posts_public_sort_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.title

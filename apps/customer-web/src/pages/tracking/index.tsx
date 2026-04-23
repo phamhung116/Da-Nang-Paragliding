@@ -1,5 +1,5 @@
-import { useMutation } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
 import { ChevronRight } from "lucide-react";
@@ -14,32 +14,85 @@ import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
 type LookupForm = { query: string };
 
-const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
-const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
+const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const mapVisibleStatuses = new Set(["EN_ROUTE", "FLYING", "LANDED"]);
+const POLL_INTERVAL_MS = 3000;
+const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
-  const { register, handleSubmit } = useForm<LookupForm>({
+  const [lookupQuery, setLookupQuery] = useState(account?.email ?? trackingLookupStorage.get() ?? "");
+  const [autoLookupDone, setAutoLookupDone] = useState(false);
+  const { register, handleSubmit, setValue } = useForm<LookupForm>({
     defaultValues: {
-      query: account?.email ?? trackingLookupStorage.get()
-    }
+      query: account?.email ?? trackingLookupStorage.get() ?? "",
+    },
   });
 
-  const mutation = useMutation({
-    mutationFn: ({ query }: LookupForm) => customerApi.lookupTracking(query),
-    onSuccess: (_, values) => trackingLookupStorage.set(values.query)
+  const trackingQuery = useQuery({
+    queryKey: ["tracking-lookup", lookupQuery],
+    queryFn: () => customerApi.lookupTracking(lookupQuery),
+    enabled: Boolean(lookupQuery),
+    refetchInterval: false,
+    staleTime: 0,
   });
 
-  const result = mutation.data;
-  const currentStepIndex = result
-    ? Math.max(0, statusOrder.indexOf(result.booking.flight_status as (typeof statusOrder)[number]))
+  const result = lookupQuery ? trackingQuery.data : undefined;
+  const hasTrackingResult = Boolean(result);
+  const progressStatus = result?.booking.flight_status === "PICKING_UP" ? "WAITING" : result?.booking.flight_status;
+  const currentStepIndex = progressStatus
+    ? Math.max(0, statusOrder.indexOf(progressStatus as (typeof statusOrder)[number]))
     : 0;
 
-  useEffect(() => {
-    if (isAuthenticated && account?.email && mutation.status === "idle") {
-      mutation.mutate({ query: account.email });
+  const shouldPoll = useMemo(() => {
+    if (!result) {
+      return false;
     }
-  }, [account?.email, isAuthenticated, mutation]);
+    if (cancelledStatuses.has(result.booking.approval_status)) {
+      return false;
+    }
+    return result.booking.flight_status !== "LANDED";
+  }, [result]);
+
+  const shouldShowMap = Boolean(
+    result &&
+      mapVisibleStatuses.has(result.booking.flight_status) &&
+      (result.tracking.tracking_active ||
+        result.tracking.route_points.length > 0 ||
+        result.booking.flight_status === "LANDED")
+  );
+
+  useEffect(() => {
+    if (!isAuthenticated || !account?.email || autoLookupDone) {
+      return;
+    }
+    const normalized = account.email.trim();
+    setValue("query", normalized);
+    trackingLookupStorage.set(normalized);
+    setLookupQuery(normalized);
+    setAutoLookupDone(true);
+  }, [account?.email, autoLookupDone, isAuthenticated, setValue]);
+
+  useEffect(() => {
+    if (!lookupQuery || !hasTrackingResult || !shouldPoll) {
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      void trackingQuery.refetch();
+    }, POLL_INTERVAL_MS);
+
+    return () => window.clearInterval(intervalId);
+  }, [hasTrackingResult, lookupQuery, shouldPoll, trackingQuery.refetch]);
+
+  const handleLookup = (values: LookupForm) => {
+    const normalized = values.query.trim();
+    if (!normalized) {
+      return;
+    }
+    trackingLookupStorage.set(normalized);
+    setLookupQuery(normalized);
+  };
 
   return (
     <SiteLayout>
@@ -47,7 +100,7 @@ export const TrackingPage = () => {
         <Container className="stack">
           <div className="stack-sm text-center">
             <Badge>Theo dõi hành trình</Badge>
-            <h1>Theo dõi booking và vị trí GPS</h1>
+            <h1>Theo dõi lịch đặt và vị trí GPS</h1>
             <p>Khách đã đăng nhập sẽ thấy hành trình gần nhất ngay lập tức.</p>
           </div>
 
@@ -55,7 +108,7 @@ export const TrackingPage = () => {
             {trackingSupportNotes.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Tra cứu tracking</strong>
+                  <strong>Tra cứu hành trình</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -65,7 +118,7 @@ export const TrackingPage = () => {
           {!isAuthenticated ? (
             <Card className="tracking-search-card">
               <Panel>
-                <form className="tracking-lookup" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+                <form className="tracking-lookup" onSubmit={handleSubmit(handleLookup)}>
                   <Field label="Email hoặc số điện thoại">
                     <Input
                       className="w-full rounded-2xl border-none bg-stone-100 p-4 outline-none focus:ring-2 focus:ring-brand"
@@ -74,21 +127,21 @@ export const TrackingPage = () => {
                     />
                   </Field>
                   <Button className="btn-primary w-full py-4">
-                    {mutation.isPending ? "Đang tra cứu..." : "Tra cứu booking"}
+                    {trackingQuery.isFetching && !result ? "Đang tra cứu..." : "Tra cứu lịch đặt"}
                   </Button>
                 </form>
               </Panel>
             </Card>
           ) : null}
 
-          {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
+          {lookupQuery && trackingQuery.error instanceof Error ? <p className="form-error">{trackingQuery.error.message}</p> : null}
 
-          {!result && mutation.isPending ? (
+          {!result && trackingQuery.isFetching ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
                 <Badge>Đang tra cứu</Badge>
-                <strong>Đang tra cứu booking...</strong>
-                <p>Hệ thống đang lấy timeline và vị trí GPS mới nhất.</p>
+                <strong>Đang tra cứu lịch đặt...</strong>
+                <p>Hệ thống đang lấy dòng thời gian và vị trí GPS mới nhất.</p>
               </Panel>
             </Card>
           ) : null}
@@ -99,7 +152,10 @@ export const TrackingPage = () => {
                 <Panel className="space-y-8">
                   <button
                     type="button"
-                    onClick={() => mutation.reset()}
+                    onClick={() => {
+                      setLookupQuery("");
+                      setValue("query", "");
+                    }}
                     className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-stone-400 transition-colors hover:text-brand"
                   >
                     <ChevronRight className="rotate-180" size={16} />
@@ -148,14 +204,15 @@ export const TrackingPage = () => {
                   <div className="tracking-grid">
                     <Card className="tracking-card">
                       <Panel className="stack-sm">
-                        <strong>Thông tin booking</strong>
-                        <p>Mã booking: {result.booking.code}</p>
+                        <strong>Thông tin đặt lịch</strong>
+                        <p>Mã đặt lịch: {result.booking.code}</p>
                         <p>Phê duyệt: {approvalStatusLabels[result.booking.approval_status]}</p>
                         <p>Thanh toán: {paymentStatusLabels[result.booking.payment_status]}</p>
                         <p>
                           Lịch bay: {result.booking.flight_date} lúc {result.booking.flight_time}
                         </p>
-                        <p>Pilot: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Đang cập nhật"}</p>
+                        <p>Điểm đón: {result.booking.pickup_address ?? "Khách tự đến"}</p>
+                        <p>Phi công: {result.booking.assigned_pilot_name ?? result.tracking.pilot_name ?? "Đang cập nhật"}</p>
                       </Panel>
                     </Card>
 
@@ -176,30 +233,37 @@ export const TrackingPage = () => {
                 </Panel>
               </Card>
 
-              {mapVisibleStatuses.has(result.booking.flight_status) ? (
+              {shouldShowMap ? (
                 <Card>
                   <Panel className="stack">
-                    <strong>Bản đồ GPS</strong>
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <strong>Bản đồ GPS</strong>
+                      {shouldPoll ? (
+                        <Badge tone="success">
+                          {trackingQuery.isFetching ? "Đang đồng bộ GPS..." : "Đang cập nhật tự động"}
+                        </Badge>
+                      ) : null}
+                    </div>
                     <TrackingMap booking={result.booking} tracking={result.tracking} />
                   </Panel>
                 </Card>
               ) : (
                 <Card>
                   <Panel className="stack-sm">
-                    <strong>Bản đồ sẽ hiển thị khi hành trình bắt đầu.</strong>
-                    <p>Hiện tại booking vẫn đang chờ xác nhận hoặc chờ tới giờ khởi hành.</p>
+                    <strong>Bản đồ sẽ hiển thị khi phi công bắt đầu đưa khách tới điểm bay.</strong>
+                    <p>Không còn theo dõi đoạn phi công tự di chuyển tới điểm đón, nên khách chỉ thấy GPS từ lúc đã lên xe.</p>
                   </Panel>
                 </Card>
               )}
             </>
           ) : null}
 
-          {!result && !mutation.isPending ? (
+          {!result && !trackingQuery.isFetching ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
                 <Badge>Sẵn sàng tra cứu</Badge>
-                <strong>Nhập thông tin booking để hiển thị timeline và vị trí GPS.</strong>
-                <p>Ngay sau khi khách hàng đặt lịch thành công, booking có thể được tra cứu lại từ trang này.</p>
+                <strong>Nhập thông tin đặt lịch để hiển thị dòng thời gian và vị trí GPS.</strong>
+                <p>Ngay sau khi khách hàng đặt lịch thành công, lịch đặt có thể được tra cứu lại từ trang này.</p>
               </Panel>
             </Card>
           ) : null}

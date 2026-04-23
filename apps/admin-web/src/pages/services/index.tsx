@@ -70,19 +70,19 @@ export const ServicesPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge>Service management</Badge>
-            <h1>Services</h1>
-            <p>Quáº£n lÃ½ gÃ³i dá»‹ch vá»¥ vÃ  danh sÃ¡ch dá»‹ch vá»¥ Ä‘i kÃ¨m Ä‘á»ƒ dÃ¹ng láº¡i khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i.</p>
+            <Badge>Quản lý dịch vụ</Badge>
+            <h1>Dịch vụ</h1>
+            <p>Quản lý gói dịch vụ và danh sách dịch vụ đi kèm để dùng lại khi tạo hoặc chỉnh sửa gói.</p>
           </div>
-          <Button onClick={() => navigate("/services/new")}>Táº¡o gÃ³i dá»‹ch vá»¥</Button>
+          <Button onClick={() => navigate("/services/new")}>Tạo gói dịch vụ</Button>
         </div>
 
         <Card className="admin-list-card">
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Danh sÃ¡ch gÃ³i dá»‹ch vá»¥</h3>
-                <p>Click vÃ o tá»«ng gÃ³i Ä‘á»ƒ chá»‰nh sá»­a thÃ´ng tin, giÃ¡ vÃ  features Ä‘i kÃ¨m.</p>
+                <h3>Danh sách gói dịch vụ</h3>
+                <p>Bấm vào từng gói để chỉnh sửa thông tin, giá và dịch vụ đi kèm.</p>
               </div>
             </div>
             <DataTable<ServicePackage>
@@ -92,7 +92,7 @@ export const ServicesPage = () => {
               columns={[
                 {
                   key: "service",
-                  title: "GÃ³i dá»‹ch vá»¥",
+                  title: "Gói dịch vụ",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
@@ -103,18 +103,18 @@ export const ServicesPage = () => {
                 },
                 {
                   key: "price",
-                  title: "GiÃ¡",
+                  title: "Giá",
                   render: (row) => formatCurrency(row.price)
                 },
                 {
                   key: "features",
-                  title: "Features",
-                  render: (row) => `${row.included_features.length} dá»‹ch vá»¥`
+                  title: "Dịch vụ đi kèm",
+                  render: (row) => `${row.included_features.length} dịch vụ`
                 },
                 {
                   key: "status",
-                  title: "Tráº¡ng thÃ¡i",
-                  render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "ACTIVE" : "INACTIVE"}</Badge>
+                  title: "Trạng thái",
+                  render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "Đang bán" : "Tạm tắt"}</Badge>
                 },
                 {
                   key: "open",
@@ -127,7 +127,7 @@ export const ServicesPage = () => {
                         navigate(`/services/${row.slug}`);
                       }}
                     >
-                      Xem chi tiáº¿t
+                      Xem chi tiết
                     </Button>
                   )
                 }
@@ -140,8 +140,8 @@ export const ServicesPage = () => {
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Dá»‹ch vá»¥ Ä‘i kÃ¨m - features</h3>
-                <p>Táº¡o feature má»™t láº§n rá»“i chá»n nhiá»u feature khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i dá»‹ch vá»¥.</p>
+                <h3>Dịch vụ đi kèm</h3>
+                <p>Tạo dịch vụ đi kèm một lần rồi chọn lại khi tạo hoặc chỉnh sửa gói dịch vụ.</p>
               </div>
             </div>
 
@@ -156,27 +156,27 @@ export const ServicesPage = () => {
               )}
             >
               <div className="inline-field-grid inline-field-grid--two">
-                <Field label="TÃªn feature">
+                <Field label="Tên dịch vụ đi kèm">
                   <Input {...featureForm.register("name", { required: true })} />
                 </Field>
               </div>
               <div className="inline-field-grid inline-field-grid--two">
-                <Field label="MÃ´ táº£ ngáº¯n">
+                <Field label="Mô tả ngắn">
                   <Textarea {...featureForm.register("description")} />
                 </Field>
               </div>
               <label className="admin-checkbox">
                 <input type="checkbox" {...featureForm.register("active")} />
-                <span>Äang sá»­ dá»¥ng</span>
+                <span>Đang sử dụng</span>
               </label>
               {saveFeatureMutation.error instanceof Error ? <p className="form-error">{saveFeatureMutation.error.message}</p> : null}
               <div className="table-actions--inline">
                 <Button disabled={saveFeatureMutation.isPending}>
-                  {saveFeatureMutation.isPending ? "Äang lÆ°u..." : featureEditing ? "LÆ°u feature" : "Táº¡o feature"}
+                  {saveFeatureMutation.isPending ? "Đang lưu..." : featureEditing ? "Lưu dịch vụ đi kèm" : "Tạo dịch vụ đi kèm"}
                 </Button>
                 {featureEditing ? (
                   <Button type="button" variant="secondary" onClick={() => setFeatureEditing(null)}>
-                    Há»§y sá»­a
+                    Hủy sửa
                   </Button>
                 ) : null}
               </div>
@@ -188,18 +188,18 @@ export const ServicesPage = () => {
               columns={[
                 {
                   key: "name",
-                  title: "Feature",
+                  title: "Dịch vụ đi kèm",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.name}</strong>
-                      <small>{row.description || "KhÃ´ng cÃ³ mÃ´ táº£"}</small>
+                      <small>{row.description || "Không có mô tả"}</small>
                     </div>
                   )
                 },
                 {
                   key: "active",
-                  title: "Tráº¡ng thÃ¡i",
-                  render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "ACTIVE" : "INACTIVE"}</Badge>
+                  title: "Trạng thái",
+                  render: (row) => <Badge tone={row.active ? "success" : "danger"}>{row.active ? "Đang dùng" : "Tạm tắt"}</Badge>
                 },
                 {
                   key: "actions",
@@ -207,10 +207,10 @@ export const ServicesPage = () => {
                   render: (row) => (
                     <div className="table-actions--inline">
                       <Button variant="secondary" onClick={() => setFeatureEditing(row)}>
-                        Sá»­a
+                        Sửa
                       </Button>
                       <Button variant="secondary" onClick={() => setFeaturePendingDelete(row)}>
-                        XÃ³a
+                        Xóa
                       </Button>
                     </div>
                   )
@@ -227,13 +227,13 @@ export const ServicesPage = () => {
               setFeaturePendingDelete(null);
             }
           }}
-          title={`XÃ³a feature ${featurePendingDelete?.name ?? ""}`}
-          description="Feature sáº½ biáº¿n máº¥t khá»i danh sÃ¡ch chá»n khi táº¡o hoáº·c chá»‰nh sá»­a gÃ³i dá»‹ch vá»¥."
+          title={`Xóa dịch vụ đi kèm ${featurePendingDelete?.name ?? ""}`}
+          description="Dịch vụ đi kèm sẽ biến mất khỏi danh sách chọn khi tạo hoặc chỉnh sửa gói dịch vụ."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setFeaturePendingDelete(null)}>
-                ÄÃ³ng
+                Đóng
               </Button>
               <Button
                 type="button"
@@ -244,7 +244,7 @@ export const ServicesPage = () => {
                   }
                 }}
               >
-                {deleteFeatureMutation.isPending ? "Äang xÃ³a..." : "XÃ³a feature"}
+                {deleteFeatureMutation.isPending ? "Đang xóa..." : "Xóa dịch vụ đi kèm"}
               </Button>
             </>
           }

@@ -12,7 +12,7 @@ class AvailabilityDayDocument(models.Model):
     wind_kph = models.FloatField()
     uv_index = models.PositiveIntegerField()
     visibility_km = models.FloatField(default=10)
-    weather_condition = models.CharField(max_length=80, default="Dang cap nhat")
+    weather_condition = models.CharField(max_length=80, default="Đang cập nhật")
     flight_condition = models.CharField(max_length=80)
     weather_available = models.BooleanField(default=False)
     slots = models.JSONField(default=list)

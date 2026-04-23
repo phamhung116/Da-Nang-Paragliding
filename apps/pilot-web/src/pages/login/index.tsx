@@ -40,7 +40,7 @@ export const LoginPage = () => {
 
     if (!loading && !isAuthenticated) {
       if (!ADMIN_APP_URL) {
-        setConfigError("Thieu bien VITE_ADMIN_APP_URL tren Vercel pilot-web.");
+        setConfigError("Thiếu biến VITE_ADMIN_APP_URL cho khu vực phi công trên Vercel.");
         return;
       }
       window.location.replace(`${ADMIN_APP_URL.replace(/\/$/, "")}/login`);
@@ -53,7 +53,7 @@ export const LoginPage = () => {
 
   return (
     <div className="pilot-login-shell">
-      <p>{configError || "Dang chuyen den trang dang nhap van hanh..."}</p>
+      <p>{configError || "Đang chuyển đến trang đăng nhập vận hành..."}</p>
     </div>
   );
 };

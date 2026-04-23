@@ -159,10 +159,10 @@ ONLINE_PAYMENT_DISCOUNT_PERCENT = int(os.getenv("ONLINE_PAYMENT_DISCOUNT_PERCENT
 ONLINE_DEPOSIT_PERCENT = int(os.getenv("ONLINE_DEPOSIT_PERCENT", "40"))
 
 BUSINESS_INFO = {
-    "name": os.getenv("BUSINESS_NAME", "Da Nang Paragliding"),
+    "name": os.getenv("BUSINESS_NAME", "Dù lượn Đà Nẵng"),
     "phone": os.getenv("BUSINESS_PHONE", "+84 909 000 123"),
     "email": os.getenv("BUSINESS_EMAIL", "info@danangparagliding.vn"),
-    "address": os.getenv("BUSINESS_ADDRESS", "Doi bay Son Tra, Da Nang"),
+    "address": os.getenv("BUSINESS_ADDRESS", "Đồi bay Sơn Trà, Đà Nẵng"),
 }
 
 NOTIFICATION_PROVIDER = os.getenv("NOTIFICATION_PROVIDER", "console")
@@ -203,29 +203,29 @@ def _validate_production_settings(values: dict[str, object] | None = None) -> No
     mongodb_uri = os.getenv("MONGODB_URI", "mongodb://127.0.0.1:27017")
 
     if bool(settings_values.get("DEBUG", False)):
-        raise ImproperlyConfigured("DJANGO_DEBUG must be false in production.")
+        raise ImproperlyConfigured("DJANGO_DEBUG phải là false trong môi trường production.")
     if secret_key in {"", "replace-me", "change-me-in-production"} or secret_key.startswith("replace-me") or len(secret_key) < 32:
-        raise ImproperlyConfigured("Set DJANGO_SECRET_KEY to a strong secret before production deploy.")
+        raise ImproperlyConfigured("Cần đặt DJANGO_SECRET_KEY đủ mạnh trước khi triển khai production.")
     if not isinstance(allowed_hosts, list) or not allowed_hosts or "*" in allowed_hosts:
-        raise ImproperlyConfigured("Set explicit DJANGO_ALLOWED_HOSTS before production deploy.")
+        raise ImproperlyConfigured("Cần cấu hình DJANGO_ALLOWED_HOSTS rõ ràng trước khi triển khai production.")
     if not isinstance(cors_origins, list) or not cors_origins:
-        raise ImproperlyConfigured("Set explicit CORS_ALLOWED_ORIGINS before production deploy.")
+        raise ImproperlyConfigured("Cần cấu hình CORS_ALLOWED_ORIGINS rõ ràng trước khi triển khai production.")
     if any(str(origin).startswith("http://") for origin in cors_origins):
-        raise ImproperlyConfigured("CORS_ALLOWED_ORIGINS must use https:// in production.")
+        raise ImproperlyConfigured("CORS_ALLOWED_ORIGINS phải dùng https:// trong môi trường production.")
     if not customer_web_url.startswith("https://"):
-        raise ImproperlyConfigured("CUSTOMER_WEB_URL must use https:// in production.")
+        raise ImproperlyConfigured("CUSTOMER_WEB_URL phải dùng https:// trong môi trường production.")
     if not bool(settings_values.get("SECURE_SSL_REDIRECT", False)):
-        raise ImproperlyConfigured("DJANGO_SECURE_SSL_REDIRECT must be true in production.")
+        raise ImproperlyConfigured("DJANGO_SECURE_SSL_REDIRECT phải là true trong môi trường production.")
     if int(settings_values.get("SECURE_HSTS_SECONDS", 0)) < 31536000:
-        raise ImproperlyConfigured("DJANGO_SECURE_HSTS_SECONDS must be at least 31536000 in production.")
+        raise ImproperlyConfigured("DJANGO_SECURE_HSTS_SECONDS phải tối thiểu là 31536000 trong môi trường production.")
     if not bool(settings_values.get("SESSION_COOKIE_SECURE", False)):
-        raise ImproperlyConfigured("SESSION_COOKIE_SECURE must be true in production.")
+        raise ImproperlyConfigured("SESSION_COOKIE_SECURE phải là true trong môi trường production.")
     if not bool(settings_values.get("CSRF_COOKIE_SECURE", False)):
-        raise ImproperlyConfigured("CSRF_COOKIE_SECURE must be true in production.")
+        raise ImproperlyConfigured("CSRF_COOKIE_SECURE phải là true trong môi trường production.")
     if mongodb_uri.startswith("mongodb://127.0.0.1") or mongodb_uri.startswith("mongodb://localhost"):
-        raise ImproperlyConfigured("MONGODB_URI must point to the production database.")
+        raise ImproperlyConfigured("MONGODB_URI phải trỏ đến cơ sở dữ liệu production.")
     if payment_provider in {"", "mockpay"}:
-        raise ImproperlyConfigured("PAYMENT_PROVIDER must be a real provider in production, for example payos.")
+        raise ImproperlyConfigured("PAYMENT_PROVIDER phải là nhà cung cấp thanh toán thật trong production, ví dụ payos.")
     if payment_provider == "payos":
         missing = [
             key
@@ -233,9 +233,9 @@ def _validate_production_settings(values: dict[str, object] | None = None) -> No
             if not str(settings_values.get(key, "")).strip()
         ]
         if missing:
-            raise ImproperlyConfigured(f"Missing production PayOS settings: {', '.join(missing)}.")
+            raise ImproperlyConfigured(f"Thiếu cấu hình PayOS cho production: {', '.join(missing)}.")
     if email_backend.endswith("console.EmailBackend"):
-        raise ImproperlyConfigured("EMAIL_BACKEND must send real email in production.")
+        raise ImproperlyConfigured("EMAIL_BACKEND phải gửi email thật trong môi trường production.")
 
 
 if IS_PRODUCTION_ENV:

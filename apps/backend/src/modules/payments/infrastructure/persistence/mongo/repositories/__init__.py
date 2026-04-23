@@ -74,7 +74,7 @@ class MongoPaymentTransactionRepository:
     def mark_paid(self, booking_code: str) -> PaymentTransaction:
         document = PaymentTransactionDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay giao dich.")
+            raise NotFoundError("Không tìm thấy giao dịch.")
         document.status = PAYMENT_STATUS_PAID
         document.save(update_fields=["status", "updated_at"])
         return _to_domain(document)
@@ -82,7 +82,7 @@ class MongoPaymentTransactionRepository:
     def mark_expired(self, booking_code: str) -> PaymentTransaction:
         document = PaymentTransactionDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay giao dich.")
+            raise NotFoundError("Không tìm thấy giao dịch.")
         document.status = PAYMENT_STATUS_EXPIRED
         document.save(update_fields=["status", "updated_at"])
         return _to_domain(document)
@@ -90,7 +90,7 @@ class MongoPaymentTransactionRepository:
     def mark_failed(self, booking_code: str) -> PaymentTransaction:
         document = PaymentTransactionDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay giao dich.")
+            raise NotFoundError("Không tìm thấy giao dịch.")
         document.status = PAYMENT_STATUS_FAILED
         document.save(update_fields=["status", "updated_at"])
         return _to_domain(document)

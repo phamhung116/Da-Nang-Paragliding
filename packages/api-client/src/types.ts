@@ -80,6 +80,8 @@ export type Booking = {
   notes: string | null;
   pickup_option: string;
   pickup_address: string | null;
+  pickup_lat: number | null;
+  pickup_lng: number | null;
   pickup_fee: string;
   unit_price: string;
   original_total: string;
@@ -199,6 +201,12 @@ export type Tracking = {
   updated_at: string | null;
 };
 
+export type PickupLocation = {
+  name: string;
+  lat: number;
+  lng: number;
+};
+
 export type PilotFlight = {
   booking: Booking;
   tracking: Tracking | null;
@@ -217,6 +225,8 @@ export type BookingCreatePayload = {
   payment_method: string;
   pickup_option?: string;
   pickup_address?: string;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
 };
 
 export type BookingCancelPayload = {

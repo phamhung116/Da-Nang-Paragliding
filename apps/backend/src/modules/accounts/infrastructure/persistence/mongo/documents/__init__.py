@@ -26,6 +26,9 @@ class AccountDocument(models.Model):
     class Meta:
         db_table = "accounts"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["role", "is_active"], name="accounts_role_active_idx"),
+        ]
 
 
 class AccountSessionDocument(models.Model):

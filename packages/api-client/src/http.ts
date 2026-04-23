@@ -15,14 +15,14 @@ type ClientOptions = {
 };
 
 const fieldLabelMap: Record<string, string> = {
-  non_field_errors: "Thong tin",
-  detail: "Chi tiet",
-  full_name: "Ho va ten",
+  non_field_errors: "Thông tin",
+  detail: "Chi tiết",
+  full_name: "Họ và tên",
   email: "Email",
-  phone: "So dien thoai",
-  password: "Mat khau",
-  confirm_password: "Xac nhan mat khau",
-  preferred_language: "Ngon ngu"
+  phone: "Số điện thoại",
+  password: "Mật khẩu",
+  confirm_password: "Xác nhận mật khẩu",
+  preferred_language: "Ngôn ngữ"
 };
 
 const getFieldLabel = (field: string) => fieldLabelMap[field] ?? field.replace(/_/g, " ");
@@ -86,7 +86,7 @@ export const createHttpClient = (baseUrl: string, options?: ClientOptions) => {
         ...init
       });
     } catch {
-      throw new ApiError("Khong the ket noi toi he thong. Hay kiem tra backend va thu lai.", 0);
+      throw new ApiError("Không thể kết nối tới hệ thống. Hãy kiểm tra máy chủ và thử lại.", 0);
     }
 
     const rawPayload = await response.text();
@@ -105,8 +105,8 @@ export const createHttpClient = (baseUrl: string, options?: ClientOptions) => {
       throw new ApiError(
         extractErrorMessage(payload) ??
           (response.status >= 500
-            ? "He thong dang gap loi may chu. Hay thu lai sau."
-            : "Da xay ra loi he thong."),
+            ? "Hệ thống đang gặp lỗi máy chủ. Hãy thử lại sau."
+            : "Đã xảy ra lỗi hệ thống."),
         response.status
       );
     }

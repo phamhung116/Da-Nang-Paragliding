@@ -35,7 +35,7 @@ class GetMonthlyAvailabilityUseCase:
     def execute(self, service_slug: str, year: int, month: int) -> list[AvailabilityDay]:
         service_package = self.service_package_repository.get_by_slug(service_slug)
         if service_package is None or not service_package.active:
-            raise NotFoundError("Khong tim thay goi dich vu.")
+            raise NotFoundError("Không tìm thấy gói dịch vụ.")
 
         days = self.availability_repository.list_month(service_slug, year, month)
         if not days:
@@ -46,7 +46,7 @@ class GetMonthlyAvailabilityUseCase:
             ]
             days = self.availability_repository.create_many(generated_days)
 
-        active_pilot_count = len(self.account_repository.list(role="PILOT", is_active=True))
+        active_pilot_count = self.account_repository.count(role="PILOT", is_active=True)
         booked_counts = self.booking_repository.reserved_counts_for_month(service_slug, year, month)
         today = date.today()
         start, end = month_bounds(year, month)

@@ -35,6 +35,9 @@ class ServicePackageDocument(models.Model):
     class Meta:
         db_table = "service_packages"
         ordering = ["-featured", "price", "name"]
+        indexes = [
+            models.Index(fields=["active", "featured"], name="catalog_service_flags_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.name

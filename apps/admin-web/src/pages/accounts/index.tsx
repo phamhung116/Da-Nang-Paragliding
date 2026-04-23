@@ -18,6 +18,12 @@ const blankValues: ManagedAccountPayload = {
   is_active: true
 };
 
+const roleLabels: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  PILOT: "Phi công",
+  CUSTOMER: "Khách hàng"
+};
+
 export const AccountsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -44,11 +50,11 @@ export const AccountsPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge>Account management</Badge>
-            <h1>Accounts</h1>
-            <p>Danh sach account chi loc theo role. Click vao account de xem chi tiet.</p>
+            <Badge>Quản lý tài khoản</Badge>
+            <h1>Tài khoản</h1>
+            <p>Danh sách tài khoản được lọc theo vai trò. Bấm vào tài khoản để xem chi tiết.</p>
           </div>
-          <div className="portal-heading__note">Account khong hien trang thai hoat dong trong UI quan tri.</div>
+          <div className="portal-heading__note">Trạng thái hoạt động không hiển thị trong giao diện quản trị.</div>
         </div>
 
         {isCreateOpen ? (
@@ -56,45 +62,45 @@ export const AccountsPage = () => {
             <Panel className="admin-stack">
               <div className="admin-card__header">
                 <div>
-                  <h3>Them tai khoan moi</h3>
-                  <p>Admin tao truc tiep tai khoan pilot hoac admin. Customer dang nhap bang email tu website.</p>
+                  <h3>Thêm tài khoản mới</h3>
+                  <p>Quản trị viên tạo trực tiếp tài khoản phi công hoặc quản trị. Khách hàng đăng nhập bằng email từ website.</p>
                 </div>
                 <Button variant="secondary" onClick={() => setIsCreateOpen(false)}>
-                  Dong
+                  Đóng
                 </Button>
               </div>
               <form className="admin-form admin-form--compact" onSubmit={form.handleSubmit((values) => createMutation.mutate(values))}>
                 <div className="inline-field-grid inline-field-grid--three">
-                  <Field label="Ho va ten">
+                  <Field label="Họ và tên">
                     <Input {...form.register("full_name")} />
                   </Field>
                   <Field label="Email">
                     <Input type="email" {...form.register("email")} />
                   </Field>
-                  <Field label="So dien thoai">
+                  <Field label="Số điện thoại">
                     <Input {...form.register("phone")} />
                   </Field>
                 </div>
                 <div className="inline-field-grid inline-field-grid--three">
-                  <Field label="Mat khau">
+                  <Field label="Mật khẩu">
                     <Input type="password" {...form.register("password")} />
                   </Field>
-                  <Field label="Role">
+                  <Field label="Vai trò">
                     <Select {...form.register("role")}>
-                      <option value="PILOT">Pilot</option>
-                      <option value="ADMIN">Admin</option>
+                      <option value="PILOT">Phi công</option>
+                      <option value="ADMIN">Quản trị viên</option>
                     </Select>
                   </Field>
-                  <Field label="Ngon ngu">
+                  <Field label="Ngôn ngữ">
                     <Select {...form.register("preferred_language")}>
-                      <option value="vi">Vietnamese</option>
-                      <option value="en">English</option>
+                      <option value="vi">Tiếng Việt</option>
+                      <option value="en">Tiếng Anh</option>
                     </Select>
                   </Field>
                 </div>
                 {createMutation.error instanceof Error ? <p className="form-error">{createMutation.error.message}</p> : null}
                 <Button disabled={createMutation.isPending}>
-                  {createMutation.isPending ? "Dang tao..." : "Tao tai khoan"}
+                  {createMutation.isPending ? "Đang tạo..." : "Tạo tài khoản"}
                 </Button>
               </form>
             </Panel>
@@ -105,17 +111,17 @@ export const AccountsPage = () => {
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Danh sach tai khoan</h3>
-                <p>Bo loc role giup xem nhanh admin, pilot hoac customer.</p>
+                <h3>Danh sách tài khoản</h3>
+                <p>Bộ lọc vai trò giúp xem nhanh quản trị viên, phi công hoặc khách hàng.</p>
               </div>
               <div className="table-actions--inline">
                 <Select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
-                  <option value="">Tat ca role</option>
-                  <option value="ADMIN">Admin</option>
-                  <option value="PILOT">Pilot</option>
-                  <option value="CUSTOMER">Customer</option>
+                  <option value="">Tất cả vai trò</option>
+                  <option value="ADMIN">Quản trị viên</option>
+                  <option value="PILOT">Phi công</option>
+                  <option value="CUSTOMER">Khách hàng</option>
                 </Select>
-                <Button onClick={() => setIsCreateOpen(true)}>Them tai khoan</Button>
+                <Button onClick={() => setIsCreateOpen(true)}>Thêm tài khoản</Button>
               </div>
             </div>
 
@@ -126,7 +132,7 @@ export const AccountsPage = () => {
               columns={[
                 {
                   key: "account",
-                  title: "Tai khoan",
+                  title: "Tài khoản",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.full_name}</strong>
@@ -137,12 +143,12 @@ export const AccountsPage = () => {
                 },
                 {
                   key: "role",
-                  title: "Role",
-                  render: (row) => <Badge>{row.role}</Badge>
+                  title: "Vai trò",
+                  render: (row) => <Badge>{roleLabels[row.role] ?? row.role}</Badge>
                 },
                 {
                   key: "created",
-                  title: "Ngay tao",
+                  title: "Ngày tạo",
                   render: (row) => (row.created_at ? new Date(row.created_at).toLocaleDateString("vi-VN") : "-")
                 },
                 {
@@ -156,7 +162,7 @@ export const AccountsPage = () => {
                         navigate(`/accounts/${row.id}`);
                       }}
                     >
-                      Xem chi tiet
+                      Xem chi tiết
                     </Button>
                   )
                 }
