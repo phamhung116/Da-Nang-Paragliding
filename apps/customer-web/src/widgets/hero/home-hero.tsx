@@ -12,7 +12,7 @@ export const HomeHero = () => {
     <section className="relative h-[90vh] flex items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src="/media/img/main1.jpg"
+          src="/media/img/main1.png"
           alt="Paragliding in Da Nang"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
