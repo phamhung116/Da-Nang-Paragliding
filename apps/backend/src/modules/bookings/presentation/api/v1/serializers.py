@@ -10,6 +10,7 @@ from modules.bookings.application.dto import (
     CancelBookingRequest,
     ReviewBookingRequest,
 )
+from modules.bookings.domain.value_objects import PAYMENT_METHOD_GATEWAY
 from shared.utils import normalize_phone
 
 
@@ -59,7 +60,7 @@ class BookingCreateSerializer(serializers.Serializer):
     adults = serializers.IntegerField(min_value=0)
     children = serializers.IntegerField(min_value=0)
     notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
-    payment_method = serializers.ChoiceField(choices=["wallet", "gateway", "bank_transfer"])
+    payment_method = serializers.ChoiceField(choices=[PAYMENT_METHOD_GATEWAY])
     pickup_option = serializers.ChoiceField(choices=["self", "pickup"], required=False, default="self")
     pickup_address = serializers.CharField(max_length=500, required=False, allow_blank=True, allow_null=True)
     pickup_lat = serializers.FloatField(required=False, allow_null=True)

@@ -17,6 +17,7 @@ urlpatterns = [
     path("api/v1/", include("modules.bookings.presentation.api.v1.urls")),
     path("api/v1/", include("modules.payments.presentation.api.v1.urls")),
     path("api/v1/", include("modules.tracking.presentation.api.v1.urls")),
+    path("api/v1/", include("modules.translation.presentation.api.v1.urls")),
     path("api/v1/pilot/", include("modules.bookings.presentation.api.v1.pilot_urls")),
     path("api/v1/pilot/", include("modules.posts.presentation.api.v1.pilot_urls")),
     path("api/v1/pilot/", include("modules.tracking.presentation.api.v1.pilot_urls")),

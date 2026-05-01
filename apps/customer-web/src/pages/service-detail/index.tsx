@@ -2,9 +2,18 @@ import { useQueries, useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
+import type { ServiceFeature } from "@paragliding/api-client";
 import { AlertCircle, CheckCircle2, ChevronDown, Eye } from "lucide-react";
 import { formatCurrency, formatDate } from "@/shared/lib/format";
+import {
+  localizeFeatureName,
+  localizeServiceDescription,
+  localizeServiceName,
+  localizeServiceShortDescription
+} from "@/shared/lib/localized-content";
 import { availabilityQueryOptions, serviceQueryOptions } from "@/shared/lib/query-options";
+import { useTranslatedText } from "@/shared/lib/use-translated-text";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -19,16 +28,24 @@ const parseDateKey = (value: string) => {
   return new Date(rawYear, rawMonth - 1, rawDay);
 };
 
-const formatSelectedSlotLabel = (value: { date: string; time: string } | null) => {
+const formatSelectedSlotLabel = (value: { date: string; time: string } | null, locale?: "vi" | "en") => {
   if (!value) {
     return "Chưa chọn khung giờ";
   }
 
-  return `${value.time} - ${formatDate(parseDateKey(value.date))}`;
+  return `${value.time} - ${formatDate(parseDateKey(value.date), undefined, locale)}`;
+};
+
+const IncludedFeatureLabel = ({ feature }: { feature: ServiceFeature }) => {
+  const { locale } = useI18n();
+  const label = useTranslatedText(localizeFeatureName(feature, locale));
+
+  return <span className="text-sm font-medium text-stone-700">{label}</span>;
 };
 
 export const ServiceDetailPage = () => {
   const { slug = "" } = useParams();
+  const { locale, t, tText } = useI18n();
   const currentDate = useMemo(() => new Date(), []);
   const [calendarState, setCalendarState] = useState({
     year: currentDate.getFullYear(),
@@ -72,19 +89,24 @@ export const ServiceDetailPage = () => {
     );
   };
 
+  const localizedServiceName = servicePackage ? localizeServiceName(servicePackage, locale) : "";
+  const localizedServiceShortDescription = servicePackage ? localizeServiceShortDescription(servicePackage, locale) : "";
+  const localizedServiceDescription = servicePackage ? localizeServiceDescription(servicePackage, locale) : "";
+  const serviceName = useTranslatedText(localizedServiceName);
+  const serviceShortDescription = useTranslatedText(localizedServiceShortDescription);
+  const serviceDescription = useTranslatedText(localizedServiceDescription);
+  const selectedSlotLabel = selectedSlot ? formatSelectedSlotLabel(selectedSlot, locale) : tText("Chưa chọn khung giờ");
+
   if (!servicePackage) {
     return (
       <SiteLayout>
         <section className="section">
-          <Container>Đang tải gói dịch vụ...</Container>
+          <Container>{t("loading_service")}</Container>
         </section>
       </SiteLayout>
     );
   }
 
-  const serviceName = servicePackage.name;
-  const serviceShortDescription = servicePackage.short_description;
-  const serviceDescription = servicePackage.description;
   const includedFeatureCountLabel = `${servicePackage.included_features.length} mục`;
 
   return (
@@ -110,14 +132,14 @@ export const ServiceDetailPage = () => {
                     }
                   >
                     <Button className="btn-primary rounded-xl px-6 py-2 text-sm font-bold shadow-lg shadow-brand/20">
-                      Đặt ngay
+                      {t("quick_book")}
                     </Button>
                   </Link>
                 </div>
                 <p className="calendar-selection-note text-xs">
                   {selectedSlot
-                    ? `Lịch đã chọn: ${formatSelectedSlotLabel(selectedSlot)}.`
-                    : "Có thể đặt ngay và chọn lịch bên dưới"}
+                    ? `${tText("Lịch đã chọn:")} ${selectedSlotLabel}.`
+                    : tText("Có thể đặt ngay và chọn lịch bên dưới")}
                 </p>
               </div>
 
@@ -133,9 +155,9 @@ export const ServiceDetailPage = () => {
               ) : (
                 <Card className="empty-state-card">
                   <Panel className="stack-sm">
-                    <Badge tone="danger">Chưa mở lịch</Badge>
-                    <strong>Tháng này chưa có khung giờ khả dụng cho gói bay này.</strong>
-                    <p>Bạn có thể đổi sang tháng khác hoặc liên hệ doanh nghiệp để được hỗ trợ.</p>
+                    <Badge tone="danger">{tText("Chưa mở lịch")}</Badge>
+                    <strong>{tText("Tháng này chưa có khung giờ khả dụng cho gói bay này.")}</strong>
+                    <p>{tText("Bạn có thể đổi sang tháng khác hoặc liên hệ doanh nghiệp để được hỗ trợ.")}</p>
                   </Panel>
                 </Card>
               )}
@@ -150,24 +172,24 @@ export const ServiceDetailPage = () => {
                 className="flex w-full items-center justify-between bg-stone-50 p-6 lg:hidden"
               >
                 <h2 className="flex items-center gap-2 text-xl font-bold">
-                  <Eye className="text-brand" /> Tổng quan
+                  <Eye className="text-brand" /> {tText("Tổng quan")}
                 </h2>
                 <ChevronDown className={`transition-transform ${openSections.includes("overview") ? "rotate-180" : ""}`} />
               </button>
 
               <div className={`${openSections.includes("overview") ? "block" : "hidden"} p-6 lg:block lg:p-0`}>
                 <h2 className="mb-6 hidden items-center gap-2 text-2xl font-bold lg:flex">
-                  <Eye className="text-brand" /> Tổng quan
+                  <Eye className="text-brand" /> {tText("Tổng quan")}
                 </h2>
                 <p className="detail-copy">{serviceDescription}</p>
                 <div className="detail-highlight-grid">
                   <article>
-                    <span>Giá gói</span>
+                    <span>{tText("Giá gói")}</span>
                     <strong>{formatCurrency(servicePackage.price)}</strong>
                   </article>
                   <article>
-                    <span>Đặt lịch</span>
-                    <strong>{formatSelectedSlotLabel(selectedSlot)}</strong>
+                    <span>{tText("Đặt lịch")}</span>
+                    <strong>{selectedSlotLabel}</strong>
                   </article>
                 </div>
               </div>
@@ -180,14 +202,14 @@ export const ServiceDetailPage = () => {
                 className="flex w-full items-center justify-between bg-stone-50 p-6 lg:hidden"
               >
                 <h2 className="flex items-center gap-2 text-xl font-bold">
-                  <CheckCircle2 className="text-emerald-500" /> Dịch vụ đi kèm
+                  <CheckCircle2 className="text-emerald-500" /> {tText("Dịch vụ đi kèm")}
                 </h2>
                 <ChevronDown className={`transition-transform ${openSections.includes("services") ? "rotate-180" : ""}`} />
               </button>
 
               <div className={`${openSections.includes("services") ? "block" : "hidden"} p-6 lg:block lg:p-0`}>
                 <h2 className="mb-6 hidden items-center gap-2 text-2xl font-bold lg:flex">
-                  <CheckCircle2 className="text-emerald-500" /> Dịch vụ đi kèm
+                  <CheckCircle2 className="text-emerald-500" /> {tText("Dịch vụ đi kèm")}
                 </h2>
                 <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-4">
                   {servicePackage.included_features.map((item) => (
@@ -198,7 +220,7 @@ export const ServiceDetailPage = () => {
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
                         <CheckCircle2 size={16} />
                       </div>
-                      <span className="text-sm font-medium text-stone-700">{item.name}</span>
+                      <IncludedFeatureLabel feature={item} />
                     </div>
                   ))}
                 </div>
@@ -212,22 +234,22 @@ export const ServiceDetailPage = () => {
                 className="flex w-full items-center justify-between bg-stone-50 p-6 lg:hidden"
               >
                 <h2 className="flex items-center gap-2 text-xl font-bold">
-                  <AlertCircle className="text-amber-500" /> Lưu ý khi tham gia
+                  <AlertCircle className="text-amber-500" /> {tText("Lưu ý khi tham gia")}
                 </h2>
                 <ChevronDown className={`transition-transform ${openSections.includes("notes") ? "rotate-180" : ""}`} />
               </button>
 
               <div className={`${openSections.includes("notes") ? "block" : "hidden"} p-6 lg:block lg:p-0`}>
                 <h2 className="mb-6 hidden items-center gap-2 text-2xl font-bold lg:flex">
-                  <AlertCircle className="text-amber-500" /> Lưu ý khi tham gia
+                  <AlertCircle className="text-amber-500" /> {tText("Lưu ý khi tham gia")}
                 </h2>
 
                 <ul className="space-y-3 text-stone-600 text-sm list-disc pl-5">
-                  <li>Sức khỏe tốt, không mắc các bệnh về tim mạch, huyết áp.</li>
-                  <li>Cân nặng từ 30kg đến 90kg.</li>
-                  <li>Trang phục gọn gàng, nên đi giày thể thao.</li>
-                  <li>Tuân thủ tuyệt đối hướng dẫn của phi công.</li>
-                  <li>Thời gian bay có thể thay đổi tùy thuộc vào điều kiện sức gió.</li>
+                  <li>{tText("Sức khỏe tốt, không mắc các bệnh về tim mạch, huyết áp.")}</li>
+                  <li>{tText("Cân nặng từ 30kg đến 90kg.")}</li>
+                  <li>{tText("Trang phục gọn gàng, nên đi giày thể thao.")}</li>
+                  <li>{tText("Tuân thủ tuyệt đối hướng dẫn của phi công.")}</li>
+                  <li>{tText("Thời gian bay có thể thay đổi tùy thuộc vào điều kiện sức gió.")}</li>
                 </ul>
               </div>
             </section>

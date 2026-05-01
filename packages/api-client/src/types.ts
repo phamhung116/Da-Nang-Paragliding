@@ -222,7 +222,7 @@ export type BookingCreatePayload = {
   adults: number;
   children: number;
   notes?: string;
-  payment_method: string;
+  payment_method: "gateway";
   pickup_option?: string;
   pickup_address?: string;
   pickup_lat?: number | null;
@@ -254,6 +254,19 @@ export type UpdateProfilePayload = {
   full_name?: string;
   phone?: string;
   preferred_language?: string;
+};
+
+export type LocaleCode = "vi" | "en";
+
+export type TranslatePayload = {
+  q: string[];
+  source?: LocaleCode;
+  target: LocaleCode;
+  format?: "text" | "html";
+};
+
+export type TranslateResult = {
+  translations: string[];
 };
 
 export type ManagedAccountPayload = {

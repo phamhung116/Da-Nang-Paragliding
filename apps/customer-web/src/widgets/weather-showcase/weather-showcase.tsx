@@ -24,6 +24,7 @@ import { routes } from "@/shared/config/routes";
 import { formatDate } from "@/shared/lib/format";
 import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { getWeatherKind } from "@/shared/ui/weather-visual";
 
 type WeatherShowcaseProps = {
@@ -89,6 +90,7 @@ const renderWeatherConditionIcon = (kind: ReturnType<typeof getWeatherKind>) => 
 };
 
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
+  const { locale, tText } = useI18n();
   const forecast = days.filter((day) => day.weather_available).slice(0, WEATHER_FORECAST_DAYS);
   const today = forecast[0];
   const [isForecastOpen, setIsForecastOpen] = useState(false);
@@ -115,6 +117,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
   }
 
   const todayFlightCondition = repairFlightConditionLabel(today.flight_condition);
+  const translatedTodayFlightCondition = tText(todayFlightCondition);
   const todayWeatherKind = getWeatherKind(today);
   const displayTheme = isDark
     ? {
@@ -135,25 +138,25 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
   const stats = [
     {
       icon: <Wind size={22} />,
-      title: "Sức gió",
+      title: tText("Sức gió"),
       value: `${today.wind_kph} km/h`,
       iconClass: "text-rose-400"
     },
     {
       icon: <Sun size={22} />,
-      title: "Chỉ số UV",
+      title: tText("Chỉ số UV"),
       value: `${today.uv_index}`,
       iconClass: "text-amber-400"
     },
     {
       icon: <Thermometer size={22} />,
-      title: "Nhiệt độ",
+      title: tText("Nhiệt độ"),
       value: `${today.temperature_c}°C`,
       iconClass: "text-sky-400"
     },
     {
       icon: <Eye size={22} />,
-      title: "Tầm nhìn",
+      title: tText("Tầm nhìn"),
       value: `${today.visibility_km} km`,
       iconClass: "text-yellow-500"
     }
@@ -166,7 +169,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
           <div className={`border-b p-6 md:p-8 lg:border-b-0 lg:border-r xl:p-10 ${displayTheme.divider}`}>
             <div className="flex flex-col gap-4 border-b border-stone-100 pb-6 md:flex-row md:items-start md:justify-between">
               <div>
-                <h2 className="text-3xl font-extrabold tracking-tight md:text-[2.25rem]">Thời tiết hôm nay</h2>
+                <h2 className="text-3xl font-extrabold tracking-tight md:text-[2.25rem]">{tText("Thời tiết hôm nay")}</h2>
                 <div className={`mt-3 flex flex-wrap items-center gap-3 text-sm font-medium ${displayTheme.muted}`}>
                   <span className="inline-flex items-center gap-2">
                     <CalendarDays size={16} className="text-rose-500" />
@@ -175,14 +178,14 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                       day: "2-digit",
                       month: "2-digit",
                       year: "numeric"
-                    })}
+                    }, locale)}
                   </span>
-                  <span className="text-2xl font-semibold italic text-[#c66352]">Sơn Trà</span>
+                  <span className="text-2xl font-semibold italic text-[#c66352]">{tText("Sơn Trà")}</span>
                 </div>
               </div>
 
               <div className={`inline-flex rounded-full border px-4 py-3 text-sm font-semibold ${getConditionCardClasses(today.flight_condition)}`}>
-                <span>Điều kiện bay: {todayFlightCondition}</span>
+                <span>{tText("Điều kiện bay:")} {translatedTodayFlightCondition}</span>
               </div>
             </div>
 
@@ -207,7 +210,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 <div className="relative h-52 overflow-hidden md:h-full">
                   <img
                     src="/media/img/anh21.jpg"
-                    alt="Bay dù lượn tại Sơn Trà"
+                    alt={tText("Bay dù lượn tại Sơn Trà")}
                     className="h-full w-full object-cover"
                     referrerPolicy="no-referrer"
                   />
@@ -219,9 +222,9 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-end gap-3">
                         <strong className="text-4xl font-extrabold leading-none text-stone-900 md:text-5xl">{today.temperature_c}°C</strong>
-                        <span className="pb-1 text-lg font-semibold text-stone-800">{today.weather_condition || "Đang cập nhật"}</span>
+                        <span className="pb-1 text-lg font-semibold text-stone-800">{today.weather_condition ? tText(today.weather_condition) : tText("Đang cập nhật")}</span>
                       </div>
-                      <p className="mt-3 max-w-lg text-base leading-7 text-stone-600">{getConditionSummary(today.flight_condition)}</p>
+                      <p className="mt-3 max-w-lg text-base leading-7 text-stone-600">{tText(getConditionSummary(today.flight_condition))}</p>
                     </div>
                     <div className="hidden rounded-2xl bg-white/80 p-3 shadow-sm md:block">
                       {renderWeatherConditionIcon(todayWeatherKind)}
@@ -231,7 +234,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Link to={routes.services} className="sm:flex-1">
                       <Button className="btn-primary flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-bold shadow-lg shadow-brand/20">
-                        Đặt lịch ngay
+                        {tText("Đặt lịch ngay")}
                         <MoveRight size={16} />
                       </Button>
                     </Link>
@@ -242,7 +245,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
 
             <div className={`mt-5 inline-flex items-center gap-2 text-sm font-medium ${displayTheme.muted}`}>
               <ShieldCheck size={18} className="text-emerald-500" />
-              An toàn là ưu tiên hàng đầu của chúng tôi
+              {tText("An toàn là ưu tiên hàng đầu của chúng tôi")}
             </div>
           </div>
 
@@ -251,7 +254,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
               className="mb-6 flex cursor-pointer items-center justify-between md:mb-8 md:cursor-default"
               onClick={() => setIsForecastOpen(!isForecastOpen)}
             >
-              <h3 className="text-lg font-bold md:text-xl">Dự báo thời tiết</h3>
+              <h3 className="text-lg font-bold md:text-xl">{tText("Dự báo thời tiết")}</h3>
               <ChevronDown
                 size={20}
                 className={`text-stone-400 transition-transform duration-300 md:hidden ${isForecastOpen ? "rotate-180" : ""}`}
@@ -276,12 +279,12 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                             weekday: "long",
                             day: "2-digit",
                             month: "2-digit"
-                          })}
+                          }, locale)}
                         </span>
                         <span
                           className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none md:text-[11px] ${getConditionCardClasses(item.flight_condition)}`}
                         >
-                          {repairFlightConditionLabel(item.flight_condition)}
+                          {tText(repairFlightConditionLabel(item.flight_condition))}
                         </span>
                       </div>
                     </div>

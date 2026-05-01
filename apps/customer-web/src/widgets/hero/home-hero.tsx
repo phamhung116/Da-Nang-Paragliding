@@ -1,19 +1,21 @@
 import { Link } from "react-router-dom";
 import { Button } from "@paragliding/ui";
 import { useI18n } from "@/shared/providers/i18n-provider";
+import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
 import { motion } from 'motion/react';
 
 export const HomeHero = () => {
-  const { t } = useI18n();
+  const { t, tText } = useI18n();
+  const intro = useTranslatedText(businessInfo.intro);
 
   return (
     <section className="relative mt-20 flex h-[calc(90vh-5rem)] items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src="/media/img/banner.png"
-          alt="Dù lượn tại Đà Nẵng"
+          alt={tText("Dù lượn tại Đà Nẵng")}
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
@@ -35,7 +37,7 @@ export const HomeHero = () => {
             <span className="text-white">{t("hero_title_line_2")}</span>
           </h1>
           <p className="text-sm md:text-lg text-stone-200 mb-8 md:mb-10 leading-relaxed max-w-md md:max-w-none">
-            {businessInfo.intro}
+            {intro}
           </p>
           <div className="flex flex-wrap gap-3 md:gap-4">
             <Link to={routes.services}>

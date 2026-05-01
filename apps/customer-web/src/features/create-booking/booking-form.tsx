@@ -8,7 +8,9 @@ import { customerApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
 import { serviceQueryOptions } from "@/shared/lib/query-options";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
+import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { PickupLocationMap } from "./pickup-location-map";
 
 type BookingFormProps = {
@@ -21,30 +23,14 @@ type BookingSubmitForm = BookingCreatePayload & {
   agree_terms: boolean;
 };
 
-const paymentOptions = [
-  {
-    value: "wallet",
-    title: "QR ví điện tử",
-    description: "Thanh toán đặt cọc online bằng QR.",
-  },
-  {
-    value: "gateway",
-    title: "QR cổng thanh toán",
-    description: "Thanh toán online và nhận xác nhận đặt lịch ngay sau khi trả cọc.",
-  },
-  {
-    value: "bank_transfer",
-    title: "QR chuyển khoản",
-    description: "Hiển thị QR và nội dung chuyển khoản theo mã đặt lịch.",
-  },
-] as const;
-
 const PICKUP_FEE = 50000;
 const DEPOSIT_PERCENT = 40;
+const PAYOS_PAYMENT_METHOD = "gateway";
 
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
   const { account } = useAuth();
+  const { tText } = useI18n();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [pickupPoint, setPickupPoint] = useState<PickupLocation | null>(null);
   const [pickupConfirmed, setPickupConfirmed] = useState(false);
@@ -69,7 +55,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
       adults: 1,
       children: 0,
       notes: "",
-      payment_method: "bank_transfer",
+      payment_method: PAYOS_PAYMENT_METHOD,
       pickup_option: "self",
       pickup_address: "",
       pickup_lat: null,
@@ -91,7 +77,6 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
     setResolvedPickupAddress("");
   }, [defaultValues, reset]);
 
-  const paymentMethod = watch("payment_method");
   const pickupOption = watch("pickup_option");
   const pickupAddress = watch("pickup_address") ?? "";
   const trimmedPickupAddress = pickupAddress.trim();
@@ -106,7 +91,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
   const mutation = useMutation({
     mutationFn: ({ agree_terms: _, ...payload }: BookingSubmitForm) => customerApi.createBooking(payload),
     onSuccess: (result) => {
-      setSuccessMessage(`Đặt lịch thành công. Mã đặt lịch ${result.booking.code}. Đang chuyển sang bước thanh toán đặt cọc...`);
+      setSuccessMessage(`${tText("Đặt lịch thành công. Mã đặt lịch")} ${result.booking.code}. ${tText("Đang chuyển sang bước thanh toán đặt cọc...")}`);
       checkoutStorage.set(result);
       trackingLookupStorage.set(account?.email ?? account?.phone ?? "");
       window.setTimeout(() => navigate("/checkout"), 900);
@@ -162,7 +147,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
     }
   }, [pickupAddress, pickupOption, resolvedPickupAddress, setValue]);
 
-  const serviceName = servicePackage?.name ?? serviceSlug;
+  const serviceName = useTranslatedText(servicePackage?.name ?? serviceSlug);
   const pickupNeedsConfirmation = pickupOption === "pickup";
   const pickupReady = !pickupNeedsConfirmation || Boolean(pickupConfirmed && pickupPoint);
 
@@ -200,47 +185,47 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
 
       <Card>
         <Panel className="booking-summary-card">
-          <h3>Tóm tắt đặt lịch</h3>
+          <h3>{tText("Tóm tắt đặt lịch")}</h3>
           <div className="booking-summary-card__fact">
-            <span>Dịch vụ</span>
+            <span>{tText("Dịch vụ")}</span>
             <strong>{serviceName}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Ngày bay</span>
+            <span>{tText("Ngày bay")}</span>
             <strong>{selectedDate}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Khung giờ</span>
+            <span>{tText("Khung giờ")}</span>
             <strong>{selectedTime}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Giá trị tour</span>
+            <span>{tText("Giá trị tour")}</span>
             <strong>{formatCurrency(tourTotal)}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Xe đón</span>
-            <strong>{pickupFee ? formatCurrency(pickupFee) : "Tự đến"}</strong>
+            <span>{tText("Xe đón")}</span>
+            <strong>{pickupFee ? formatCurrency(pickupFee) : tText("Tự đến")}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Tổng giá trị</span>
+            <span>{tText("Tổng giá trị")}</span>
             <strong>{formatCurrency(finalTotal)}</strong>
           </div>
           <div className="booking-summary-card__fact">
-            <span>Cần trả trước</span>
+            <span>{tText("Cần trả trước")}</span>
             <strong>{formatCurrency(depositAmount)}</strong>
           </div>
           {servicePackage?.included_features.length ? (
             <div className="booking-summary-card__features">
-              <span>Dịch vụ đi kèm</span>
+              <span>{tText("Dịch vụ đi kèm")}</span>
               <ul>
                 {servicePackage.included_features.map((feature) => (
-                  <li key={feature.id}>{feature.name}</li>
+                  <li key={feature.id}>{tText(feature.name)}</li>
                 ))}
               </ul>
             </div>
           ) : null}
           <p className="booking-summary-card__note">
-            Tiền trả trước gồm {DEPOSIT_PERCENT}% giá trị tour và phí xe đón nếu khách chọn xe đến đón.
+            {tText("Tiền trả trước gồm")} {DEPOSIT_PERCENT}% {tText("giá trị tour và phí xe đón nếu khách chọn xe đến đón.")}
           </p>
         </Panel>
       </Card>
@@ -248,18 +233,19 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
       <Card>
         <Panel className="stack">
           <form className="booking-form-grid" onSubmit={handleSubmit((values) => mutation.mutate(values))}>
+            <input type="hidden" value={PAYOS_PAYMENT_METHOD} {...register("payment_method")} />
             <input type="hidden" {...register("pickup_lat", { valueAsNumber: true })} />
             <input type="hidden" {...register("pickup_lng", { valueAsNumber: true })} />
 
             <div className="booking-form-grid__cols">
-              <Field label="Họ và tên">
+              <Field label={tText("Họ và tên")}>
                 {accountNeedsContactDetails ? (
                   <Input {...register("customer_name", { required: true })} />
                 ) : (
                   <Input value={account?.full_name ?? ""} disabled readOnly />
                 )}
               </Field>
-              <Field label="Số điện thoại">
+              <Field label={tText("Số điện thoại")}>
                 {accountNeedsContactDetails ? (
                   <Input {...register("phone", { required: true })} />
                 ) : (
@@ -272,48 +258,48 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <Field label="Email">
                 <Input type="email" value={account?.email ?? ""} disabled readOnly />
               </Field>
-              <Field label="Số người lớn">
+              <Field label={tText("Số người lớn")}>
                 <Input type="number" min={0} {...register("adults", { valueAsNumber: true })} />
               </Field>
             </div>
 
             <div className="booking-form-grid__cols">
-              <Field label="Số trẻ em">
+              <Field label={tText("Số trẻ em")}>
                 <Input type="number" min={0} {...register("children", { valueAsNumber: true })} />
               </Field>
-              <Field label="Ghi chú">
+              <Field label={tText("Ghi chú")}>
                 <Textarea {...register("notes")} />
               </Field>
             </div>
 
             <div className="stack-sm">
-              <strong>Di chuyển đến điểm bay</strong>
+              <strong>{tText("Di chuyển đến điểm bay")}</strong>
               <div className="payment-options payment-options--pickup">
                 <label className={`payment-option ${pickupOption !== "pickup" ? "is-active" : ""}`}>
                   <input type="radio" value="self" {...register("pickup_option")} />
-                  <strong>Tự đến điểm hẹn</strong>
-                  <span>Khách tự di chuyển đến khu vực Chùa Bửu Đài Sơn.</span>
+                  <strong>{tText("Tự đến điểm hẹn")}</strong>
+                  <span>{tText("Khách tự di chuyển đến khu vực Chùa Bửu Đài Sơn.")}</span>
                 </label>
                 <label className={`payment-option ${pickupOption === "pickup" ? "is-active" : ""}`}>
                   <input type="radio" value="pickup" {...register("pickup_option")} />
-                  <strong>Xe đến đón</strong>
-                  <span>Cộng thêm 50.000 VND vào tiền trả trước.</span>
+                  <strong>{tText("Xe đến đón")}</strong>
+                  <span>{tText("Cộng thêm 50.000 VND vào tiền trả trước.")}</span>
                 </label>
               </div>
 
               {pickupOption === "pickup" ? (
                 <div className="stack-sm">
-                  <Field label="Địa chỉ đón">
+                  <Field label={tText("Địa chỉ đón")}>
                     <div className="pickup-address-picker">
                       <Input
                         autoComplete="street-address"
-                        placeholder="Nhập khách sạn, homestay, số nhà tại Đà Nẵng"
+                        placeholder={tText("Nhập khách sạn, homestay, số nhà tại Đà Nẵng")}
                         {...register("pickup_address", {
-                          required: pickupOption === "pickup" ? "Nhập địa chỉ đón." : false,
+                          required: pickupOption === "pickup" ? tText("Nhập địa chỉ đón.") : false,
                         })}
                       />
                       {!pickupConfirmed && resolvedPickupAddress !== trimmedPickupAddress && pickupSuggestionsQuery.isFetching ? (
-                        <div className="pickup-address-picker__hint">Đang tìm gợi ý gần Đà Nẵng...</div>
+                        <div className="pickup-address-picker__hint">{tText("Đang tìm gợi ý gần Đà Nẵng...")}</div>
                       ) : null}
                       {!pickupConfirmed && resolvedPickupAddress !== trimmedPickupAddress && pickupSuggestionsQuery.data?.length ? (
                         <div className="pickup-address-picker__list">
@@ -340,9 +326,9 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
                       disabled={pickupLookupMutation.isPending || !trimmedPickupAddress}
                       onClick={() => pickupLookupMutation.mutate(trimmedPickupAddress)}
                     >
-                      {pickupLookupMutation.isPending ? "Đang định vị..." : "Dùng địa chỉ này"}
+                      {pickupLookupMutation.isPending ? tText("Đang định vị...") : tText("Dùng địa chỉ này")}
                     </Button>
-                    {pickupConfirmed ? <span className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">Đã xác nhận điểm đón</span> : null}
+                    {pickupConfirmed ? <span className="rounded-full bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-700">{tText("Đã xác nhận điểm đón")}</span> : null}
                   </div>
 
                   {pickupLookupMutation.error instanceof Error ? (
@@ -352,7 +338,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
                   {pickupPoint ? (
                     <div className="stack-sm rounded-2xl border border-stone-200 bg-stone-50 p-4">
                       <p className="m-0 text-sm text-stone-600">
-                        Chọn đúng ghim như app gọi xe. Nếu cần, bấm vào bản đồ để chỉnh lại vị trí rồi xác nhận điểm đón.
+                        {tText("Chọn đúng ghim như app gọi xe. Nếu cần, bấm vào bản đồ để chỉnh lại vị trí rồi xác nhận điểm đón.")}
                       </p>
                       <PickupLocationMap point={pickupPoint} onChange={handlePickupMapChange} />
                       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -360,7 +346,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
                           {pickupPoint.lat.toFixed(6)}, {pickupPoint.lng.toFixed(6)}
                         </span>
                         <Button type="button" onClick={confirmPickupPoint}>
-                          Xác nhận điểm đón
+                          {tText("Xác nhận điểm đón")}
                         </Button>
                       </div>
                     </div>
@@ -370,34 +356,31 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
 
               {formState.errors.pickup_address ? <p className="form-error">{formState.errors.pickup_address.message}</p> : null}
               {pickupNeedsConfirmation && !pickupReady ? (
-                <p className="form-error">Hãy hiển thị và xác nhận điểm đón trên bản đồ.</p>
+                <p className="form-error">{tText("Hãy hiển thị và xác nhận điểm đón trên bản đồ.")}</p>
               ) : null}
             </div>
 
             <div className="stack-sm">
-              <strong>Phương thức thanh toán</strong>
+              <strong>{tText("Phương thức thanh toán")}</strong>
               <div className="payment-options">
-                {paymentOptions.map((option) => (
-                  <label key={option.value} className={`payment-option ${paymentMethod === option.value ? "is-active" : ""}`}>
-                    <input type="radio" value={option.value} {...register("payment_method")} />
-                    <strong>{option.title}</strong>
-                    <span>{option.description}</span>
-                  </label>
-                ))}
+                <div className="payment-option is-active">
+                  <strong>{tText("payOS")}</strong>
+                  <span>{tText("Thanh toán đặt cọc qua payOS bằng QR hoặc cổng thanh toán.")}</span>
+                </div>
               </div>
             </div>
 
             <label className="terms-check">
               <input type="checkbox" {...register("agree_terms", { required: true })} />
-              <span>Tôi đồng ý điều khoản bay, điều kiện sức khỏe và chính sách hoàn hủy lịch đặt của doanh nghiệp.</span>
+              <span>{tText("Tôi đồng ý điều khoản bay, điều kiện sức khỏe và chính sách hoàn hủy lịch đặt của doanh nghiệp.")}</span>
             </label>
 
             {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 
             <div className="booking-form-actions">
-              <p>Thông tin liên hệ được lấy từ tài khoản. Nếu cần chỉnh sửa, hãy cập nhật trong trang tài khoản.</p>
+              <p>{tText("Thông tin liên hệ được lấy từ tài khoản. Nếu cần chỉnh sửa, hãy cập nhật trong trang tài khoản.")}</p>
               <Button disabled={mutation.isPending || !formState.isValid || !pickupReady}>
-                {mutation.isPending ? "Đang gửi đặt lịch..." : "Xác nhận đặt lịch"}
+                {mutation.isPending ? tText("Đang gửi đặt lịch...") : tText("Xác nhận đặt lịch")}
               </Button>
             </div>
           </form>

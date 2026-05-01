@@ -97,7 +97,7 @@ class Command(BaseCommand):
                     adults=2,
                     children=0,
                     notes="Muốn giữ lịch bay buổi sáng.",
-                    payment_method="cash",
+                    payment_method="gateway",
                 )
             )
 
@@ -121,7 +121,7 @@ class Command(BaseCommand):
                     adults=2,
                     children=1,
                     notes="Đặt lịch cho nhóm gia đình.",
-                    payment_method="cash",
+                    payment_method="gateway",
                 )
             )
             review_booking_use_case().execute(

@@ -7,7 +7,6 @@ from modules.bookings.domain.repositories import BookingRepository
 from modules.bookings.domain.value_objects import (
     BOOKING_APPROVAL_CONFIRMED,
     FLIGHT_STATUS_WAITING,
-    PAYMENT_METHOD_CASH,
     PAYMENT_STATUS_EXPIRED,
     PAYMENT_STATUS_FAILED,
     PAYMENT_STATUS_PAID,
@@ -35,8 +34,6 @@ class CompleteOnlinePaymentUseCase:
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
-        if booking.payment_method == PAYMENT_METHOD_CASH:
-            raise ValidationError("Lịch đặt này sử dụng thanh toán tiền mặt.")
         if booking.payment_status == PAYMENT_STATUS_PAID:
             transaction = self.payment_transaction_repository.get_by_booking_code(booking_code)
             return {"booking": booking, "transaction": transaction}

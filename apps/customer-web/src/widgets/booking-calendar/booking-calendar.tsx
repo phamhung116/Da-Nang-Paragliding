@@ -70,7 +70,7 @@ export const BookingCalendar = ({
   onSelectSlot,
   weatherAside = false
 }: BookingCalendarProps) => {
-  const { locale } = useI18n();
+  const { locale, tText } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<SelectedSlot>(selectedSlot);
   const [showMonthMenu, setShowMonthMenu] = useState(false);
   const [showYearMenu, setShowYearMenu] = useState(false);
@@ -240,33 +240,33 @@ export const BookingCalendar = ({
         <>
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-bold uppercase text-stone-400">
-              Dự báo {activeSlot ? `${activeSlot} - ` : ""}Ngày {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
+              {tText("Dự báo")} {activeSlot ? `${activeSlot} - ` : ""}{tText("Ngày")} {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
             </span>
             <Sun size={15} className="text-yellow-500" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-end gap-2">
               <span className="text-xl font-bold">{weather.temp}°C</span>
-              <span className="pb-0.5 text-[10px] font-medium text-stone-600">{weather.condition}</span>
+              <span className="pb-0.5 text-[10px] font-medium text-stone-600">{tText(weather.condition)}</span>
             </div>
             <div className="flex flex-col justify-center">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Điều kiện bay</span>
-              <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Điều kiện bay")}</span>
+              <span className="text-xs font-bold text-emerald-600">{tText(weather.flight)}</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 border-t border-stone-200 pt-2">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Sức gió</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Sức gió")}</span>
               <span className="text-xs font-bold">{weather.wind} km/h</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Chỉ số UV</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Chỉ số UV")}</span>
               <span className="text-xs font-bold">{weather.uv}</span>
             </div>
           </div>
         </>
       ) : (
-        <p className="text-xs text-stone-500">Chưa có dữ liệu thời tiết cho lịch bay này</p>
+        <p className="text-xs text-stone-500">{tText("Chưa có dữ liệu thời tiết cho lịch bay này")}</p>
       )}
     </div>
   );
@@ -392,7 +392,7 @@ export const BookingCalendar = ({
                     <table className={`w-full table-fixed border-collapse ${tableMinWidth}`}>
                       <thead>
                         <tr>
-                          <th className={`${timeHeaderWidth} p-1`} aria-label="Khung gio" />
+                          <th className={`${timeHeaderWidth} p-1`} aria-label={tText("Khung giờ")} />
                           {activePage.map((day) => {
                             const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
                             return (
@@ -469,19 +469,19 @@ export const BookingCalendar = ({
                   </div>
                 </div>
               ) : (
-                <div className="calendar-empty">Chua co du lieu kha dung cho thang nay.</div>
+                <div className="calendar-empty">{tText("Chưa có dữ liệu khả dụng cho tháng này.")}</div>
               )}
 
               <div className="flex items-center justify-between border-t border-stone-100 pt-2 text-[10px] text-stone-400">
                 <div className="flex items-center gap-1">
                   <div className="h-2 w-2 rounded-sm border-2 border-stone-300 bg-white" />
-                  <span>Trong</span>
+                  <span>{tText("Trống")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="flex h-2 w-2 items-center justify-center rounded-sm border-2 border-stone-300 bg-stone-100">
                     <X size={8} />
                   </div>
-                  <span>Da day</span>
+                  <span>{tText("Đã đầy")}</span>
                 </div>
               </div>
             </div>

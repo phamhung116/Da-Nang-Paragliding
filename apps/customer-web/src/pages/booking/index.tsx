@@ -3,6 +3,7 @@ import { useQueries } from "@tanstack/react-query";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { useAuth } from "@/shared/providers/auth-provider";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { bookingRules } from "@/shared/constants/customer-content";
 import { routes } from "@/shared/config/routes";
 import { BookingForm } from "@/features/create-booking/booking-form";
@@ -22,6 +23,7 @@ export const BookingPage = () => {
   const [params] = useSearchParams();
   const location = useLocation();
   const { isAuthenticated } = useAuth();
+  const { tText } = useI18n();
   const initialService = params.get("service") ?? "";
   const initialDate = params.get("date") ?? "";
   const initialTime = params.get("time") ?? "";
@@ -69,10 +71,10 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Thieu thong tin dat lich</Badge>
-            <h2 className="detail-title">Hay chon mot goi dich vu truoc khi dat lich.</h2>
+            <Badge tone="danger">{tText("Thiếu thông tin đặt lịch")}</Badge>
+            <h2 className="detail-title">{tText("Hãy chọn một gói dịch vụ trước khi đặt lịch.")}</h2>
             <Link to={routes.services}>
-              <Button variant="secondary">Quay lai danh sach dich vu</Button>
+              <Button variant="secondary">{tText("Quay lại danh sách dịch vụ")}</Button>
             </Link>
           </Container>
         </section>
@@ -85,13 +87,13 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge>Bat buoc dang nhap</Badge>
-            <h2 className="detail-title">Dang nhap de tiep tuc dat lich</h2>
+            <Badge>{tText("Bắt buộc đăng nhập")}</Badge>
+            <h2 className="detail-title">{tText("Đăng nhập để tiếp tục đặt lịch")}</h2>
             <p className="detail-copy">
-              He thong se tu dong dien email, so dien thoai va luu lich su dat lich vao tai khoan cua ban.
+              {tText("Hệ thống sẽ tự động điền email, số điện thoại và lưu lịch sử đặt lịch vào tài khoản của bạn.")}
             </p>
             <Link to={`${routes.login}?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}>
-              <Button>Dang nhap ngay</Button>
+              <Button>{tText("Đăng nhập ngay")}</Button>
             </Link>
           </Container>
         </section>
@@ -105,19 +107,19 @@ export const BookingPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Thong tin hanh khach</Badge>
-              <h2>Hoan tat bieu mau dat lich</h2>
+              <Badge>{tText("Thông tin hành khách")}</Badge>
+              <h2>{tText("Hoàn tất biểu mẫu đặt lịch")}</h2>
             </div>
-            <p>Khach co the doi ngay, khung gio va xem weather theo gio bang overlay ngay tren o lich dang hover.</p>
+            <p>{tText("Khách có thể đổi ngày, khung giờ và xem thời tiết theo giờ bằng overlay ngay trên ô lịch đang hover.")}</p>
           </div>
 
           <Card>
             <Panel className="stack">
               <div className="booking-section-head">
                 <div>
-                  <Badge>Chon lai lich neu can</Badge>
-                  <h3>Lich bay va weather theo gio</h3>
-                  <p>O trong co the dat. O X da het phi cong hoac bi khoa. Lich chi hien thi tu ngay hien tai tro di.</p>
+                  <Badge>{tText("Chọn lại lịch nếu cần")}</Badge>
+                  <h3>{tText("Lịch bay và thời tiết theo giờ")}</h3>
+                  <p>{tText("Ô trống có thể đặt. Ô X đã hết phi công hoặc bị khóa. Lịch chỉ hiển thị từ ngày hiện tại trở đi.")}</p>
                 </div>
               </div>
               <BookingCalendar
@@ -136,8 +138,8 @@ export const BookingPage = () => {
             {bookingRules.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Quy tac dat lich</strong>
-                  <p>{item}</p>
+                  <strong>{tText("Quy tắc đặt lịch")}</strong>
+                  <p>{tText(item)}</p>
                 </Panel>
               </Card>
             ))}
@@ -152,9 +154,9 @@ export const BookingPage = () => {
           ) : (
             <Card>
               <Panel className="calendar-selection-card">
-                <Badge tone="danger">Chua chon khung gio</Badge>
-                <strong>Hay chon mot o con trong tren lich truoc khi dien bieu mau dat lich.</strong>
-                <small>Thong tin thoi tiet theo gio se hien dang overlay ngay tren o lich khi tro vao tung khung gio.</small>
+                <Badge tone="danger">{tText("Chưa chọn khung giờ")}</Badge>
+                <strong>{tText("Hãy chọn một ô còn trống trên lịch trước khi điền biểu mẫu đặt lịch.")}</strong>
+                <small>{tText("Thông tin thời tiết theo giờ sẽ hiện dạng overlay ngay trên ô lịch khi trỏ vào từng khung giờ.")}</small>
               </Panel>
             </Card>
           )}

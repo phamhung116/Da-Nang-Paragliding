@@ -3,6 +3,8 @@ export const businessInfo = {
   shortName: "Dù lượn Đà Nẵng",
   phone: "+84 909 000 123",
   secondaryPhone: "+84 236 000 123",
+  zaloPhone: "0982194635",
+  zaloUrl: "https://zalo.me/0982194635",
   email: "info@danangparagliding.vn",
   address: "Công viên Biển Đông, đường Võ Nguyên Giáp, phường Phước Mỹ, Sơn Trà, Đà Nẵng",
   intro:
