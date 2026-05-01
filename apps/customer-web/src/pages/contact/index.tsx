@@ -72,7 +72,7 @@ export const ContactPage = () => (
               ))}
             </div>
             <div className="flex gap-3">
-              <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://www.facebook.com/profile.php?id=100064087207931"><FaFacebook /></a></div>
+              <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand text-white transition-colors cursor-pointer"><a href="https://www.facebook.com/profile.php?id=100064087207931"><FaFacebook /></a></div>
               <div className="w-10 h-10 rounded-full bg-stone-800 flex items-center justify-center hover:bg-brand transition-colors cursor-pointer"><a href="https://zalo.me/0935101188" className="flex items-center justify-center w-full h-full"><img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{width: "50%"}}/></a></div>
             </div>
           </div>

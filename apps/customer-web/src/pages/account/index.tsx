@@ -79,14 +79,6 @@ export const AccountPage = () => {
     <SiteLayout>
       <section className="section">
         <Container className="stack">
-          <div className="section-heading">
-            <div>
-              <Badge>Tài khoản</Badge>
-              <h2>Quản lý thông tin cá nhân và lịch sử đặt lịch</h2>
-            </div>
-            <p>Khách hàng có thể cập nhật thông tin liên hệ để lần đặt lịch sau được điền nhanh và chính xác hơn.</p>
-          </div>
-
           <div className="account-layout">
             <Card>
               <Panel className="stack">

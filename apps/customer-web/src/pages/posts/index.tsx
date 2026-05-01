@@ -23,7 +23,7 @@ export const PostsPage = () => {
         <Banner 
           title="Tin tức & Hoạt động" 
           subtitle="Cập nhật những thông tin mới nhất về hoạt động bay dù lượn tại Đà Nẵng."
-          image="https://images.unsplash.com/photo-1544625344-63189df1e401?auto=format&fit=crop&q=80&w=1920"
+          image="https://images.unsplash.com/photo-1596263576925-d90d63691097?auto=format&fit=crop&q=80&w=1920"
         />
 
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

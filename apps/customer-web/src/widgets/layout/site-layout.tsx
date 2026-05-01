@@ -282,7 +282,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </div>
 
             <div className="mt-16 border-t border-stone-800 pt-8 text-center text-xs text-stone-500">
-              © 2024 Dù lượn Đà Nẵng. Bảo lưu mọi quyền.
+              Copyright © 2024 Da Nang Paragliding.
             </div>
           </div>
         </footer>
