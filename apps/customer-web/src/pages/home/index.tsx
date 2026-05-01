@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
@@ -58,8 +58,13 @@ const toYouTubeEmbedUrl = (value: string) => {
 };
 
 export const HomePage = () => {
+  const videoSectionRef = useRef<HTMLDivElement | null>(null);
+  const [videoInView, setVideoInView] = useState(false);
   const video1YoutubeWatchUrl = "https://www.youtube.com/watch?v=r8uhrlAQ-Tk";
-  const video1YoutubeEmbedUrl = toYouTubeEmbedUrl(video1YoutubeWatchUrl);
+  const video1YoutubeEmbedUrl = useMemo(() => {
+    const baseUrl = toYouTubeEmbedUrl(video1YoutubeWatchUrl);
+    return videoInView ? baseUrl : baseUrl.replace("&autoplay=1", "&autoplay=0");
+  }, [video1YoutubeWatchUrl, videoInView]);
   const { data: services = [] } = useQuery({
     ...servicesQueryOptions()
   });
@@ -79,6 +84,24 @@ export const HomePage = () => {
 
   const forecast = useMemo(() => forecastQueries.flatMap((query) => query.data ?? []), [forecastQueries]);
   const upcomingForecast = useMemo(() => getUpcomingWeatherDays(forecast, today), [forecast, today]);
+
+  useEffect(() => {
+    if (!videoSectionRef.current) {
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setVideoInView(entry.isIntersecting && entry.intersectionRatio >= 0.6);
+      },
+      {
+        threshold: [0, 0.25, 0.6, 1]
+      }
+    );
+
+    observer.observe(videoSectionRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <SiteLayout>
@@ -199,7 +222,7 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="mx-auto max-w-[96rem] px-0 pb-12 sm:px-4 md:px-6 md:pb-20 lg:px-8">
+        <section ref={videoSectionRef} className="mx-auto max-w-[96rem] px-0 pb-12 sm:px-4 md:px-6 md:pb-20 lg:px-8">
           <div className="group relative mx-auto aspect-video max-w-7xl overflow-hidden shadow-2xl md:rounded-[40px]">
             <iframe
               src={video1YoutubeEmbedUrl}

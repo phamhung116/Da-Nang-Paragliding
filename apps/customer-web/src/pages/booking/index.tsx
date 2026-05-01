@@ -69,10 +69,10 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge tone="danger">Thiếu thông tin đặt lịch</Badge>
-            <h2 className="detail-title">Hãy chọn một gói dịch vụ trước khi đặt lịch.</h2>
+            <Badge tone="danger">Thieu thong tin dat lich</Badge>
+            <h2 className="detail-title">Hay chon mot goi dich vu truoc khi dat lich.</h2>
             <Link to={routes.services}>
-              <Button variant="secondary">Quay lại danh sách dịch vụ</Button>
+              <Button variant="secondary">Quay lai danh sach dich vu</Button>
             </Link>
           </Container>
         </section>
@@ -85,13 +85,13 @@ export const BookingPage = () => {
       <SiteLayout>
         <section className="section">
           <Container className="stack">
-            <Badge>Bắt buộc đăng nhập</Badge>
-            <h2 className="detail-title">Đăng nhập để tiếp tục đặt lịch</h2>
+            <Badge>Bat buoc dang nhap</Badge>
+            <h2 className="detail-title">Dang nhap de tiep tuc dat lich</h2>
             <p className="detail-copy">
-              Hệ thống sẽ tự động điền email, số điện thoại và lưu lịch sử đặt lịch vào tài khoản của bạn.
+              He thong se tu dong dien email, so dien thoai va luu lich su dat lich vao tai khoan cua ban.
             </p>
             <Link to={`${routes.login}?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}>
-              <Button>Đăng nhập ngay</Button>
+              <Button>Dang nhap ngay</Button>
             </Link>
           </Container>
         </section>
@@ -105,19 +105,19 @@ export const BookingPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Thông tin hành khách</Badge>
-              <h2>Hoàn tất biểu mẫu đặt lịch</h2>
+              <Badge>Thong tin hanh khach</Badge>
+              <h2>Hoan tat bieu mau dat lich</h2>
             </div>
-            <p>Khách có thể đổi ngày, khung giờ và xem weather theo giờ ngay trên màn hình đặt lịch.</p>
+            <p>Khach co the doi ngay, khung gio va xem weather theo gio ngay phia tren khu vuc chon lich.</p>
           </div>
 
           <Card>
             <Panel className="stack">
               <div className="booking-section-head">
                 <div>
-                  <Badge>Chọn lại lịch nếu cần</Badge>
-                  <h3>Lịch bay và weather theo giờ</h3>
-                  <p>Ô trống có thể đặt. Ô X đã hết phi công hoặc bị khóa do điều kiện bay.</p>
+                  <Badge>Chon lai lich neu can</Badge>
+                  <h3>Lich bay va weather theo gio</h3>
+                  <p>O trong co the dat. O X da het phi cong, bi khoa hoac la ngay da qua.</p>
                 </div>
               </div>
               <BookingCalendar
@@ -136,7 +136,7 @@ export const BookingPage = () => {
             {bookingRules.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Quy tắc đặt lịch</strong>
+                  <strong>Quy tac dat lich</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -152,9 +152,9 @@ export const BookingPage = () => {
           ) : (
             <Card>
               <Panel className="calendar-selection-card">
-                <Badge tone="danger">Chưa chọn khung giờ</Badge>
-                <strong>Hãy chọn một ô còn trống trên lịch trước khi điền biểu mẫu đặt lịch.</strong>
-                <small>Thông tin thời tiết theo giờ sẽ hiện ngay bên dưới lịch khi trỏ vào từng khung giờ.</small>
+                <Badge tone="danger">Chua chon khung gio</Badge>
+                <strong>Hay chon mot o con trong tren lich truoc khi dien bieu mau dat lich.</strong>
+                <small>Thong tin thoi tiet theo gio se hien ngay phia tren lich khi tro vao tung khung gio.</small>
               </Panel>
             </Card>
           )}
