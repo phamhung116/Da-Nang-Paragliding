@@ -274,11 +274,11 @@ export const BookingCalendar = ({
   const tableMinWidth = weatherAside ? "min-w-[300px]" : "min-w-[260px]";
   const wrapperWidth = weatherAside ? "min-w-[300px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl";
   const timeHeaderWidth = weatherAside ? "w-12 md:w-14" : "w-11 md:w-12";
-  const timeLabelClass = "text-[10px] md:text-[12px]";
-  const weekdayClass = "text-[9px] md:text-[11px]";
-  const dayNumberClass = "text-[11px] md:text-[13px]";
-  const cellPaddingClass = weatherAside ? "p-[10px]" : "p-[5px]";
-  const slotSizeClass = "h-9 w-9 md:h-10 md:w-10";
+  const timeLabelClass = "text-[9px] md:text-[11px]";
+  const weekdayClass = "text-[8px] md:text-[10px]";
+  const dayNumberClass = "text-[10px] md:text-[12px]";
+  const cellPaddingClass = weatherAside ? "p-[5px]" : "p-[2px]";
+  const slotSizeClass = weatherAside ? "h-10 w-10 md:h-11 md:w-11" : "h-9 w-9 md:h-10 md:w-10";
 
   return (
     <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-sm lg:max-w-none"}`}>
@@ -370,7 +370,7 @@ export const BookingCalendar = ({
                   className="relative overflow-visible pb-1"
                   onMouseLeave={() => {
                     setHoveredCell(selectedSlot);
-                    if (!selectedSlot) setOverlayAnchor(null);
+                    setOverlayAnchor(null);
                   }}
                 >
                   {weatherAside ? (
