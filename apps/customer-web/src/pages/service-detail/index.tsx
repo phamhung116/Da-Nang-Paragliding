@@ -114,10 +114,10 @@ export const ServiceDetailPage = () => {
                     </Button>
                   </Link>
                 </div>
-                <p className="calendar-selection-note">
+                <p className="calendar-selection-note text-xs">
                   {selectedSlot
-                    ? `Lịch đã chọn: ${formatSelectedSlotLabel(selectedSlot)}. Thông tin này sẽ được giữ sẵn khi sang trang điền thông tin.`
-                    : "Có thể đặt ngay và chọn lịch ở bước tiếp theo."}
+                    ? `Lịch đã chọn: ${formatSelectedSlotLabel(selectedSlot)}.`
+                    : "Có thể đặt ngay và chọn lịch bên dưới"}
                 </p>
               </div>
 
