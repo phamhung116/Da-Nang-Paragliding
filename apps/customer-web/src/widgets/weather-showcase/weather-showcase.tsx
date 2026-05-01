@@ -252,7 +252,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
             </div>
           </div>
 
-          <div className={`lg:w-1/2 p-6 md:p-12 ${isDark ? "bg-stone-800/30" : "bg-stone-50/50"}`}>
+          <div className={`p-6 md:p-12 ${isDark ? "bg-stone-800/30" : "bg-stone-50/50"}`}>
             <div
               className="mb-6 flex cursor-pointer items-center justify-between md:mb-8 md:cursor-default"
               onClick={() => setIsForecastOpen(!isForecastOpen)}
@@ -271,36 +271,35 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 {visibleForecast.map((item) => (
                   <article
                     key={item.date}
-                    className={`flex flex-wrap items-center gap-2 rounded-xl p-2 transition-colors md:flex-nowrap md:gap-4 md:p-3 ${
+                    className={`grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl p-3 transition-colors md:grid-cols-[72px_110px_minmax(76px,1fr)_minmax(52px,0.7fr)_minmax(92px,1fr)_70px] md:items-center md:gap-x-4 ${
                       isDark ? "hover:bg-white/5" : "hover:bg-stone-100"
                     }`}
                   >
-                    <span className="w-14 shrink-0 text-[10px] font-medium md:w-16 md:text-sm">
+                    <span className="text-[11px] font-medium leading-4 md:text-sm">
                       {formatDate(item.date, {
                         weekday: "short",
                         day: "2-digit",
                         month: "2-digit"
                       })}
                     </span>
-                    <div className="shrink-0 text-[10px] md:text-[11px]">
-                      <Badge tone={getWeatherTone(item.flight_condition)}>{repairFlightConditionLabel(item.flight_condition)}</Badge>
+                    <span
+                      className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none md:text-[11px] ${getConditionCardClasses(item.flight_condition)}`}
+                    >
+                      {repairFlightConditionLabel(item.flight_condition)}
+                    </span>
+                    <div className="flex items-center gap-1.5 md:min-w-0">
+                      <Wind size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
+                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.wind_kph} km/h</span>
                     </div>
-                    <div className="grid min-w-0 flex-1 grid-cols-3 gap-2 md:gap-3">
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <Wind size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
-                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.wind_kph} km/h</span>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <Sun size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
-                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.uv_index}</span>
-                      </div>
-                      <div className="flex min-w-0 items-center gap-1.5">
-                        <Eye size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
-                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.visibility_km} km</span>
-                      </div>
+                    <div className="flex items-center gap-1.5 md:min-w-0">
+                      <Sun size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
+                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.uv_index}</span>
                     </div>
-
-                    <span className="shrink-0 text-[11px] font-bold md:text-sm">{item.temperature_c}°C</span>
+                    <div className="flex items-center gap-1.5 md:min-w-0">
+                      <Eye size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
+                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.visibility_km} km</span>
+                    </div>
+                    <span className="text-[12px] font-bold md:text-[13px]">{item.temperature_c}°C</span>
                   </article>
                 ))}
 
