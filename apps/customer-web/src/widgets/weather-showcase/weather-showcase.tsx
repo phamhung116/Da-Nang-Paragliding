@@ -1,6 +1,6 @@
 import { Badge, Button } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
-import { CalendarDays, ChevronLeft, ChevronRight, Eye, MoveRight, ShieldCheck, Sun, Thermometer, Wind } from "lucide-react";
+import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Eye, MoveRight, ShieldCheck, Sun, Thermometer, Wind } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { routes } from "@/shared/config/routes";
@@ -87,20 +87,10 @@ const getStatDescription = (kind: "wind" | "uv" | "temperature" | "visibility", 
   return "Tầm nhìn trung bình";
 };
 
-const formatWeekday = (date: string) =>
-  formatDate(date, {
-    weekday: "short"
-  }).replace(",", "");
-
-const formatDayMonth = (date: string) =>
-  formatDate(date, {
-    day: "2-digit",
-    month: "2-digit"
-  });
-
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
   const forecast = days.filter((day) => day.weather_available).slice(0, WEATHER_FORECAST_DAYS);
   const today = forecast[0];
+  const [isForecastOpen, setIsForecastOpen] = useState(false);
   const [forecastPage, setForecastPage] = useState(0);
   const forecastKey = useMemo(() => forecast.map((item) => item.date).join("|"), [forecast]);
   const forecastPageCount = Math.max(1, Math.ceil(forecast.length / FORECAST_PAGE_SIZE));
@@ -130,20 +120,14 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
         divider: "border-white/10",
         panel: "bg-white/5",
         muted: "text-stone-300",
-        subMuted: "text-stone-400",
-        row: "border-white/8 bg-white/5 hover:bg-white/10",
-        rowMeta: "text-stone-300",
-        button: "border-white/10 text-white hover:bg-white/10 disabled:text-white/30"
+        subMuted: "text-stone-400"
       }
     : {
         shell: "border-stone-200 bg-white text-stone-900",
         divider: "border-stone-100",
         panel: "bg-stone-50",
         muted: "text-stone-600",
-        subMuted: "text-stone-500",
-        row: "border-stone-100 bg-white hover:bg-stone-50",
-        rowMeta: "text-stone-500",
-        button: "border-stone-200 text-stone-700 hover:bg-stone-100 disabled:text-stone-300"
+        subMuted: "text-stone-500"
       };
 
   const stats = [
@@ -268,90 +252,91 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
             </div>
           </div>
 
-          <div className="p-6 md:p-8 xl:p-10">
-            <div className="flex flex-col gap-4 border-b border-stone-100 pb-6 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-2xl font-bold tracking-tight">Dự báo thời tiết 4 ngày tới</h3>
-              <Link to={routes.services} className="inline-flex items-center gap-2 text-sm font-semibold text-[#c66352] transition-colors hover:text-[#aa4f40]">
-                Xem chi tiết
-                <MoveRight size={16} />
-              </Link>
+          <div className={`lg:w-1/2 p-6 md:p-12 ${isDark ? "bg-stone-800/30" : "bg-stone-50/50"}`}>
+            <div
+              className="mb-6 flex cursor-pointer items-center justify-between md:mb-8 md:cursor-default"
+              onClick={() => setIsForecastOpen(!isForecastOpen)}
+            >
+              <h3 className="text-lg font-bold md:text-xl">Dự báo thời tiết</h3>
+              <ChevronDown
+                size={20}
+                className={`text-stone-400 transition-transform duration-300 md:hidden ${isForecastOpen ? "rotate-180" : ""}`}
+              />
             </div>
 
-            <div className="mt-6 space-y-4">
-              {visibleForecast.map((item) => {
-                const condition = repairFlightConditionLabel(item.flight_condition);
-
-                return (
+            <div
+              className={`${isForecastOpen ? "mt-0 max-h-[1000px] opacity-100" : "-mt-4 max-h-0 opacity-0"} overflow-hidden transition-all duration-500 md:mt-0 md:max-h-none md:opacity-100`}
+            >
+              <div className="space-y-3 md:space-y-4">
+                {visibleForecast.map((item) => (
                   <article
                     key={item.date}
-                    className={`rounded-[24px] border p-4 shadow-sm transition-colors md:p-5 ${displayTheme.row}`}
+                    className={`flex items-center gap-2 rounded-xl p-2 transition-colors md:gap-4 md:p-3 ${
+                      isDark ? "hover:bg-white/5" : "hover:bg-stone-100"
+                    }`}
                   >
-                    <div className="grid gap-4 lg:grid-cols-[88px_132px_repeat(4,minmax(0,1fr))_42px] lg:items-center">
-                      <div>
-                        <p className="text-lg font-bold text-stone-900">{formatWeekday(item.date)}</p>
-                        <p className={`mt-1 text-sm font-medium ${displayTheme.rowMeta}`}>{formatDayMonth(item.date)}</p>
+                    <span className="w-14 text-[10px] font-medium md:w-16 md:text-sm">
+                      {formatDate(item.date, {
+                        weekday: "short",
+                        day: "2-digit",
+                        month: "2-digit"
+                      })}
+                    </span>
+                    <Badge tone={getWeatherTone(item.flight_condition)}>{repairFlightConditionLabel(item.flight_condition)}</Badge>
+                    <div className="grid flex-1 grid-cols-3 gap-1 md:gap-2">
+                      <div className="flex items-center gap-1">
+                        <Wind size={10} className="text-stone-400" />
+                        <span className="text-[9px] font-bold md:text-[11px]">{item.wind_kph} km/h</span>
                       </div>
-
-                      <div className="flex">
-                        <Badge tone={getWeatherTone(item.flight_condition)}>{condition}</Badge>
+                      <div className="flex items-center gap-1">
+                        <Sun size={10} className="text-stone-400" />
+                        <span className="text-[9px] font-bold md:text-[11px]">{item.uv_index}</span>
                       </div>
-
-                      <div>
-                        <p className="text-xl font-bold text-stone-900">{item.wind_kph}</p>
-                        <p className={`mt-1 text-sm ${displayTheme.rowMeta}`}>km/h</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xl font-bold text-stone-900">{item.uv_index}</p>
-                        <p className={`mt-1 text-sm ${displayTheme.rowMeta}`}>UV</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xl font-bold text-stone-900">{item.visibility_km} km</p>
-                        <p className={`mt-1 text-sm ${displayTheme.rowMeta}`}>Tầm nhìn</p>
-                      </div>
-
-                      <div>
-                        <p className="text-xl font-bold text-stone-900">{item.temperature_c}°C</p>
-                        <p className={`mt-1 text-sm ${displayTheme.rowMeta}`}>Nhiệt độ</p>
-                      </div>
-
-                      <div className="flex justify-start lg:justify-end">
-                        <div className={`h-10 w-10 rounded-full border ${getConditionCardClasses(item.flight_condition)} flex items-center justify-center`}>
-                          <Sun size={18} />
-                        </div>
+                      <div className="flex items-center gap-1">
+                        <Eye size={10} className="text-stone-400" />
+                        <span className="text-[9px] font-bold md:text-[11px]">{item.visibility_km} km</span>
                       </div>
                     </div>
-                  </article>
-                );
-              })}
-            </div>
 
-            {forecastPageCount > 1 ? (
-              <div className="mt-6 flex items-center justify-between">
-                <button
-                  type="button"
-                  aria-label="Previous forecast page"
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${displayTheme.button}`}
-                  disabled={forecastPage === 0}
-                  onClick={() => setForecastPage((page) => Math.max(0, page - 1))}
-                >
-                  <ChevronLeft size={18} />
-                </button>
-                <span className={`text-sm font-bold ${displayTheme.subMuted}`}>
-                  {forecastPage + 1} / {forecastPageCount}
-                </span>
-                <button
-                  type="button"
-                  aria-label="Next forecast page"
-                  className={`inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors ${displayTheme.button}`}
-                  disabled={forecastPage >= forecastPageCount - 1}
-                  onClick={() => setForecastPage((page) => Math.min(forecastPageCount - 1, page + 1))}
-                >
-                  <ChevronRight size={18} />
-                </button>
+                    <span className="text-[10px] font-bold md:text-sm">{item.temperature_c}°C</span>
+                  </article>
+                ))}
+
+                {forecastPageCount > 1 ? (
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      aria-label="Previous forecast page"
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                        isDark
+                          ? "border-white/10 text-white hover:bg-white/10 disabled:text-white/30"
+                          : "border-stone-200 text-stone-700 hover:bg-stone-100 disabled:text-stone-300"
+                      }`}
+                      disabled={forecastPage === 0}
+                      onClick={() => setForecastPage((page) => Math.max(0, page - 1))}
+                    >
+                      <ChevronLeft size={16} />
+                    </button>
+                    <span className={`text-xs font-bold ${isDark ? "text-stone-400" : "text-stone-500"}`}>
+                      {forecastPage + 1} / {forecastPageCount}
+                    </span>
+                    <button
+                      type="button"
+                      aria-label="Next forecast page"
+                      className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border transition-colors ${
+                        isDark
+                          ? "border-white/10 text-white hover:bg-white/10 disabled:text-white/30"
+                          : "border-stone-200 text-stone-700 hover:bg-stone-100 disabled:text-stone-300"
+                      }`}
+                      disabled={forecastPage >= forecastPageCount - 1}
+                      onClick={() => setForecastPage((page) => Math.min(forecastPageCount - 1, page + 1))}
+                    >
+                      <ChevronRight size={16} />
+                    </button>
+                  </div>
+                ) : null}
               </div>
-            ) : null}
+            </div>
           </div>
         </div>
       </div>
