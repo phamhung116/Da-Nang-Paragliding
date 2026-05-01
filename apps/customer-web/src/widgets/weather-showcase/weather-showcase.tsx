@@ -1,20 +1,37 @@
 import { Badge, Button } from "@paragliding/ui";
 import type { AvailabilityDay } from "@paragliding/api-client";
-import { CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Eye, MoveRight, ShieldCheck, Sun, Thermometer, Wind } from "lucide-react";
+import {
+  CalendarDays,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  Cloud,
+  CloudFog,
+  CloudLightning,
+  CloudRain,
+  CloudSun,
+  Eye,
+  MoveRight,
+  ShieldCheck,
+  Sun,
+  SunMedium,
+  Thermometer,
+  Wind
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { routes } from "@/shared/config/routes";
 import { formatDate } from "@/shared/lib/format";
 import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
-import { getWeatherKind, WeatherSymbol } from "@/shared/ui/weather-visual";
+import { getWeatherKind } from "@/shared/ui/weather-visual";
 
 type WeatherShowcaseProps = {
   days: AvailabilityDay[];
   isDark?: boolean;
 };
 
-const FORECAST_PAGE_SIZE = 8;
+const FORECAST_PAGE_SIZE = 6;
 
 const normalizeCondition = (condition: string) =>
   condition
@@ -50,10 +67,25 @@ const getConditionSummary = (condition: string) => {
   return "Thời tiết đang ổn định và có thể theo dõi thêm để chọn giờ đẹp.";
 };
 
-const formatForecastWeekday = (date: string) => {
-  const day = new Date(date).getDay();
-  const weekdayMap = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-  return weekdayMap[day] ?? "N/A";
+const renderWeatherConditionIcon = (kind: ReturnType<typeof getWeatherKind>) => {
+  const iconClass = "text-sky-600";
+
+  switch (kind) {
+    case "partly-cloudy":
+      return <CloudSun className={iconClass} size={36} />;
+    case "cloudy":
+      return <Cloud className={iconClass} size={36} />;
+    case "rain":
+      return <CloudRain className={iconClass} size={36} />;
+    case "storm":
+      return <CloudLightning className={iconClass} size={36} />;
+    case "fog":
+      return <CloudFog className={iconClass} size={36} />;
+    case "wind":
+      return <Wind className={iconClass} size={36} />;
+    default:
+      return <SunMedium className="text-amber-400" size={36} />;
+  }
 };
 
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
@@ -192,7 +224,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                       <p className="mt-3 max-w-lg text-base leading-7 text-stone-600">{getConditionSummary(today.flight_condition)}</p>
                     </div>
                     <div className="hidden rounded-2xl bg-white/80 p-3 shadow-sm md:block">
-                      <WeatherSymbol kind={todayWeatherKind} />
+                      {renderWeatherConditionIcon(todayWeatherKind)}
                     </div>
                   </div>
 
@@ -239,7 +271,13 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        <span className="shrink-0 text-sm font-bold md:text-base">{formatForecastWeekday(item.date)}</span>
+                        <span className="shrink-0 text-sm font-bold md:text-base">
+                          {formatDate(item.date, {
+                            weekday: "long",
+                            day: "2-digit",
+                            month: "2-digit"
+                          })}
+                        </span>
                         <span
                           className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none md:text-[11px] ${getConditionCardClasses(item.flight_condition)}`}
                         >
