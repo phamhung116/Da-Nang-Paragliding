@@ -7,33 +7,20 @@ import { routes } from "@/shared/config/routes";
 import { formatDate } from "@/shared/lib/format";
 import { WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
+import { getWeatherKind, WeatherSymbol } from "@/shared/ui/weather-visual";
 
 type WeatherShowcaseProps = {
   days: AvailabilityDay[];
   isDark?: boolean;
 };
 
-const FORECAST_PAGE_SIZE = 4;
+const FORECAST_PAGE_SIZE = 8;
 
 const normalizeCondition = (condition: string) =>
   condition
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
-
-const getWeatherTone = (condition: string): "default" | "success" | "danger" => {
-  const normalized = normalizeCondition(condition);
-
-  if (normalized === "ly tuong" || normalized === "thoi tiet tot") {
-    return "success";
-  }
-
-  if (normalized === "khong ly tuong" || normalized === "thoi tiet xau") {
-    return "danger";
-  }
-
-  return "default";
-};
 
 const getConditionCardClasses = (condition: string) => {
   const normalized = normalizeCondition(condition);
@@ -61,13 +48,6 @@ const getConditionSummary = (condition: string) => {
   }
 
   return "Thời tiết đang ổn định và có thể theo dõi thêm để chọn giờ đẹp.";
-};
-
-const getStatDescription = (kind: "wind" | "uv" | "temperature" | "visibility") => {
-  if (kind === "wind") return "Dữ liệu tốc độ gió từ API weather";
-  if (kind === "uv") return "Chỉ số bức xạ UV từ API weather";
-  if (kind === "temperature") return "Nhiệt độ dự báo từ API weather";
-  return "Tầm nhìn dự báo từ API weather";
 };
 
 const formatForecastWeekday = (date: string) => {
@@ -103,6 +83,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
   }
 
   const todayFlightCondition = repairFlightConditionLabel(today.flight_condition);
+  const todayWeatherKind = getWeatherKind(today);
   const displayTheme = isDark
     ? {
         shell: "border-white/10 bg-stone-900 text-white",
@@ -130,21 +111,18 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
       icon: <Sun size={22} />,
       title: "Chỉ số UV",
       value: `${today.uv_index}`,
-      description: getStatDescription("uv"),
       iconClass: "text-amber-400"
     },
     {
       icon: <Thermometer size={22} />,
       title: "Nhiệt độ",
       value: `${today.temperature_c}°C`,
-      description: getStatDescription("temperature"),
       iconClass: "text-sky-400"
     },
     {
       icon: <Eye size={22} />,
       title: "Tầm nhìn",
       value: `${today.visibility_km} km`,
-      description: getStatDescription("visibility"),
       iconClass: "text-yellow-500"
     }
   ];
@@ -186,7 +164,6 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                     <div>
                       <p className={`text-xs font-bold uppercase tracking-[0.18em] ${displayTheme.subMuted}`}>{stat.title}</p>
                       <p className="mt-2 text-3xl font-extrabold leading-none">{stat.value}</p>
-                      <p className={`mt-2 text-sm ${displayTheme.muted}`}>{stat.description}</p>
                     </div>
                   </div>
                 </article>
@@ -194,8 +171,8 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
             </div>
 
             <div className="mt-6 overflow-hidden rounded-[28px] border border-stone-100 bg-gradient-to-r from-[#eef5ff] via-white to-[#fff8eb] shadow-sm">
-              <div className="grid gap-6 p-4 md:grid-cols-[220px_1fr] md:p-5">
-                <div className="relative h-44 overflow-hidden rounded-[24px] md:h-full">
+              <div className="grid gap-0 md:grid-cols-[260px_1fr]">
+                <div className="relative h-52 overflow-hidden md:h-full">
                   <img
                     src="/media/img/anh21.jpg"
                     alt="Bay dù lượn tại Sơn Trà"
@@ -205,16 +182,18 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                   <div className="absolute inset-0 bg-gradient-to-r from-sky-900/35 via-transparent to-transparent" />
                 </div>
 
-                <div className="flex flex-col justify-between gap-5">
+                <div className="flex flex-col justify-between gap-5 p-4 md:p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="flex items-end gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-end gap-3">
                         <strong className="text-4xl font-extrabold leading-none text-stone-900 md:text-5xl">{today.temperature_c}°C</strong>
-                        <span className="pb-1 text-lg font-semibold text-stone-800">{today.weather_condition || "Nhiều nắng"}</span>
+                        <span className="pb-1 text-lg font-semibold text-stone-800">{today.weather_condition || "Đang cập nhật"}</span>
                       </div>
                       <p className="mt-3 max-w-lg text-base leading-7 text-stone-600">{getConditionSummary(today.flight_condition)}</p>
                     </div>
-                    <Sun className="hidden text-amber-400 md:block" size={38} />
+                    <div className="hidden rounded-2xl bg-white/80 p-3 shadow-sm md:block">
+                      <WeatherSymbol kind={todayWeatherKind} />
+                    </div>
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
@@ -267,9 +246,8 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                           {repairFlightConditionLabel(item.flight_condition)}
                         </span>
                       </div>
-                      <span className="shrink-0 text-[13px] font-bold md:text-[15px]">{item.temperature_c}°C</span>
                     </div>
-                    <div className="mt-3 grid grid-cols-3 gap-3">
+                    <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
                       <div className="flex items-center gap-1.5">
                         <Wind size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
                         <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.wind_kph} km/h</span>
@@ -281,6 +259,10 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                       <div className="flex items-center gap-1.5">
                         <Eye size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
                         <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.visibility_km} km</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Thermometer size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
+                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.temperature_c}°C</span>
                       </div>
                     </div>
                   </article>
