@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AvailabilityDay, AvailabilitySlot } from "@paragliding/api-client";
 import { Button } from "@paragliding/ui";
 import { formatDate, resolveLocaleTag } from "@/shared/lib/format";
@@ -11,14 +11,18 @@ type SelectedSlot = {
   time: string;
 } | null;
 
-type CalendarWeekDay = {
+type CalendarDay = {
   key: string;
   isoDate: string;
   date: Date;
   day: AvailabilityDay | null;
   outsideMonth: boolean;
-  isPast: boolean;
 };
+
+type OverlayAnchor = {
+  left: number;
+  top: number;
+} | null;
 
 type BookingCalendarProps = {
   year: number;
@@ -30,8 +34,15 @@ type BookingCalendarProps = {
   weatherAside?: boolean;
 };
 
+const PAGE_SIZE = 7;
+
 const toDateKey = (date: Date) =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+const fromDateKey = (value: string) => {
+  const [rawYear, rawMonth, rawDay] = value.split("-").map(Number);
+  return new Date(rawYear, (rawMonth || 1) - 1, rawDay || 1);
+};
 
 const addDays = (date: Date, amount: number) => {
   const nextDate = new Date(date);
@@ -39,16 +50,16 @@ const addDays = (date: Date, amount: number) => {
   return nextDate;
 };
 
-const startOfWeek = (date: Date) => addDays(date, -date.getDay());
-const endOfWeek = (date: Date) => addDays(startOfWeek(date), 6);
-
-const getAvailableCount = (day: AvailabilityDay) => day.slots.filter((slot) => !slot.is_locked && !slot.is_full).length;
+const compareMonth = (left: Date, right: Date) =>
+  left.getFullYear() === right.getFullYear() ? left.getMonth() - right.getMonth() : left.getFullYear() - right.getFullYear();
 
 const sortTime = (left: string, right: string) => {
   const [leftHour, leftMinute] = left.split(":").map(Number);
   const [rightHour, rightMinute] = right.split(":").map(Number);
   return leftHour * 60 + leftMinute - (rightHour * 60 + rightMinute);
 };
+
+const getAvailableCount = (day: AvailabilityDay) => day.slots.filter((slot) => !slot.is_locked && !slot.is_full).length;
 
 export const BookingCalendar = ({
   year,
@@ -63,9 +74,15 @@ export const BookingCalendar = ({
   const [hoveredCell, setHoveredCell] = useState<SelectedSlot>(selectedSlot);
   const [showMonthMenu, setShowMonthMenu] = useState(false);
   const [showYearMenu, setShowYearMenu] = useState(false);
-  const [weekIndex, setWeekIndex] = useState(0);
-  const [pendingWeekEdge, setPendingWeekEdge] = useState<"start" | "end" | null>(null);
-  const todayKey = useMemo(() => toDateKey(new Date()), []);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pendingPageEdge, setPendingPageEdge] = useState<"start" | "end" | null>(null);
+  const [overlayAnchor, setOverlayAnchor] = useState<OverlayAnchor>(null);
+  const overlayHostRef = useRef<HTMLDivElement | null>(null);
+
+  const today = useMemo(() => new Date(), []);
+  const todayKey = useMemo(() => toDateKey(today), [today]);
+  const todayMonthStart = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
+  const currentMonthStart = useMemo(() => new Date(year, month - 1, 1), [month, year]);
 
   useEffect(() => {
     setHoveredCell(selectedSlot);
@@ -83,44 +100,6 @@ export const BookingCalendar = ({
     return Array.from(uniqueTimes).sort(sortTime);
   }, [visibleDays]);
 
-  const calendarWeeks = useMemo(() => {
-    const firstDayOfMonth = new Date(year, month - 1, 1);
-    const lastDayOfMonth = new Date(year, month, 0);
-    const firstVisibleDay = startOfWeek(firstDayOfMonth);
-    const lastVisibleDay = endOfWeek(lastDayOfMonth);
-    const weeks: CalendarWeekDay[][] = [];
-
-    for (let cursor = new Date(firstVisibleDay); cursor <= lastVisibleDay; cursor = addDays(cursor, 7)) {
-      const week: CalendarWeekDay[] = [];
-
-      for (let index = 0; index < 7; index += 1) {
-        const cellDate = addDays(cursor, index);
-        const isoDate = toDateKey(cellDate);
-        const isPast = isoDate < todayKey;
-
-        week.push({
-          key: `${isoDate}-${index}`,
-          isoDate,
-          date: cellDate,
-          day: isPast ? null : daysByDate.get(isoDate) ?? null,
-          outsideMonth: cellDate.getMonth() !== month - 1,
-          isPast
-        });
-      }
-
-      weeks.push(week);
-    }
-
-    return weeks;
-  }, [daysByDate, month, todayKey, year]);
-
-  const yearOptions = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    return Array.from(new Set([currentYear - 1, currentYear, currentYear + 1, currentYear + 2, year])).sort(
-      (left, right) => left - right
-    );
-  }, [year]);
-
   const monthNames = useMemo(() => {
     const formatter = new Intl.DateTimeFormat(resolveLocaleTag(locale), { month: "long" });
     return Array.from({ length: 12 }, (_unused, index) => formatter.format(new Date(2026, index, 1)));
@@ -132,45 +111,73 @@ export const BookingCalendar = ({
     return Array.from({ length: 7 }, (_unused, index) => formatter.format(addDays(sunday, index)));
   }, [locale]);
 
+  const yearOptions = useMemo(() => {
+    const currentYear = today.getFullYear();
+    return Array.from(new Set([currentYear, currentYear + 1, currentYear + 2, year])).sort((left, right) => left - right);
+  }, [today, year]);
+
+  const startDate = useMemo(() => {
+    if (compareMonth(currentMonthStart, todayMonthStart) <= 0) {
+      return today;
+    }
+    return currentMonthStart;
+  }, [currentMonthStart, today, todayMonthStart]);
+
+  const calendarPages = useMemo(() => {
+    const monthEnd = new Date(year, month, 0);
+    const pages: CalendarDay[][] = [];
+
+    for (let cursor = new Date(startDate); cursor <= monthEnd || pages.length === 0; cursor = addDays(cursor, PAGE_SIZE)) {
+      const page: CalendarDay[] = [];
+
+      for (let index = 0; index < PAGE_SIZE; index += 1) {
+        const cellDate = addDays(cursor, index);
+        const isoDate = toDateKey(cellDate);
+        page.push({
+          key: `${isoDate}-${index}`,
+          isoDate,
+          date: cellDate,
+          day: daysByDate.get(isoDate) ?? null,
+          outsideMonth: cellDate.getMonth() !== month - 1
+        });
+      }
+
+      pages.push(page);
+    }
+
+    return pages;
+  }, [daysByDate, month, startDate, year]);
+
   useEffect(() => {
-    if (!calendarWeeks.length) {
-      setWeekIndex(0);
+    if (!calendarPages.length) {
+      setPageIndex(0);
       return;
     }
 
-    if (pendingWeekEdge) {
-      setWeekIndex(pendingWeekEdge === "end" ? calendarWeeks.length - 1 : 0);
-      setPendingWeekEdge(null);
+    if (pendingPageEdge) {
+      setPageIndex(pendingPageEdge === "end" ? calendarPages.length - 1 : 0);
+      setPendingPageEdge(null);
       return;
     }
 
     if (selectedSlot?.date) {
-      const selectedWeek = calendarWeeks.findIndex((week) => week.some((day) => day.isoDate === selectedSlot.date));
-      if (selectedWeek >= 0) {
-        setWeekIndex(selectedWeek);
+      const selectedPage = calendarPages.findIndex((page) => page.some((day) => day.isoDate === selectedSlot.date));
+      if (selectedPage >= 0) {
+        setPageIndex(selectedPage);
         return;
       }
     }
 
-    const today = new Date();
-    const todayWeek = calendarWeeks.findIndex((week) => week.some((day) => day.isoDate === toDateKey(today)));
-    if (today.getFullYear() === year && today.getMonth() + 1 === month && todayWeek >= 0) {
-      setWeekIndex(todayWeek);
-      return;
-    }
+    const firstPageWithAvailability = calendarPages.findIndex((page) => page.some((day) => day.day && getAvailableCount(day.day) > 0));
+    setPageIndex(firstPageWithAvailability >= 0 ? firstPageWithAvailability : 0);
+  }, [calendarPages, pendingPageEdge, selectedSlot?.date]);
 
-    const firstWeekWithAvailability = calendarWeeks.findIndex((week) =>
-      week.some((day) => day.day && getAvailableCount(day.day) > 0)
-    );
-    setWeekIndex(firstWeekWithAvailability >= 0 ? firstWeekWithAvailability : 0);
-  }, [calendarWeeks, month, pendingWeekEdge, selectedSlot?.date, year]);
-
-  const activeWeek = calendarWeeks[weekIndex] ?? [];
+  const activePage = calendarPages[pageIndex] ?? [];
   const previewSlot = hoveredCell ? daysByDate.get(hoveredCell.date)?.slots.find((slot) => slot.time === hoveredCell.time) ?? null : null;
   const selectedWeatherSlot = selectedSlot
     ? daysByDate.get(selectedSlot.date)?.slots.find((slot) => slot.time === selectedSlot.time) ?? null
     : null;
-  const fallbackDay = activeWeek.find((day) => day.day)?.day ?? visibleDays[0] ?? null;
+  const fallbackDay = activePage.find((day) => day.day)?.day ?? visibleDays[0] ?? null;
   const weatherSource: AvailabilitySlot | AvailabilityDay | null = previewSlot ?? selectedWeatherSlot ?? fallbackDay;
   const hasRealWeather = Boolean(weatherSource?.weather_available);
   const previewDate = hoveredCell?.date ?? selectedSlot?.date ?? fallbackDay?.date ?? null;
@@ -188,19 +195,38 @@ export const BookingCalendar = ({
         }
       : null;
 
-  const changeMonth = (nextYear: number, nextMonth: number, edge: "start" | "end" = "start") => {
-    setPendingWeekEdge(edge);
-    setHoveredCell(selectedSlot);
-    setShowMonthMenu(false);
-    setShowYearMenu(false);
-    onMonthChange(nextYear, nextMonth);
+  const updateOverlayAnchor = (element: HTMLElement) => {
+    if (!overlayHostRef.current) return;
+    const hostRect = overlayHostRef.current.getBoundingClientRect();
+    const cellRect = element.getBoundingClientRect();
+    setOverlayAnchor({
+      left: cellRect.left - hostRect.left + cellRect.width / 2,
+      top: cellRect.top - hostRect.top - 10
+    });
   };
 
-  const moveWeek = (step: number) => {
-    const nextWeek = weekIndex + step;
-    if (nextWeek >= 0 && nextWeek < calendarWeeks.length) {
-      setWeekIndex(nextWeek);
+  const changeMonth = (nextYear: number, nextMonth: number, edge: "start" | "end" = "start") => {
+    const requestedMonth = new Date(nextYear, nextMonth - 1, 1);
+    const normalizedMonth = compareMonth(requestedMonth, todayMonthStart) < 0 ? todayMonthStart : requestedMonth;
+
+    setPendingPageEdge(edge);
+    setHoveredCell(selectedSlot);
+    setOverlayAnchor(null);
+    setShowMonthMenu(false);
+    setShowYearMenu(false);
+    onMonthChange(normalizedMonth.getFullYear(), normalizedMonth.getMonth() + 1);
+  };
+
+  const movePage = (step: number) => {
+    const nextPage = pageIndex + step;
+    if (nextPage >= 0 && nextPage < calendarPages.length) {
+      setPageIndex(nextPage);
       setHoveredCell(selectedSlot);
+      setOverlayAnchor(null);
+      return;
+    }
+
+    if (step < 0 && compareMonth(currentMonthStart, todayMonthStart) <= 0) {
       return;
     }
 
@@ -208,51 +234,53 @@ export const BookingCalendar = ({
     changeMonth(nextMonthDate.getFullYear(), nextMonthDate.getMonth() + 1, step > 0 ? "start" : "end");
   };
 
-  const weatherCard = weather ? (
-    <div className="space-y-3 rounded-2xl border border-stone-200 bg-stone-50 p-4">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase text-stone-400">
-          Du bao {activeSlot ? `${activeSlot} - ` : ""}Ngay {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
-        </span>
-        <Sun size={16} className="text-yellow-500" />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex items-end gap-2">
-          <span className="text-2xl font-bold">{weather.temp}°C</span>
-          <span className="pb-1 text-[10px] font-medium text-stone-600">{weather.condition}</span>
-        </div>
-        <div className="flex flex-col justify-center">
-          <span className="text-[10px] font-bold uppercase text-stone-400">Dieu kien bay</span>
-          <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4 border-t border-stone-200/70 pt-2">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase text-stone-400">Suc gio</span>
-          <span className="text-xs font-bold">{weather.wind} km/h</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold uppercase text-stone-400">Chi so UV</span>
-          <span className="text-xs font-bold">{weather.uv}</span>
-        </div>
-      </div>
+  const weatherCard = (
+    <div className="space-y-2 rounded-2xl border border-stone-200 bg-white/95 p-3 shadow-xl backdrop-blur-sm">
+      {weather ? (
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-[10px] font-bold uppercase text-stone-400">
+              Du bao {activeSlot ? `${activeSlot} - ` : ""}Ngay {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
+            </span>
+            <Sun size={15} className="text-yellow-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex items-end gap-2">
+              <span className="text-xl font-bold">{weather.temp}°C</span>
+              <span className="pb-0.5 text-[10px] font-medium text-stone-600">{weather.condition}</span>
+            </div>
+            <div className="flex flex-col justify-center">
+              <span className="text-[10px] font-bold uppercase text-stone-400">Dieu kien bay</span>
+              <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3 border-t border-stone-200 pt-2">
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase text-stone-400">Suc gio</span>
+              <span className="text-xs font-bold">{weather.wind} km/h</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] font-bold uppercase text-stone-400">Chi so UV</span>
+              <span className="text-xs font-bold">{weather.uv}</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <p className="text-xs text-stone-500">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
+      )}
     </div>
-  ) : (
-    <p className="calendar-selection-note">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
   );
 
   return (
-    <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-md lg:max-w-none"}`}>
-      <div className="space-y-4">
-        {weatherAside ? weatherCard : null}
+    <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-sm lg:max-w-none"}`}>
+      <div className="space-y-3">
+        {!weatherAside ? weatherCard : null}
 
-        <div className="space-y-4">
+        <div className="space-y-3">
           <div className="relative">
-            <div className="mb-4 flex items-center justify-between">
-              <Button onClick={() => moveWeek(-1)} className="rounded-full p-1 transition-colors hover:bg-stone-100">
-                <ChevronRight className="rotate-180 text-stone-400" size={20} />
+            <div className="mb-3 flex items-center justify-between">
+              <Button onClick={() => movePage(-1)} className="rounded-full p-1 transition-colors hover:bg-stone-100">
+                <ChevronRight className="rotate-180 text-stone-400" size={18} />
               </Button>
 
               <div className="flex gap-2">
@@ -280,24 +308,31 @@ export const BookingCalendar = ({
                 </button>
               </div>
 
-              <Button onClick={() => moveWeek(1)} className="rounded-full p-1 transition-colors hover:bg-stone-100">
-                <ChevronRight className="text-stone-400" size={20} />
+              <Button onClick={() => movePage(1)} className="rounded-full p-1 transition-colors hover:bg-stone-100">
+                <ChevronRight className="text-stone-400" size={18} />
               </Button>
             </div>
 
             {showMonthMenu ? (
               <div className="absolute left-0 right-0 top-full z-20 mt-1 rounded-2xl border border-stone-200 bg-white p-4 shadow-xl">
                 <div className="grid grid-cols-3 gap-2">
-                  {monthNames.map((label, index) => (
-                    <button
-                      key={label}
-                      type="button"
-                      className={`rounded-lg py-1 text-[10px] transition-colors ${month === index + 1 ? "is-active bg-brand text-white" : "hover:bg-stone-100"}`}
-                      onClick={() => changeMonth(year, index + 1)}
-                    >
-                      {label}
-                    </button>
-                  ))}
+                  {monthNames.map((label, index) => {
+                    const optionDate = new Date(year, index, 1);
+                    const disabled = compareMonth(optionDate, todayMonthStart) < 0;
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        className={`rounded-lg py-1 text-[10px] transition-colors ${
+                          month === index + 1 ? "is-active bg-brand text-white" : disabled ? "cursor-not-allowed text-stone-300" : "hover:bg-stone-100"
+                        }`}
+                        disabled={disabled}
+                        onClick={() => changeMonth(year, index + 1)}
+                      >
+                        {label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             ) : null}
@@ -321,94 +356,109 @@ export const BookingCalendar = ({
           </div>
 
           <div className="overflow-x-auto">
-            <div className={`${weatherAside ? "min-w-[280px] max-w-3xl" : "min-w-[300px] mx-auto max-w-2xl"}`}>
-              {activeWeek.length > 0 ? (
-                <div className="overflow-x-auto pb-1" onMouseLeave={() => setHoveredCell(selectedSlot)}>
-                  <table className={`w-full table-fixed border-collapse ${weatherAside ? "min-w-[280px]" : "min-w-[300px]"}`}>
-                    <thead>
-                      <tr>
-                        <th className={`${weatherAside ? "w-12" : "w-14"} p-1`} aria-label="Khung gio" />
-                        {activeWeek.map((day) => {
-                          const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
-                          return (
-                            <th key={day.key} className="p-1 text-center">
-                              <div className="flex flex-col">
-                                {day.isPast ? (
-                                  <>
-                                    <span className="text-[8px] font-bold uppercase text-transparent">.</span>
-                                    <span className="text-[10px] font-bold text-transparent">.</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <span className={`text-[8px] font-bold uppercase ${isSelectedDay ? "text-brand" : "text-stone-400"}`}>
-                                      {weekdayShort[day.date.getDay()]}
-                                    </span>
-                                    <span
-                                      className={`text-[10px] font-bold ${
-                                        isSelectedDay ? "text-brand" : day.outsideMonth ? "text-stone-300" : "text-stone-500"
-                                      }`}
-                                    >
-                                      {day.date.getDate()}
-                                    </span>
-                                  </>
-                                )}
-                              </div>
-                            </th>
-                          );
-                        })}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {timeSlots.map((time) => (
-                        <tr key={time}>
-                          <td
-                            className={`whitespace-nowrap p-1 pr-2 align-middle font-bold leading-none text-stone-400 ${
-                              weatherAside ? "text-[9px]" : "text-[10px]"
-                            }`}
-                          >
-                            {time}
-                          </td>
-                          {activeWeek.map((day) => {
-                            const slot = day.day?.slots.find((item) => item.time === time) ?? null;
-                            const isBlocked = Boolean(slot?.is_locked || slot?.is_full);
-                            const isSelected = Boolean(slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time);
+            <div className={`${weatherAside ? "min-w-[280px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl"}`}>
+              {activePage.length > 0 ? (
+                <div
+                  ref={overlayHostRef}
+                  className="relative pb-1"
+                  onMouseLeave={() => {
+                    setHoveredCell(selectedSlot);
+                    if (!selectedSlot) setOverlayAnchor(null);
+                  }}
+                >
+                  {weatherAside ? (
+                    <>
+                      <div className="mb-3 lg:hidden">{weatherCard}</div>
+                      {overlayAnchor ? (
+                        <div
+                          className="pointer-events-none absolute z-20 hidden w-64 -translate-x-1/2 -translate-y-full lg:block"
+                          style={{ left: overlayAnchor.left, top: overlayAnchor.top }}
+                        >
+                          {weatherCard}
+                        </div>
+                      ) : null}
+                    </>
+                  ) : null}
 
+                  <div className="overflow-x-auto">
+                    <table className={`w-full table-fixed border-collapse ${weatherAside ? "min-w-[280px]" : "min-w-[260px]"}`}>
+                      <thead>
+                        <tr>
+                          <th className={`${weatherAside ? "w-11" : "w-10"} p-1`} aria-label="Khung gio" />
+                          {activePage.map((day) => {
+                            const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
                             return (
-                              <td key={`${day.key}-${time}`} className="p-0.5">
-                                <button
-                                  type="button"
-                                  className={`flex aspect-square w-full items-center justify-center rounded-md border-[1.5px] transition-all ${
-                                    !slot || isBlocked || day.isPast
-                                      ? "cursor-default border-stone-300 bg-stone-100 text-stone-400"
-                                      : isSelected
-                                        ? "cursor-pointer border-brand bg-brand font-black text-white shadow-inner"
-                                        : "cursor-pointer border-stone-300 bg-white hover:border-brand/60"
-                                  }`}
-                                  onMouseEnter={() => {
-                                    if (slot && !day.isPast) setHoveredCell({ date: day.isoDate, time });
-                                  }}
-                                  onFocus={() => {
-                                    if (slot && !day.isPast) setHoveredCell({ date: day.isoDate, time });
-                                  }}
-                                  onClick={() => {
-                                    if (!slot || isBlocked || day.isPast) return;
-                                    onSelectSlot({ date: day.isoDate, time });
-                                    setHoveredCell({ date: day.isoDate, time });
-                                  }}
-                                >
-                                  {!slot || isBlocked || day.isPast ? (
-                                    <X size={12} aria-hidden="true" />
-                                  ) : isSelected ? (
-                                    <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
-                                  ) : null}
-                                </button>
-                              </td>
+                              <th key={day.key} className="p-1 text-center">
+                                <div className="flex flex-col">
+                                  <span className={`text-[8px] font-bold uppercase ${isSelectedDay ? "text-brand" : "text-stone-400"}`}>
+                                    {weekdayShort[day.date.getDay()]}
+                                  </span>
+                                  <span
+                                    className={`text-[10px] font-bold ${
+                                      isSelectedDay ? "text-brand" : day.outsideMonth ? "text-stone-300" : "text-stone-500"
+                                    }`}
+                                  >
+                                    {day.date.getDate()}
+                                  </span>
+                                </div>
+                              </th>
                             );
                           })}
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {timeSlots.map((time) => (
+                          <tr key={time}>
+                            <td className={`whitespace-nowrap p-1 pr-2 align-middle font-bold leading-none text-stone-400 ${weatherAside ? "text-[9px]" : "text-[9px]"}`}>
+                              {time}
+                            </td>
+                            {activePage.map((day) => {
+                              const slot = day.day?.slots.find((item) => item.time === time) ?? null;
+                              const isBlocked = Boolean(slot?.is_locked || slot?.is_full);
+                              const isSelected = Boolean(slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time);
+
+                              return (
+                                <td key={`${day.key}-${time}`} className="p-0.5">
+                                  <button
+                                    type="button"
+                                    className={`flex ${weatherAside ? "h-7" : "h-6"} w-full items-center justify-center rounded-md border-2 transition-all ${
+                                      !slot || isBlocked
+                                        ? "cursor-default border-stone-300 bg-stone-100 text-stone-400"
+                                        : isSelected
+                                          ? "cursor-pointer border-brand bg-brand font-black text-white shadow-inner"
+                                          : "cursor-pointer border-stone-300 bg-white hover:border-brand/60"
+                                    }`}
+                                    onMouseEnter={(event) => {
+                                      if (!slot || isBlocked) return;
+                                      setHoveredCell({ date: day.isoDate, time });
+                                      if (weatherAside) updateOverlayAnchor(event.currentTarget);
+                                    }}
+                                    onFocus={(event) => {
+                                      if (!slot || isBlocked) return;
+                                      setHoveredCell({ date: day.isoDate, time });
+                                      if (weatherAside) updateOverlayAnchor(event.currentTarget);
+                                    }}
+                                    onClick={(event) => {
+                                      if (!slot || isBlocked) return;
+                                      onSelectSlot({ date: day.isoDate, time });
+                                      setHoveredCell({ date: day.isoDate, time });
+                                      if (weatherAside) updateOverlayAnchor(event.currentTarget);
+                                    }}
+                                  >
+                                    {!slot || isBlocked ? (
+                                      <X size={10} aria-hidden="true" />
+                                    ) : isSelected ? (
+                                      <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
+                                    ) : null}
+                                  </button>
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               ) : (
                 <div className="calendar-empty">Chua co du lieu kha dung cho thang nay.</div>
@@ -416,11 +466,11 @@ export const BookingCalendar = ({
 
               <div className="flex items-center justify-between border-t border-stone-100 pt-2 text-[10px] text-stone-400">
                 <div className="flex items-center gap-1">
-                  <div className="h-2 w-2 rounded-sm border-[1.5px] border-stone-300 bg-white" />
+                  <div className="h-2 w-2 rounded-sm border-2 border-stone-300 bg-white" />
                   <span>Trong</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="flex h-2 w-2 items-center justify-center rounded-sm border-[1.5px] border-stone-300 bg-stone-100">
+                  <div className="flex h-2 w-2 items-center justify-center rounded-sm border-2 border-stone-300 bg-stone-100">
                     <X size={8} />
                   </div>
                   <span>Da day</span>

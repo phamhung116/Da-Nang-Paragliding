@@ -108,7 +108,7 @@ export const BookingPage = () => {
               <Badge>Thong tin hanh khach</Badge>
               <h2>Hoan tat bieu mau dat lich</h2>
             </div>
-            <p>Khach co the doi ngay, khung gio va xem weather theo gio ngay phia tren khu vuc chon lich.</p>
+            <p>Khach co the doi ngay, khung gio va xem weather theo gio bang overlay ngay tren o lich dang hover.</p>
           </div>
 
           <Card>
@@ -117,7 +117,7 @@ export const BookingPage = () => {
                 <div>
                   <Badge>Chon lai lich neu can</Badge>
                   <h3>Lich bay va weather theo gio</h3>
-                  <p>O trong co the dat. O X da het phi cong, bi khoa hoac la ngay da qua.</p>
+                  <p>O trong co the dat. O X da het phi cong hoac bi khoa. Lich chi hien thi tu ngay hien tai tro di.</p>
                 </div>
               </div>
               <BookingCalendar
@@ -154,7 +154,7 @@ export const BookingPage = () => {
               <Panel className="calendar-selection-card">
                 <Badge tone="danger">Chua chon khung gio</Badge>
                 <strong>Hay chon mot o con trong tren lich truoc khi dien bieu mau dat lich.</strong>
-                <small>Thong tin thoi tiet theo gio se hien ngay phia tren lich khi tro vao tung khung gio.</small>
+                <small>Thong tin thoi tiet theo gio se hien dang overlay ngay tren o lich khi tro vao tung khung gio.</small>
               </Panel>
             </Card>
           )}
