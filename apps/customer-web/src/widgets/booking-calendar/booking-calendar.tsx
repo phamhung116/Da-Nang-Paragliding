@@ -271,6 +271,15 @@ export const BookingCalendar = ({
     </div>
   );
 
+  const tableMinWidth = weatherAside ? "min-w-[300px]" : "min-w-[260px]";
+  const wrapperWidth = weatherAside ? "min-w-[300px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl";
+  const timeHeaderWidth = weatherAside ? "w-12" : "w-11";
+  const timeLabelClass = weatherAside ? "text-[10px]" : "text-[10px]";
+  const weekdayClass = weatherAside ? "text-[9px]" : "text-[9px]";
+  const dayNumberClass = weatherAside ? "text-[11px]" : "text-[11px]";
+  const cellPaddingClass = weatherAside ? "p-[10px]" : "p-[5px]";
+  const slotSizeClass = weatherAside ? "h-8 w-8" : "h-7 w-7";
+
   return (
     <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-sm lg:max-w-none"}`}>
       <div className="space-y-3">
@@ -353,12 +362,12 @@ export const BookingCalendar = ({
             ) : null}
           </div>
 
-          <div className="overflow-x-auto">
-            <div className={`${weatherAside ? "min-w-[280px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl"}`}>
+          <div className="overflow-visible">
+            <div className={wrapperWidth}>
               {activePage.length > 0 ? (
                 <div
                   ref={overlayHostRef}
-                  className="relative pb-1"
+                  className="relative overflow-visible pb-1"
                   onMouseLeave={() => {
                     setHoveredCell(selectedSlot);
                     if (!selectedSlot) setOverlayAnchor(null);
@@ -369,7 +378,7 @@ export const BookingCalendar = ({
                       <div className="mb-3 lg:hidden">{weatherCard}</div>
                       {overlayAnchor ? (
                         <div
-                          className="pointer-events-none absolute z-20 hidden w-64 -translate-x-1/2 -translate-y-full lg:block"
+                          className="pointer-events-none absolute z-30 hidden w-72 -translate-x-1/2 -translate-y-full lg:block"
                           style={{ left: overlayAnchor.left, top: overlayAnchor.top }}
                         >
                           {weatherCard}
@@ -378,21 +387,21 @@ export const BookingCalendar = ({
                     </>
                   ) : null}
 
-                  <div className="overflow-x-auto">
-                    <table className={`w-full table-fixed border-collapse ${weatherAside ? "min-w-[280px]" : "min-w-[260px]"}`}>
+                  <div className="overflow-x-auto overflow-y-visible">
+                    <table className={`w-full table-fixed border-collapse ${tableMinWidth}`}>
                       <thead>
                         <tr>
-                          <th className={`${weatherAside ? "w-11" : "w-10"} p-1`} aria-label="Khung gio" />
+                          <th className={`${timeHeaderWidth} p-1`} aria-label="Khung gio" />
                           {activePage.map((day) => {
                             const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
                             return (
-                              <th key={day.key} className="p-1 text-center">
+                              <th key={day.key} className="px-1 py-1 text-center">
                                 <div className="flex flex-col">
-                                  <span className={`text-[8px] font-bold uppercase ${isSelectedDay ? "text-brand" : "text-stone-400"}`}>
+                                  <span className={`${weekdayClass} font-bold uppercase ${isSelectedDay ? "text-brand" : "text-stone-400"}`}>
                                     {weekdayShort[day.date.getDay()]}
                                   </span>
                                   <span
-                                    className={`text-[10px] font-bold ${
+                                    className={`${dayNumberClass} font-bold ${
                                       isSelectedDay ? "text-brand" : day.outsideMonth ? "text-stone-300" : "text-stone-500"
                                     }`}
                                   >
@@ -407,7 +416,7 @@ export const BookingCalendar = ({
                       <tbody>
                         {timeSlots.map((time) => (
                           <tr key={time}>
-                            <td className={`whitespace-nowrap p-1 pr-2 align-middle font-bold leading-none text-stone-400 ${weatherAside ? "text-[9px]" : "text-[9px]"}`}>
+                            <td className={`whitespace-nowrap p-1 pr-2 align-middle font-bold leading-none text-stone-400 ${timeLabelClass}`}>
                               {time}
                             </td>
                             {activePage.map((day) => {
@@ -416,10 +425,10 @@ export const BookingCalendar = ({
                               const isSelected = Boolean(slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time);
 
                               return (
-                                <td key={`${day.key}-${time}`} className="p-0.5">
+                                <td key={`${day.key}-${time}`} className={cellPaddingClass}>
                                   <button
                                     type="button"
-                                    className={`mx-auto flex ${weatherAside ? "h-7 w-7" : "h-6 w-6"} items-center justify-center rounded-md border-2 transition-all ${
+                                    className={`mx-auto flex ${slotSizeClass} items-center justify-center rounded-md border-2 transition-all ${
                                       !slot || isBlocked
                                         ? "cursor-default border-stone-300 bg-stone-100 text-stone-400"
                                         : isSelected
