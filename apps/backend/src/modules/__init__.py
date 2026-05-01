@@ -1,1 +1,1 @@
-"""Bounded contexts for the backend application."""
+"""Các ngữ cảnh nghiệp vụ của ứng dụng backend."""

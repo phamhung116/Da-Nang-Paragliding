@@ -5,8 +5,8 @@ import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { bookingRules } from "@/shared/constants/customer-content";
 import { routes } from "@/shared/config/routes";
-import { customerApi } from "@/shared/config/api";
 import { BookingForm } from "@/features/create-booking/booking-form";
+import { availabilityQueryOptions } from "@/shared/lib/query-options";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 
@@ -53,8 +53,7 @@ export const BookingPage = () => {
 
   const availabilityQueries = useQueries({
     queries: availabilityMonths.map(({ year, month }) => ({
-      queryKey: ["availability", bookingContext.service, year, month],
-      queryFn: () => customerApi.getAvailability(bookingContext.service, year, month),
+      ...availabilityQueryOptions(bookingContext.service, year, month),
       enabled: Boolean(bookingContext.service)
     }))
   });
@@ -89,7 +88,7 @@ export const BookingPage = () => {
             <Badge>Bắt buộc đăng nhập</Badge>
             <h2 className="detail-title">Đăng nhập để tiếp tục đặt lịch</h2>
             <p className="detail-copy">
-              Hệ thống sẽ tự động điền email, số điện thoại và lưu lịch sử booking vào tài khoản của bạn.
+              Hệ thống sẽ tự động điền email, số điện thoại và lưu lịch sử đặt lịch vào tài khoản của bạn.
             </p>
             <Link to={`${routes.login}?redirect=${encodeURIComponent(`${location.pathname}${location.search}`)}`}>
               <Button>Đăng nhập ngay</Button>
@@ -107,7 +106,7 @@ export const BookingPage = () => {
           <div className="section-heading">
             <div>
               <Badge>Thông tin hành khách</Badge>
-              <h2>Hoàn tất form booking</h2>
+              <h2>Hoàn tất biểu mẫu đặt lịch</h2>
             </div>
             <p>Khách có thể đổi ngày, khung giờ và xem weather theo giờ ngay trên màn hình đặt lịch.</p>
           </div>
@@ -118,7 +117,7 @@ export const BookingPage = () => {
                 <div>
                   <Badge>Chọn lại lịch nếu cần</Badge>
                   <h3>Lịch bay và weather theo giờ</h3>
-                  <p>Ô trống có thể đặt. Ô X đã hết pilot hoặc bị khóa do điều kiện bay.</p>
+                  <p>Ô trống có thể đặt. Ô X đã hết phi công hoặc bị khóa do điều kiện bay.</p>
                 </div>
               </div>
               <BookingCalendar
@@ -136,7 +135,7 @@ export const BookingPage = () => {
             {bookingRules.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Quy tắc booking</strong>
+                  <strong>Quy tắc đặt lịch</strong>
                   <p>{item}</p>
                 </Panel>
               </Card>
@@ -153,8 +152,8 @@ export const BookingPage = () => {
             <Card>
               <Panel className="calendar-selection-card">
                 <Badge tone="danger">Chưa chọn khung giờ</Badge>
-                <strong>Hãy chọn một ô còn trống trên lịch trước khi điền form đặt lịch.</strong>
-                <small>Thông tin thời tiết theo giờ sẽ hiện ngay bên dưới lịch khi hover vào từng slot.</small>
+                <strong>Hãy chọn một ô còn trống trên lịch trước khi điền biểu mẫu đặt lịch.</strong>
+                <small>Thông tin thời tiết theo giờ sẽ hiện ngay bên dưới lịch khi trỏ vào từng khung giờ.</small>
               </Panel>
             </Card>
           )}

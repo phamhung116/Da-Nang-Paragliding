@@ -9,10 +9,10 @@ export const createPilotApi = (baseUrl: string, getAccessToken?: () => string | 
     listPosts: () => http.request<Post[]>("/posts/"),
     getPost: (slug: string) => http.request<Post>(`/posts/${slug}/`),
     listFlights: () => http.request<PilotFlight[]>("/flights/"),
-    updateFlightStatus: (code: string, status: string) =>
+    updateFlightStatus: (code: string, status: string, payload?: { lat: number; lng: number; name?: string } | null) =>
       http.request<{ booking: Booking; tracking: Tracking }>(`/flights/${code}/status/`, {
         method: "PATCH",
-        body: JSON.stringify({ status })
+        body: JSON.stringify(payload ? { status, ...payload } : { status })
       }),
     startTracking: (code: string, payload: { lat: number; lng: number; name?: string }) =>
       http.request<{ booking: Booking; tracking: Tracking }>(`/flights/${code}/tracking/start/`, {

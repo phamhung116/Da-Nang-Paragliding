@@ -84,10 +84,18 @@ class MongoAccountRepository:
             queryset = queryset.filter(is_active=is_active)
         return [_to_account(document) for document in queryset]
 
+    def count(self, *, role: str | None = None, is_active: bool | None = None) -> int:
+        queryset = AccountDocument.objects.all()
+        if role:
+            queryset = queryset.filter(role=role)
+        if is_active is not None:
+            queryset = queryset.filter(is_active=is_active)
+        return queryset.count()
+
     def update(self, account: Account, *, password_hash: str | None = None) -> Account:
         document = AccountDocument.objects.filter(id=account.id).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
 
         document.full_name = account.full_name
         document.email = account.email
@@ -104,7 +112,7 @@ class MongoAccountRepository:
     def delete(self, account_id: str) -> None:
         document = AccountDocument.objects.filter(id=account_id).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
         AccountSessionDocument.objects.filter(account_id=account_id).delete()
         document.delete()
 
@@ -158,7 +166,7 @@ class MongoAccountRepository:
     ) -> None:
         document = AccountDocument.objects.filter(id=account_id).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tai khoan.")
+            raise NotFoundError("Không tìm thấy tài khoản.")
 
         document.email_verified = False
         document.email_verified_at = None

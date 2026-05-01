@@ -12,6 +12,7 @@ from config.containers import (
     list_confirmed_bookings_use_case,
     list_pilot_flights_use_case,
     lookup_bookings_by_phone_use_case,
+    resolve_pickup_location_use_case,
     review_booking_use_case,
     update_my_profile_use_case,
 )
@@ -21,6 +22,8 @@ from modules.bookings.presentation.api.v1.serializers import (
     BookingCreateSerializer,
     BookingReadSerializer,
     CancelBookingSerializer,
+    PickupLocationResolveSerializer,
+    PickupLocationSerializer,
     ReviewBookingSerializer,
 )
 from modules.tracking.presentation.api.v1.serializers import FlightTrackingSerializer
@@ -49,7 +52,7 @@ class PublicBookingCreateApi(APIView):
                 booking_request.customer_name = booking_request.customer_name or request.user.full_name
                 booking_request.phone = normalize_phone(booking_request.phone)
                 if not booking_request.customer_name.strip() or not booking_request.phone:
-                    return error("Vui long nhap ho ten va so dien thoai khi dat lich.", status.HTTP_400_BAD_REQUEST)
+                    return error("Vui lòng nhập họ tên và số điện thoại khi đặt lịch.", status.HTTP_400_BAD_REQUEST)
                 update_my_profile_use_case().execute(
                     request.user.id,
                     UpdateProfileRequest(
@@ -89,6 +92,31 @@ class PublicBookingLookupApi(APIView):
         )
         bookings = lookup_bookings_by_phone_use_case().execute(identifier)
         return success(BookingReadSerializer(serialize_entity(bookings), many=True).data)
+
+
+class PublicPickupLocationResolveApi(APIView):
+    authentication_classes = [BearerTokenAuthentication]
+    permission_classes = [IsAuthenticatedAccount]
+
+    def post(self, request):
+        serializer = PickupLocationResolveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            location = resolve_pickup_location_use_case().execute(serializer.validated_data["address"])
+            return success(PickupLocationSerializer(location).data)
+        except DomainError as exc:
+            return error(str(exc), status.HTTP_400_BAD_REQUEST)
+
+
+class PublicPickupLocationSuggestApi(APIView):
+    authentication_classes = [BearerTokenAuthentication]
+    permission_classes = [IsAuthenticatedAccount]
+
+    def post(self, request):
+        serializer = PickupLocationResolveSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        locations = resolve_pickup_location_use_case().suggest(serializer.validated_data["address"])
+        return success(PickupLocationSerializer(locations, many=True).data)
 
 
 class PublicBookingCancelApi(APIView):

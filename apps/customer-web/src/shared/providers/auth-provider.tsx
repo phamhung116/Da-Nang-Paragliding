@@ -37,7 +37,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 const ensureCustomerRole = (account: Account) => {
   if (account.role !== "CUSTOMER") {
-    throw new Error("Tài khoản này không được phép đăng nhập customer portal.");
+    throw new Error("Tài khoản này không được phép đăng nhập khu vực khách hàng.");
   }
   return account;
 };
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used inside AuthProvider");
+    throw new Error("useAuth phải được dùng bên trong AuthProvider");
   }
   return context;
 };

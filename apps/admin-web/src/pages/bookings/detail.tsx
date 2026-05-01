@@ -11,17 +11,24 @@ import { AdminLayout } from "@/widgets/layout/admin-layout";
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 
 const flightLabels: Record<string, string> = {
-  WAITING_CONFIRMATION: "Cho xac nhan",
-  WAITING: "Dang cho",
-  PICKING_UP: "Dang di chuyen den diem don",
-  EN_ROUTE: "Dang di chuyen",
-  FLYING: "Dang bay",
-  LANDED: "Da ha canh"
+  WAITING_CONFIRMATION: "Chờ xác nhận",
+  WAITING: "Đang chờ",
+  PICKING_UP: "Phi công đang đến điểm đón",
+  EN_ROUTE: "Đang di chuyển",
+  FLYING: "Đang bay",
+  LANDED: "Đã hạ cánh"
+};
+
+const paymentLabels: Record<string, string> = {
+  PENDING: "Chờ thanh toán",
+  PAID: "Đã thanh toán",
+  FAILED: "Thanh toán thất bại",
+  REFUNDED: "Đã hoàn tiền"
 };
 
 const statusLabel = (booking: Booking) => {
   if (cancelledStatuses.has(booking.approval_status)) {
-    return "Da huy";
+    return "Đã hủy";
   }
   return flightLabels[booking.flight_status] ?? booking.flight_status;
 };
@@ -123,12 +130,12 @@ export const BookingDetailPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge>Booking detail</Badge>
+            <Badge>Chi tiết đặt lịch</Badge>
             <h1>{booking?.code ?? code}</h1>
-            <p>Trang nay chi hien thong tin cua booking dang chon.</p>
+            <p>Trang này hiển thị thông tin của lịch đặt đang chọn.</p>
           </div>
           <Link to={routes.bookings}>
-            <Button variant="secondary">Quay lai danh sach</Button>
+            <Button variant="secondary">Quay lại danh sách</Button>
           </Link>
         </div>
 
@@ -145,28 +152,28 @@ export const BookingDetailPage = () => {
                   <h3>{booking.service_name}</h3>
                   <p>{formatCurrency(booking.final_total)}</p>
                 </div>
-                <Badge>{booking.payment_status}</Badge>
+                <Badge>{paymentLabels[booking.payment_status] ?? booking.payment_status}</Badge>
               </div>
 
               <div className="detail-list">
                 <div>
-                  <span>Ma booking</span>
+                  <span>Mã đặt lịch</span>
                   <strong>{booking.code}</strong>
                 </div>
                 <div>
-                  <span>Trang thai booking</span>
+                  <span>Trạng thái đặt lịch</span>
                   <strong>{statusLabel(booking)}</strong>
                 </div>
                 <div>
-                  <span>Thoi gian tao booking</span>
+                  <span>Thời gian tạo đặt lịch</span>
                   <strong>{formatDateTime(booking.created_at)}</strong>
                 </div>
                 <div>
-                  <span>Ten khach hang</span>
+                  <span>Tên khách hàng</span>
                   <strong>{booking.customer_name}</strong>
                 </div>
                 <div>
-                  <span>So dien thoai</span>
+                  <span>Số điện thoại</span>
                   <strong>{booking.phone}</strong>
                 </div>
                 <div>
@@ -174,30 +181,30 @@ export const BookingDetailPage = () => {
                   <strong>{booking.email}</strong>
                 </div>
                 <div>
-                  <span>Lich bay</span>
+                  <span>Lịch bay</span>
                   <strong>
                     {booking.flight_date} - {booking.flight_time}
                   </strong>
                 </div>
                 <div>
-                  <span>So nguoi lon</span>
+                  <span>Số người lớn</span>
                   <strong>{booking.adults}</strong>
                 </div>
                 <div>
-                  <span>So tre em</span>
+                  <span>Số trẻ em</span>
                   <strong>{booking.children}</strong>
                 </div>
                 <div>
-                  <span>Ghi chu</span>
-                  <strong>{booking.notes || "Khong co ghi chu"}</strong>
+                  <span>Ghi chú</span>
+                  <strong>{booking.notes || "Không có ghi chú"}</strong>
                 </div>
                 <div>
-                  <span>Xe don</span>
-                  <strong>{booking.pickup_option === "pickup" ? "Xe den don" : "Khach tu den"}</strong>
+                  <span>Xe đón</span>
+                  <strong>{booking.pickup_option === "pickup" ? "Xe đến đón" : "Khách tự đến"}</strong>
                 </div>
                 {booking.pickup_option === "pickup" ? (
                   <div>
-                    <span>Dia chi don</span>
+                    <span>Địa chỉ đón</span>
                     <strong>{booking.pickup_address}</strong>
                   </div>
                 ) : null}
@@ -207,14 +214,14 @@ export const BookingDetailPage = () => {
                 <div className="booking-decision-card">
                   <div className="admin-card__header">
                     <div>
-                      <strong>Pilot phu trach</strong>
-                      <p>Chon pilot phu trach booking nay.</p>
+                      <strong>Phi công phụ trách</strong>
+                      <p>Chọn phi công phụ trách lịch đặt này.</p>
                     </div>
                     {booking.assigned_pilot_name ? <Badge>{booking.assigned_pilot_name}</Badge> : null}
                   </div>
-                  <Field label="Chon pilot">
+                  <Field label="Chọn phi công">
                     <Select value={selectedPilotPhone} onChange={(event) => setSelectedPilotPhone(event.target.value)}>
-                      <option value="">Chon pilot</option>
+                      <option value="">Chọn phi công</option>
                       {activePilots.map((pilot) => (
                         <option key={pilot.id} value={pilot.phone}>
                           {pilot.full_name} - {pilot.phone}
@@ -226,7 +233,7 @@ export const BookingDetailPage = () => {
                     disabled={!selectedPilot || reviewMutation.isPending || assignPilotMutation.isPending}
                     onClick={savePilot}
                   >
-                    {booking.approval_status === "PENDING" ? "Xac nhan va gan pilot" : "Luu pilot"}
+                    {booking.approval_status === "PENDING" ? "Xác nhận và gán phi công" : "Lưu phi công"}
                   </Button>
                 </div>
               ) : null}
@@ -234,13 +241,13 @@ export const BookingDetailPage = () => {
               {!cancelledStatuses.has(booking.approval_status) ? (
                 <div className="table-actions--inline">
                   <Button variant="secondary" onClick={() => setCancelModalOpen(true)}>
-                    Huy booking
+                    Hủy lịch đặt
                   </Button>
                 </div>
               ) : (
                 <div className="booking-decision-card booking-decision-card--danger">
-                  <strong>Ly do huy</strong>
-                  <p>{booking.rejection_reason ?? "Khong co ly do"}</p>
+                  <strong>Lý do hủy</strong>
+                  <p>{booking.rejection_reason ?? "Không có lý do"}</p>
                 </div>
               )}
 
@@ -251,7 +258,7 @@ export const BookingDetailPage = () => {
           </Card>
         ) : (
           <Card>
-            <Panel>Dang tai booking...</Panel>
+            <Panel>Đang tải lịch đặt...</Panel>
           </Card>
         )}
 
@@ -264,25 +271,25 @@ export const BookingDetailPage = () => {
               closeCancelDialog();
             }
           }}
-          title={`Huy booking ${booking?.code ?? code}`}
-          description="Email thong bao huy booking se duoc gui den khach hang sau khi xac nhan."
+          title={`Hủy lịch đặt ${booking?.code ?? code}`}
+          description="Email thông báo hủy lịch đặt sẽ được gửi đến khách hàng sau khi xác nhận."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={closeCancelDialog}>
-                Dong
+                Đóng
               </Button>
               <Button type="button" disabled={!cancelReason.trim() || cancelMutation.isPending} onClick={cancelBooking}>
-                {cancelMutation.isPending ? "Dang huy..." : "Huy booking"}
+                {cancelMutation.isPending ? "Đang hủy..." : "Hủy lịch đặt"}
               </Button>
             </>
           }
         >
-          <Field label="Ly do huy">
+          <Field label="Lý do hủy">
             <Textarea
               value={cancelReason}
               onChange={(event) => setCancelReason(event.target.value)}
-              placeholder="Nhap ly do huy booking"
+              placeholder="Nhập lý do hủy lịch đặt"
               autoFocus
             />
           </Field>

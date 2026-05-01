@@ -55,10 +55,10 @@ export const LoginPage = () => {
     mutationFn: async (payload: LoginPayload) => {
       const result = await authApi.login(payload);
       if (!["ADMIN", "PILOT"].includes(result.account.role)) {
-        throw new Error("Tai khoan nay khong co quyen truy cap workspace van hanh.");
+        throw new Error("Tài khoản này không có quyền truy cập khu vực vận hành.");
       }
       if (result.account.role === "PILOT" && !PILOT_APP_URL) {
-        throw new Error("Thieu bien VITE_PILOT_APP_URL tren Vercel admin-web.");
+        throw new Error("Thiếu biến VITE_PILOT_APP_URL cho khu vực quản trị trên Vercel.");
       }
       return result;
     },
@@ -84,30 +84,30 @@ export const LoginPage = () => {
     <div className="admin-login-shell">
       <Card>
         <Panel className="admin-stack">
-          <Badge>OPERATIONS</Badge>
-          <h1>Workspace login</h1>
-          <p>Admin and pilot use the same sign-in. The system routes each role to the right workspace.</p>
+          <Badge>VẬN HÀNH</Badge>
+          <h1>Đăng nhập khu vực vận hành</h1>
+          <p>Quản trị viên và phi công dùng chung màn hình đăng nhập. Hệ thống sẽ tự chuyển đúng khu vực theo vai trò.</p>
 
           <form className="admin-form" onSubmit={form.handleSubmit((values) => mutation.mutate(values))}>
             <Field label="Email">
               <Input
                 type="email"
                 {...form.register("email", {
-                  required: "Email is required.",
+                  required: "Email là bắt buộc.",
                   pattern: {
                     value: emailPattern,
-                    message: "Invalid email format."
+                    message: "Email không đúng định dạng."
                   }
                 })}
               />
             </Field>
             {form.formState.errors.email ? <p className="form-error">{form.formState.errors.email.message}</p> : null}
 
-            <Field label="Password">
+            <Field label="Mật khẩu">
               <Input
                 type="password"
                 {...form.register("password", {
-                  required: "Password is required."
+                  required: "Mật khẩu là bắt buộc."
                 })}
               />
             </Field>
@@ -117,7 +117,7 @@ export const LoginPage = () => {
             {mutation.error instanceof Error ? <p className="form-error">{mutation.error.message}</p> : null}
 
             <Button disabled={mutation.isPending || !form.formState.isValid}>
-              {mutation.isPending ? "Signing in..." : "Sign in"}
+              {mutation.isPending ? "Đang đăng nhập..." : "Đăng nhập"}
             </Button>
           </form>
         </Panel>

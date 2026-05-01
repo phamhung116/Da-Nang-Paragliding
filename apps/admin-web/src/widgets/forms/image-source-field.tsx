@@ -24,7 +24,7 @@ export const ImageSourceField = ({
   const [error, setError] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState("");
   const isUploadedImage = value.startsWith("data:image/");
-  const displayValue = isUploadedImage ? uploadedFileName || "Anh da tai len tu may cuc bo" : value;
+  const displayValue = isUploadedImage ? uploadedFileName || "Ảnh đã tải lên từ máy cục bộ" : value;
 
   useEffect(() => {
     if (!isUploadedImage) {
@@ -48,7 +48,7 @@ export const ImageSourceField = ({
       setUploadedFileName(file.name);
       onChange(nextValue);
     } catch (uploadError) {
-      setError(uploadError instanceof Error ? uploadError.message : "Khong the tai anh len.");
+      setError(uploadError instanceof Error ? uploadError.message : "Không thể tải ảnh lên.");
     } finally {
       setIsProcessing(false);
     }
@@ -68,7 +68,7 @@ export const ImageSourceField = ({
       </Field>
       <div className="image-source-field__actions">
         <Button type="button" variant="secondary" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
-          {isProcessing ? "Dang xu ly anh..." : "Tai anh len"}
+          {isProcessing ? "Đang xử lý ảnh..." : "Tải ảnh lên"}
         </Button>
         {value ? (
           <Button
@@ -79,7 +79,7 @@ export const ImageSourceField = ({
               onChange("");
             }}
           >
-            Xoa anh
+            Xóa ảnh
           </Button>
         ) : null}
       </div>

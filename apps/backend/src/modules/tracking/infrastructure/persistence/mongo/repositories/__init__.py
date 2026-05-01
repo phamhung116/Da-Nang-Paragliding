@@ -50,7 +50,7 @@ class MongoTrackingRepository:
             timeline=[
                 {
                     "status": flight_status,
-                    "label": "Cho xac nhan" if flight_status == "WAITING_CONFIRMATION" else "Dang cho",
+                    "label": "Chờ xác nhận" if flight_status == "WAITING_CONFIRMATION" else "Đang chờ",
                     "recorded_at": datetime.utcnow().isoformat(),
                     "type": "STATUS",
                 }
@@ -69,7 +69,7 @@ class MongoTrackingRepository:
     def assign_pilot(self, *, booking_code: str, pilot_name: str | None) -> FlightTracking:
         document = FlightTrackingDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tracking.")
+            raise NotFoundError("Không tìm thấy dữ liệu theo dõi.")
 
         document.pilot_name = pilot_name
         document.save(update_fields=["pilot_name", "updated_at"])
@@ -88,7 +88,7 @@ class MongoTrackingRepository:
     ) -> FlightTracking:
         document = FlightTrackingDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tracking.")
+            raise NotFoundError("Không tìm thấy dữ liệu theo dõi.")
 
         route_points = [] if reset_route_points else list(document.route_points)
         if append_route_point:
@@ -117,7 +117,7 @@ class MongoTrackingRepository:
     ) -> FlightTracking:
         document = FlightTrackingDocument.objects.filter(booking_code=booking_code).first()
         if document is None:
-            raise NotFoundError("Khong tim thay tracking.")
+            raise NotFoundError("Không tìm thấy dữ liệu theo dõi.")
 
         route_points = list(document.route_points)
         route_points.append({**current_location, "recorded_at": datetime.utcnow().isoformat()})

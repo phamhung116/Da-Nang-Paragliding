@@ -3,10 +3,10 @@ import { useMemo } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Clock, Eye, Sun, Wind } from "lucide-react";
 import { Badge, Card, Container, Panel } from "@paragliding/ui";
-import { customerApi } from "@/shared/config/api";
 import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { localizePostContent, localizePostTitle, repairFlightConditionLabel } from "@/shared/lib/localized-content";
+import { availabilityQueryOptions, postQueryOptions, servicesQueryOptions } from "@/shared/lib/query-options";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { motion } from "motion/react";
 
@@ -27,22 +27,19 @@ const getWeatherIcon = (windKph: number, visibilityKm: number) => {
 export const PostDetailPage = () => {
   const { slug = "" } = useParams();
   const { data } = useQuery({
-    queryKey: ["post", slug],
-    queryFn: () => customerApi.getPost(slug),
+    ...postQueryOptions(slug),
     enabled: Boolean(slug)
   });
 
   const { data: services = [] } = useQuery({
-    queryKey: ["post-detail-services"],
-    queryFn: () => customerApi.listServices()
+    ...servicesQueryOptions()
   });
   const weatherServiceSlug = services[0]?.slug;
   const today = useMemo(() => new Date(), []);
   const forecastMonthKeys = useMemo(() => getForecastMonthKeys(today, WEATHER_FORECAST_DAYS), [today]);
   const forecastQueries = useQueries({
     queries: forecastMonthKeys.map(({ year, month }) => ({
-      queryKey: ["post-detail-weather", weatherServiceSlug, year, month],
-      queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", year, month),
+      ...availabilityQueryOptions(weatherServiceSlug ?? "", year, month),
       enabled: Boolean(weatherServiceSlug)
     }))
   });
@@ -109,7 +106,7 @@ export const PostDetailPage = () => {
                   </div>
                   <div className="post-gallery-strip">
                     {POST_SIDEBAR_GALLERY_IMAGES.map((image) => (
-                      <img key={image} src={image} alt="Da Nang Paragliding gallery" referrerPolicy="no-referrer" />
+                      <img key={image} src={image} alt="Bộ sưu tập Dù lượn Đà Nẵng" referrerPolicy="no-referrer" />
                     ))}
                   </div>
                 </Panel>

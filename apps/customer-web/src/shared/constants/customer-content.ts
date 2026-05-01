@@ -5,15 +5,15 @@ export const customerExperienceSteps = [
   },
   {
     title: "2. Chọn ngày và khung giờ",
-    description: "Lịch booking hiển thị slot còn trống, slot đã đầy và snapshot thời tiết theo từng giờ bay."
+    description: "Lịch đặt hiển thị khung giờ còn trống, khung giờ đã đầy và ảnh chụp thời tiết theo từng giờ bay."
   },
   {
     title: "3. Đăng nhập và xác nhận",
-    description: "Hệ thống tự động điền thông tin tài khoản, lưu lịch sử booking và ghi nhận yêu cầu."
+    description: "Hệ thống tự động điền thông tin tài khoản, lưu lịch sử đặt lịch và ghi nhận yêu cầu."
   },
   {
     title: "4. Thanh toán và theo dõi",
-    description: "Nhận mã booking, QR đặt cọc và theo dõi trạng thái chuyến bay sau khi xác nhận."
+    description: "Nhận mã đặt lịch, QR đặt cọc và theo dõi trạng thái chuyến bay sau khi xác nhận."
   }
 ];
 
@@ -24,7 +24,7 @@ export const customerFaqs = [
   },
   {
     question: "Nếu thời tiết xấu thì sao?",
-    answer: "Booking sẽ được đổi lịch sang khung giờ an toàn hơn hoặc hỗ trợ xử lý theo chính sách hoàn hủy."
+    answer: "Lịch đặt sẽ được đổi sang khung giờ an toàn hơn hoặc hỗ trợ xử lý theo chính sách hoàn hủy."
   },
   {
     question: "Tôi có cần thanh toán đủ 100 phần trăm không?",
@@ -45,36 +45,36 @@ export const servicePreparationChecklist = [
 ];
 
 export const aboutOperationalHighlights = [
-  "Pilot có chứng chỉ và được admin gán theo booking đã xác nhận.",
-  "Nhân sự điều phối cập nhật slot đầy, thời tiết và trạng thái chuyến bay theo ngày.",
-  "Khách nhận mã booking rõ ràng, email xác nhận và kênh liên hệ trực tiếp."
+  "Phi công có chứng chỉ và được quản trị viên gán theo lịch đặt đã xác nhận.",
+  "Nhân sự điều phối cập nhật khung giờ đã đầy, thời tiết và trạng thái chuyến bay theo ngày.",
+  "Khách nhận mã đặt lịch rõ ràng, email xác nhận và kênh liên hệ trực tiếp."
 ];
 
 export const loginBenefits = [
-  "Tự động điền email, số điện thoại và họ tên vào form booking.",
-  "Xem lịch sử booking, trạng thái thanh toán và hành trình bay.",
+  "Tự động điền email, số điện thoại và họ tên vào biểu mẫu đặt lịch.",
+  "Xem lịch sử đặt lịch, trạng thái thanh toán và hành trình bay.",
   "Nhận email xác nhận, đổi lịch nhanh và lưu lại lịch sử tra cứu."
 ];
 
 export const authTrustStats = [
   {
     value: "24/7",
-    label: "Tra cứu booking, thanh toán và tracking trên cùng một tài khoản."
+    label: "Tra cứu lịch đặt, thanh toán và theo dõi hành trình trên cùng một tài khoản."
   },
   {
-    value: "3 roles",
-    label: "Khách hàng, pilot và admin đồng bộ dữ liệu trên cùng hệ thống vận hành."
+    value: "3 vai trò",
+    label: "Khách hàng, phi công và quản trị viên đồng bộ dữ liệu trên cùng hệ thống vận hành."
   },
   {
-    value: "7 days",
-    label: "Dự báo thời tiết và kế hoạch slot được cập nhật để khách chọn lịch hợp lý."
+    value: "7 ngày",
+    label: "Dự báo thời tiết và kế hoạch khung giờ được cập nhật để khách chọn lịch hợp lý."
   }
 ];
 
 export const authJourneyHighlights = [
   "Tạo tài khoản một lần để đặt lịch nhanh hơn cho các lần bay sau.",
-  "Lưu lịch sử booking, QR đặt cọc và trạng thái chuyến bay theo từng mã.",
-  "Nhận email xác nhận và truy cập lại tracking ngay cả khi rời khỏi website."
+  "Lưu lịch sử đặt lịch, QR đặt cọc và trạng thái chuyến bay theo từng mã.",
+  "Nhận email xác nhận và truy cập lại trang theo dõi ngay cả khi rời khỏi website."
 ];
 
 export const authPasswordRules = [
@@ -86,29 +86,29 @@ export const authPasswordRules = [
 export const authSupportNotes = [
   "Email và số điện thoại là duy nhất cho mỗi tài khoản.",
   "Đăng ký xong sẽ được đăng nhập ngay để tiếp tục đặt lịch.",
-  "Nếu backend hoặc database mất kết nối, form sẽ hiển thị lỗi cụ thể thay vì thông báo chung chung."
+  "Nếu hệ thống máy chủ hoặc cơ sở dữ liệu mất kết nối, biểu mẫu sẽ hiển thị lỗi cụ thể thay vì thông báo chung chung."
 ];
 
 export const accountSupportNotes = [
   "Cập nhật đúng số điện thoại để doanh nghiệp liên hệ nhanh khi cần đổi lịch.",
-  "Mỗi booking sẽ lưu mã, trạng thái thanh toán và tình trạng chuyến bay.",
+  "Mỗi lịch đặt sẽ lưu mã, trạng thái thanh toán và tình trạng chuyến bay.",
   "Nếu cần hỗ trợ gấp, khách có thể gọi trực tiếp trong khung giờ hỗ trợ."
 ];
 
 export const bookingRules = [
-  "Không thể đặt vào ngày đầy hoặc slot đã kín.",
+  "Không thể đặt vào ngày đầy hoặc khung giờ đã kín.",
   "Số trẻ em phải phù hợp độ tuổi tối thiểu của gói bay.",
-  "Sau khi gửi booking, slot sẽ được giữ theo logic thanh toán của hệ thống."
+  "Sau khi gửi lịch đặt, khung giờ sẽ được giữ theo logic thanh toán của hệ thống."
 ];
 
 export const checkoutGuidelines = [
-  "Booking online sẽ hiển thị QR và nội dung chuyển khoản theo mã booking.",
-  "Thanh toán thành công sẽ chuyển booking sang đã xác nhận.",
+  "Đặt lịch online sẽ hiển thị QR và nội dung chuyển khoản theo mã đặt lịch.",
+  "Thanh toán thành công sẽ chuyển lịch đặt sang đã xác nhận.",
   "Nếu QR hết hạn, khách cần tạo lại yêu cầu thanh toán mới."
 ];
 
 export const trackingSupportNotes = [
-  "Nhập đúng email hoặc số điện thoại đã dùng khi đặt lịch để lấy lại booking.",
+  "Nhập đúng email hoặc số điện thoại đã dùng khi đặt lịch để lấy lại lịch đặt.",
   "Dòng thời gian theo dõi hiển thị các mốc đang chờ, đang di chuyển, đang bay và đã hạ cánh.",
-  "Nếu không tìm thấy booking, hãy liên hệ doanh nghiệp để kiểm tra thông tin xác thực."
+  "Nếu không tìm thấy lịch đặt, hãy liên hệ doanh nghiệp để kiểm tra thông tin xác thực."
 ];

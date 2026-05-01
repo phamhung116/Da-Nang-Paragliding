@@ -33,7 +33,7 @@ from modules.tracking.infrastructure.persistence.mongo.documents import FlightTr
 
 
 class Command(BaseCommand):
-    help = "Seed demo data for local development and UI preview."
+    help = "Tạo dữ liệu mẫu cho môi trường phát triển và xem trước giao diện."
 
     def handle(self, *args, **options):
         self._sync_accounts()
@@ -44,7 +44,7 @@ class Command(BaseCommand):
             else:
                 create_service_feature_use_case().execute(payload)
         feature_map = {feature.name: feature for feature in list_service_features_use_case().execute(active_only=False)}
-        self.stdout.write(self.style.SUCCESS("Service features synchronized."))
+        self.stdout.write(self.style.SUCCESS("Đã đồng bộ dịch vụ đi kèm."))
 
         service_map = {service.slug: service for service in list_service_packages_use_case().execute(active_only=False)}
         for payload in self._service_payloads(feature_map):
@@ -53,7 +53,7 @@ class Command(BaseCommand):
             else:
                 create_service_package_use_case().execute(payload)
         services = list_service_packages_use_case().execute(active_only=False)
-        self.stdout.write(self.style.SUCCESS("Catalog synchronized."))
+        self.stdout.write(self.style.SUCCESS("Đã đồng bộ danh mục dịch vụ."))
 
         post_map = {post.slug: post for post in list_posts_use_case().execute(published_only=False)}
         for payload in self._post_payloads():
@@ -61,7 +61,7 @@ class Command(BaseCommand):
                 update_post_use_case().execute(payload.slug, payload)
             else:
                 create_post_use_case().execute(payload)
-        self.stdout.write(self.style.SUCCESS("Posts synchronized."))
+        self.stdout.write(self.style.SUCCESS("Đã đồng bộ bài viết."))
 
         today = date.today()
         for service in services:
@@ -91,12 +91,12 @@ class Command(BaseCommand):
                     service_slug=primary_service.slug,
                     flight_date=pending_slot["date"],
                     flight_time=pending_slot["time"],
-                    customer_name="Nguyen Minh Anh",
+                    customer_name="Nguyễn Minh Anh",
                     phone="+84909000111",
-                    email="pending@example.com",
+                    email="dangcho@example.com",
                     adults=2,
                     children=0,
-                    notes="Morning hold request.",
+                    notes="Muốn giữ lịch bay buổi sáng.",
                     payment_method="cash",
                 )
             )
@@ -115,12 +115,12 @@ class Command(BaseCommand):
                     service_slug=secondary_service.slug,
                     flight_date=confirmed_slot["date"],
                     flight_time=confirmed_slot["time"],
-                    customer_name="Tran Hoang Khang",
+                    customer_name="Trần Hoàng Khang",
                     phone="+84909000222",
-                    email="confirmed@example.com",
+                    email="xacnhan@example.com",
                     adults=2,
                     children=1,
-                    notes="Family group booking.",
+                    notes="Đặt lịch cho nhóm gia đình.",
                     payment_method="cash",
                 )
             )
@@ -128,7 +128,7 @@ class Command(BaseCommand):
                 confirmed_result["booking"].code,
                 ReviewBookingRequest(
                     decision="confirm",
-                    pilot_name="Pilot Son Tra 01",
+                    pilot_name="Phi công Sơn Trà 01",
                     pilot_phone="+84908000111",
                 ),
             )
@@ -147,25 +147,25 @@ class Command(BaseCommand):
                     service_slug=primary_service.slug,
                     flight_date=online_slot["date"],
                     flight_time=online_slot["time"],
-                    customer_name="Le Bao Chau",
+                    customer_name="Lê Bảo Châu",
                     phone="+84909000333",
-                    email="online@example.com",
+                    email="tructuyen@example.com",
                     adults=1,
                     children=0,
-                    notes="Prefer cinematic route.",
+                    notes="Muốn lộ trình có góc quay đẹp.",
                     payment_method="gateway",
                 )
             )
             complete_online_payment_use_case().execute(online_result["booking"].code)
             assign_pilot_use_case().execute(
                 online_result["booking"].code,
-                AssignPilotRequest(pilot_name="Pilot Son Tra 02", pilot_phone="+84908000222"),
+                AssignPilotRequest(pilot_name="Phi công Sơn Trà 02", pilot_phone="+84908000222"),
             )
             update_flight_status_use_case().execute(online_result["booking"].code, "EN_ROUTE")
             update_flight_status_use_case().execute(online_result["booking"].code, "FLYING")
 
         self._repair_snapshot_texts(services)
-        self.stdout.write(self.style.SUCCESS("Demo seed completed."))
+        self.stdout.write(self.style.SUCCESS("Đã tạo dữ liệu mẫu."))
 
     def _sync_accounts(self) -> None:
         repository = account_repository()
@@ -191,7 +191,7 @@ class Command(BaseCommand):
                     ),
                     password_hash=make_password(payload["password"]),
                 )
-        self.stdout.write(self.style.SUCCESS("Accounts synchronized."))
+        self.stdout.write(self.style.SUCCESS("Đã đồng bộ tài khoản."))
 
     def _first_open_slot(self, days, *, min_date: date):
         for day in days:
@@ -200,78 +200,78 @@ class Command(BaseCommand):
             for slot in day.slots:
                 if not slot.is_locked and not slot.is_full:
                     return {"date": day.date, "time": slot.time}
-        raise RuntimeError("No open slot found for demo seed.")
+        raise RuntimeError("Không tìm thấy khung giờ trống để tạo dữ liệu mẫu.")
 
     def _feature_payloads(self) -> list[ServiceFeaturePayload]:
         return [
             ServiceFeaturePayload(
                 name="Phi công bay đôi",
-                name_en="Tandem pilot",
-                description="Pilot tandem đã được phân công theo booking.",
-                description_en="Assigned tandem pilot for the booking.",
+                name_en="Phi công bay đôi",
+                description="Phi công bay đôi đã được phân công theo lịch đặt.",
+                description_en="Phi công bay đôi đã được phân công theo lịch đặt.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Bảo hiểm cơ bản",
-                name_en="Basic insurance",
+                name_en="Bảo hiểm cơ bản",
                 description="Bảo hiểm cơ bản cho trải nghiệm bay.",
-                description_en="Basic insurance coverage for the flight experience.",
+                description_en="Bảo hiểm cơ bản cho trải nghiệm bay.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Ảnh hậu trường",
-                name_en="Behind-the-scenes photos",
+                name_en="Ảnh hậu trường",
                 description="Một số ảnh ghi lại khoảnh khắc chuẩn bị trước chuyến bay.",
-                description_en="A short set of photos captured before takeoff.",
+                description_en="Một số ảnh ghi lại khoảnh khắc chuẩn bị trước chuyến bay.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Mũ bảo hộ",
-                name_en="Protective helmet",
+                name_en="Mũ bảo hộ",
                 description="Trang bị bảo hộ tiêu chuẩn trước khi cất cánh.",
-                description_en="Standard protective helmet provided before launch.",
+                description_en="Trang bị bảo hộ tiêu chuẩn trước khi cất cánh.",
                 active=True,
             ),
             ServiceFeaturePayload(
-                name="GoPro highlight",
-                name_en="GoPro highlight",
+                name="Điểm nhấn GoPro",
+                name_en="Điểm nhấn GoPro",
                 description="Ghi lại các khoảnh khắc nổi bật trong chuyến bay.",
-                description_en="Highlights captured during the flight with GoPro.",
+                description_en="Ghi lại các khoảnh khắc nổi bật trong chuyến bay bằng GoPro.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Video dựng ngắn",
-                name_en="Short edited video",
+                name_en="Video dựng ngắn",
                 description="Video ngắn đã dựng để khách dễ lưu giữ và chia sẻ.",
-                description_en="A short edited video that is easy to save and share.",
+                description_en="Video ngắn đã dựng để khách dễ lưu giữ và chia sẻ.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Xe trung chuyển lên điểm bay",
-                name_en="Shuttle to launch site",
+                name_en="Xe trung chuyển lên điểm bay",
                 description="Hỗ trợ di chuyển lên điểm cất cánh theo gói.",
-                description_en="Transport support to the launch site based on the selected package.",
+                description_en="Hỗ trợ di chuyển lên điểm cất cánh theo gói đã chọn.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Điều phối nhóm",
-                name_en="Group coordination",
+                name_en="Điều phối nhóm",
                 description="Điều phối nhiều khách trong cùng nhóm theo khung giờ liên tiếp.",
-                description_en="Coordinate multiple guests in one group across consecutive slots.",
+                description_en="Điều phối nhiều khách trong cùng nhóm theo các khung giờ liên tiếp.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Ảnh nhóm",
-                name_en="Group photos",
+                name_en="Ảnh nhóm",
                 description="Ảnh lưu niệm cho nhóm trước hoặc sau chuyến bay.",
-                description_en="Group keepsake photos before or after the flight.",
+                description_en="Ảnh lưu niệm cho nhóm trước hoặc sau chuyến bay.",
                 active=True,
             ),
             ServiceFeaturePayload(
                 name="Nước uống",
-                name_en="Drinking water",
+                name_en="Nước uống",
                 description="Nước uống hỗ trợ khách trong quá trình tập kết.",
-                description_en="Drinking water for guests during check-in and staging.",
+                description_en="Nước uống hỗ trợ khách trong quá trình tập kết.",
                 active=True,
             ),
         ]
@@ -280,12 +280,12 @@ class Command(BaseCommand):
         return [
             ServicePackagePayload(
                 slug="son-tra-sunrise-flight",
-                name="Sunrise Discovery Flight",
-                name_en="Sunrise Discovery Flight",
-                short_description="Bay đôi buổi sáng với điều phối thời tiết và media cơ bản.",
-                short_description_en="A morning tandem flight with weather coordination and a basic media set.",
-                description="Gói bay phù hợp cho người mới, tập trung vào trải nghiệm cất cánh nhẹ nhàng, khung giờ sáng và đội ngũ hỗ trợ đầy đủ từ briefing tới hạ cánh.",
-                description_en="A starter-friendly package focused on a smooth morning launch, gentle pacing, and full support from briefing to landing.",
+                name="Chuyến bay bình minh Sơn Trà",
+                name_en="Chuyến bay bình minh Sơn Trà",
+                short_description="Bay đôi buổi sáng với điều phối thời tiết và bộ ảnh cơ bản.",
+                short_description_en="Bay đôi buổi sáng với điều phối thời tiết và bộ ảnh cơ bản.",
+                description="Gói bay phù hợp cho người mới, tập trung vào trải nghiệm cất cánh nhẹ nhàng, khung giờ sáng và đội ngũ hỗ trợ đầy đủ từ hướng dẫn an toàn tới hạ cánh.",
+                description_en="Gói bay phù hợp cho người mới, tập trung vào trải nghiệm cất cánh nhẹ nhàng, khung giờ sáng và đội ngũ hỗ trợ đầy đủ từ hướng dẫn an toàn tới hạ cánh.",
                 price=Decimal("1490000"),
                 flight_duration_minutes=18,
                 included_feature_ids=[
@@ -294,7 +294,7 @@ class Command(BaseCommand):
                     feature_map["Ảnh hậu trường"].id or "",
                     feature_map["Mũ bảo hộ"].id or "",
                 ],
-                participation_requirements=["Tuân thủ briefing an toàn", "Không có bệnh lý chống chỉ định nghiêm trọng"],
+                participation_requirements=["Tuân thủ hướng dẫn an toàn", "Không có bệnh lý chống chỉ định nghiêm trọng"],
                 min_child_age=7,
                 hero_image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
                 gallery_images=[
@@ -313,17 +313,17 @@ class Command(BaseCommand):
             ),
             ServicePackagePayload(
                 slug="golden-hour-signature-flight",
-                name="Golden Hour Signature Flight",
-                name_en="Golden Hour Signature Flight",
+                name="Chuyến bay hoàng hôn đặc biệt",
+                name_en="Chuyến bay hoàng hôn đặc biệt",
                 short_description="Gói bay hoàng hôn với thời lượng dài hơn và bộ ảnh video đầy đủ.",
-                short_description_en="A sunset package with longer airtime and a full photo and video set.",
-                description="Thiết kế cho khách muốn có trải nghiệm thị giác mạnh, ánh sáng đẹp và nội dung truyền thông trọn gói với tổ media đồng hành.",
-                description_en="Designed for guests who want dramatic visuals, golden light, and a complete media package accompanied by the content crew.",
+                short_description_en="Gói bay hoàng hôn với thời lượng dài hơn và bộ ảnh video đầy đủ.",
+                description="Thiết kế cho khách muốn có trải nghiệm thị giác mạnh, ánh sáng đẹp và nội dung truyền thông trọn gói với tổ quay dựng đồng hành.",
+                description_en="Thiết kế cho khách muốn có trải nghiệm thị giác mạnh, ánh sáng đẹp và nội dung truyền thông trọn gói với tổ quay dựng đồng hành.",
                 price=Decimal("2190000"),
                 flight_duration_minutes=28,
                 included_feature_ids=[
                     feature_map["Phi công bay đôi"].id or "",
-                    feature_map["GoPro highlight"].id or "",
+                    feature_map["Điểm nhấn GoPro"].id or "",
                     feature_map["Video dựng ngắn"].id or "",
                     feature_map["Xe trung chuyển lên điểm bay"].id or "",
                 ],
@@ -346,12 +346,12 @@ class Command(BaseCommand):
             ),
             ServicePackagePayload(
                 slug="team-bonding-cloud-run",
-                name="Team Bonding Cloud Run",
-                name_en="Team Bonding Cloud Run",
+                name="Chuyến bay nhóm gắn kết",
+                name_en="Chuyến bay nhóm gắn kết",
                 short_description="Gói cho nhóm nhỏ kèm điều phối lịch liên tiếp và hỗ trợ doanh nghiệp.",
-                short_description_en="A small-group package with back-to-back scheduling and corporate support.",
-                description="Phù hợp hoạt động team building với nhiều booking liên tiếp, ưu tiên điều phối khung giờ và hỗ trợ liên hệ nhóm trưởng.",
-                description_en="Built for team-building groups with consecutive bookings, slot coordination, and support for the team lead.",
+                short_description_en="Gói cho nhóm nhỏ kèm điều phối lịch liên tiếp và hỗ trợ doanh nghiệp.",
+                description="Phù hợp hoạt động gắn kết đội nhóm với nhiều lịch đặt liên tiếp, ưu tiên điều phối khung giờ và hỗ trợ liên hệ nhóm trưởng.",
+                description_en="Phù hợp hoạt động gắn kết đội nhóm với nhiều lịch đặt liên tiếp, ưu tiên điều phối khung giờ và hỗ trợ liên hệ nhóm trưởng.",
                 price=Decimal("1790000"),
                 flight_duration_minutes=22,
                 included_feature_ids=[
@@ -383,59 +383,57 @@ class Command(BaseCommand):
         return [
             PostPayload(
                 slug="how-to-prepare-for-your-first-flight",
-                title="How to prepare for your first tandem paragliding flight",
-                title_en="How to prepare for your first tandem paragliding flight",
+                title="Chuẩn bị gì cho chuyến bay dù lượn đôi đầu tiên",
+                title_en="Chuẩn bị gì cho chuyến bay dù lượn đôi đầu tiên",
                 excerpt="Checklist ngắn gọn cho lần bay đầu: sức khỏe, trang phục, giờ tập trung và cách đến điểm bay.",
-                excerpt_en="A quick checklist for your first flight: health, outfit, arrival time, and how to reach the launch area.",
+                excerpt_en="Checklist ngắn gọn cho lần bay đầu: sức khỏe, trang phục, giờ tập trung và cách đến điểm bay.",
                 content=(
                     "Lần bay đầu tiên nên được chuẩn bị theo 4 nhóm việc: trang phục gọn, giày bám tốt, "
-                    "đến điểm hẹn đúng giờ và giữ tinh thần thoải mái. Người bay đôi sẽ briefing kỹ trước "
+                    "đến điểm hẹn đúng giờ và giữ tinh thần thoải mái. Phi công bay đôi sẽ hướng dẫn kỹ trước "
                     "cất cánh, vì vậy khách chỉ cần làm đúng hướng dẫn và báo sớm nếu có tiền sử sức khỏe cần lưu ý."
                 ),
                 content_en=(
-                    "Your first flight is best prepared around four essentials: neat clothing, good-grip shoes, "
-                    "arriving on time, and staying relaxed. The tandem pilot will walk you through a full "
-                    "briefing before takeoff, so guests mainly need to follow instructions and share any "
-                    "important health history in advance."
+                    "Lần bay đầu tiên nên được chuẩn bị theo 4 nhóm việc: trang phục gọn, giày bám tốt, "
+                    "đến điểm hẹn đúng giờ và giữ tinh thần thoải mái. Phi công bay đôi sẽ hướng dẫn kỹ trước "
+                    "cất cánh, vì vậy khách chỉ cần làm đúng hướng dẫn và báo sớm nếu có tiền sử sức khỏe cần lưu ý."
                 ),
                 cover_image="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80",
                 published=True,
             ),
             PostPayload(
                 slug="why-wind-and-uv-matter-before-booking",
-                title="Why wind and UV matter before booking a flight slot",
-                title_en="Why wind and UV matter before booking a flight slot",
-                excerpt="Giải thích vì sao lịch booking cần đi kèm snapshot thời tiết và cách đọc nhanh gió, UV, điều kiện bay.",
-                excerpt_en="Why the booking calendar needs a weather snapshot and how to read wind, UV, and flight condition at a glance.",
+                title="Vì sao gió và UV quan trọng trước khi đặt lịch bay",
+                title_en="Vì sao gió và UV quan trọng trước khi đặt lịch bay",
+                excerpt="Giải thích vì sao lịch đặt cần đi kèm ảnh chụp nhanh thời tiết và cách đọc nhanh gió, UV, điều kiện bay.",
+                excerpt_en="Giải thích vì sao lịch đặt cần đi kèm ảnh chụp nhanh thời tiết và cách đọc nhanh gió, UV, điều kiện bay.",
                 content=(
-                    "Tốc độ gió và mức UV là hai chỉ số khách nhìn thấy ngay trên booking calendar. "
+                    "Tốc độ gió và mức UV là hai chỉ số khách nhìn thấy ngay trên lịch đặt. "
                     "Nếu gió tốt và UV ở mức chấp nhận được, điều kiện bay sẽ ổn định hơn. "
-                    "Admin và điều phối viên vẫn là người quyết định cuối cùng, nhưng snapshot này giúp khách chọn khung giờ hợp lý hơn."
+                    "Quản trị viên và điều phối viên vẫn là người quyết định cuối cùng, nhưng ảnh chụp nhanh này giúp khách chọn khung giờ hợp lý hơn."
                 ),
                 content_en=(
-                    "Wind speed and UV index are the first two indicators guests see on the booking calendar. "
-                    "When wind stays within a comfortable range and UV remains manageable, the flight window is "
-                    "usually more stable. Admin and flight coordinators still make the final decision, but the "
-                    "snapshot helps guests choose a better slot upfront."
+                    "Tốc độ gió và mức UV là hai chỉ số khách nhìn thấy ngay trên lịch đặt. "
+                    "Nếu gió tốt và UV ở mức chấp nhận được, điều kiện bay sẽ ổn định hơn. "
+                    "Quản trị viên và điều phối viên vẫn là người quyết định cuối cùng, nhưng ảnh chụp nhanh này giúp khách chọn khung giờ hợp lý hơn."
                 ),
                 cover_image="https://images.unsplash.com/photo-1544625344-63189df1e401?auto=format&fit=crop&w=1200&q=80",
                 published=True,
             ),
             PostPayload(
                 slug="behind-the-scenes-of-a-live-flight-ops-day",
-                title="Behind the scenes of a live flight operations day",
-                title_en="Behind the scenes of a live flight operations day",
-                excerpt="Một ngày vận hành gói gọn admin, pilot và tracking phối hợp như thế nào.",
-                excerpt_en="How admin, pilot, and tracking coordinate during a full live operations day.",
+                title="Bên trong một ngày vận hành chuyến bay trực tiếp",
+                title_en="Bên trong một ngày vận hành chuyến bay trực tiếp",
+                excerpt="Một ngày vận hành cho thấy quản trị viên, phi công và theo dõi hành trình phối hợp như thế nào.",
+                excerpt_en="Một ngày vận hành cho thấy quản trị viên, phi công và theo dõi hành trình phối hợp như thế nào.",
                 content=(
-                    "Sau khi booking được xác nhận, admin gán pilot, pilot cập nhật mốc vận hành, "
-                    "và khách theo dõi route trên bản đồ. Đây là luồng 3 role cần có để vận hành dù lượn "
+                    "Sau khi lịch đặt được xác nhận, quản trị viên gán phi công, phi công cập nhật mốc vận hành, "
+                    "và khách theo dõi lộ trình trên bản đồ. Đây là luồng 3 vai trò cần có để vận hành dù lượn "
                     "minh bạch và tránh gọi điện quá nhiều lần cho cùng một thông tin."
                 ),
                 content_en=(
-                    "Once a booking is confirmed, admin assigns the pilot, the pilot updates each operational "
-                    "milestone, and the guest can follow the route on the map. This three-role flow keeps "
-                    "operations transparent and reduces repeated calls for the same status update."
+                    "Sau khi lịch đặt được xác nhận, quản trị viên gán phi công, phi công cập nhật từng mốc vận hành, "
+                    "và khách theo dõi lộ trình trên bản đồ. Luồng ba vai trò này giúp vận hành minh bạch "
+                    "và giảm các cuộc gọi lặp lại cho cùng một trạng thái."
                 ),
                 cover_image="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80",
                 published=True,
@@ -445,34 +443,34 @@ class Command(BaseCommand):
     def _account_payloads(self) -> list[dict[str, str]]:
         return [
             {
-                "full_name": "Da Nang Paragliding Admin",
-                "email": "admin@danangparagliding.vn",
+                "full_name": "Quản trị Dù lượn Đà Nẵng",
+                "email": "quantri@danangparagliding.vn",
                 "phone": "+84909000001",
-                "password": "Admin12345!",
+                "password": "Quantri12345!",
                 "role": "ADMIN",
                 "preferred_language": "vi",
             },
             {
-                "full_name": "Nguyen Minh Anh",
-                "email": "customer@danangparagliding.vn",
+                "full_name": "Nguyễn Minh Anh",
+                "email": "khachhang@danangparagliding.vn",
                 "phone": "+84909000111",
-                "password": "Customer123!",
+                "password": "Khachhang123!",
                 "role": "CUSTOMER",
                 "preferred_language": "vi",
             },
             {
-                "full_name": "Pilot Son Tra 01",
-                "email": "pilot01@danangparagliding.vn",
+                "full_name": "Phi công Sơn Trà 01",
+                "email": "phicong01@danangparagliding.vn",
                 "phone": "+84908000111",
-                "password": "Pilot12345!",
+                "password": "Phicong12345!",
                 "role": "PILOT",
                 "preferred_language": "vi",
             },
             {
-                "full_name": "Pilot Son Tra 02",
-                "email": "pilot02@danangparagliding.vn",
+                "full_name": "Phi công Sơn Trà 02",
+                "email": "phicong02@danangparagliding.vn",
                 "phone": "+84908000222",
-                "password": "Pilot12345!",
+                "password": "Phicong12345!",
                 "role": "PILOT",
                 "preferred_language": "vi",
             },
@@ -481,13 +479,13 @@ class Command(BaseCommand):
     def _repair_snapshot_texts(self, services) -> None:
         service_map = {service.slug: service for service in services}
         booking_notes = {
-            "+84909000111": "Morning hold request.",
-            "+84909000222": "Family group booking.",
-            "+84909000333": "Prefer cinematic route.",
+            "+84909000111": "Muốn giữ lịch bay buổi sáng.",
+            "+84909000222": "Đặt lịch cho nhóm gia đình.",
+            "+84909000333": "Muốn lộ trình có góc quay đẹp.",
         }
         booking_pilots = {
-            "+84909000222": ("Pilot Son Tra 01", "+84908000111"),
-            "+84909000333": ("Pilot Son Tra 02", "+84908000222"),
+            "+84909000222": ("Phi công Sơn Trà 01", "+84908000111"),
+            "+84909000333": ("Phi công Sơn Trà 02", "+84908000222"),
         }
 
         for booking in BookingDocument.objects.all():
@@ -535,18 +533,18 @@ class Command(BaseCommand):
 
     def _status_label(self, status: str, service) -> str:
         labels = {
-            "WAITING": f"Waiting at {service.launch_site_name}",
-            "EN_ROUTE": "En route to launch site",
-            "FLYING": "Flying",
-            "LANDED": f"Landed at {service.landing_site_name}",
+            "WAITING": f"Đang chờ tại {service.launch_site_name}",
+            "EN_ROUTE": "Đang di chuyển đến điểm bay",
+            "FLYING": "Đang bay",
+            "LANDED": f"Đã hạ cánh tại {service.landing_site_name}",
         }
         return labels.get(status, status)
 
     def _location_name(self, status: str, service) -> str:
         names = {
             "WAITING": service.launch_site_name,
-            "EN_ROUTE": "En route to launch site",
-            "FLYING": "Flying",
+            "EN_ROUTE": "Đang di chuyển đến điểm bay",
+            "FLYING": "Đang bay",
             "LANDED": service.landing_site_name,
         }
         return names.get(status, service.launch_site_name)

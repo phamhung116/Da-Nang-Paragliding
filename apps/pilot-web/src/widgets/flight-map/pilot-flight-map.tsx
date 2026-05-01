@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import type { Tracking } from "@paragliding/api-client";
 
@@ -19,7 +19,7 @@ const parseRoutePoints = (tracking: Tracking | null, livePosition?: MapPoint | n
     .map((point) => ({
       lat: Number(point.lat),
       lng: Number(point.lng),
-      name: String(point.name ?? "Route point"),
+      name: String(point.name ?? "Điểm lộ trình"),
       recordedAt: point.recorded_at ? String(point.recorded_at) : undefined
     }))
     .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
@@ -36,13 +36,15 @@ const parseRoutePoints = (tracking: Tracking | null, livePosition?: MapPoint | n
   return points;
 };
 
-const MapViewport = ({ points }: { points: MapPoint[] }) => {
+const MapViewport = ({ points, viewKey }: { points: MapPoint[]; viewKey: string }) => {
   const map = useMap();
+  const lastViewKeyRef = useRef("");
 
   useEffect(() => {
-    if (!points.length) {
+    if (!points.length || lastViewKeyRef.current === viewKey) {
       return;
     }
+    lastViewKeyRef.current = viewKey;
 
     if (points.length === 1) {
       map.setView([points[0].lat, points[0].lng], 14);
@@ -53,14 +55,15 @@ const MapViewport = ({ points }: { points: MapPoint[] }) => {
       points.map((point) => [point.lat, point.lng] as [number, number]),
       { padding: [24, 24] }
     );
-  }, [map, points]);
+  }, [map, points, viewKey]);
 
   return null;
 };
 
 export const PilotFlightMap = ({ tracking, livePosition }: PilotFlightMapProps) => {
   const routePoints = useMemo(() => parseRoutePoints(tracking, livePosition), [tracking, livePosition]);
-  const center = routePoints[routePoints.length - 1] ?? { lat: 16.0544, lng: 108.2022, name: "Da Nang" };
+  const center = routePoints[routePoints.length - 1] ?? { lat: 16.0544, lng: 108.2022, name: "Đà Nẵng" };
+  const viewKey = tracking?.booking_code ?? "pending";
 
   return (
     <div className="pilot-flight-map">
@@ -70,7 +73,7 @@ export const PilotFlightMap = ({ tracking, livePosition }: PilotFlightMapProps) 
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        <MapViewport points={routePoints} />
+        <MapViewport points={routePoints} viewKey={viewKey} />
 
         {routePoints.length > 1 ? (
           <Polyline positions={routePoints.map((point) => [point.lat, point.lng] as [number, number])} color="#c91842" weight={4} />
@@ -98,7 +101,7 @@ export const PilotFlightMap = ({ tracking, livePosition }: PilotFlightMapProps) 
         })}
       </MapContainer>
 
-      {!routePoints.length ? <div className="pilot-flight-map__empty">Route se hien tai day khi pilot bat dau tracking.</div> : null}
+      {!routePoints.length ? <div className="pilot-flight-map__empty">Lộ trình sẽ hiển thị tại đây khi phi công bắt đầu theo dõi GPS.</div> : null}
     </div>
   );
 };

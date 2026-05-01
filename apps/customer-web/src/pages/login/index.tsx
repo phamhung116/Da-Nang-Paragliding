@@ -79,23 +79,23 @@ export const LoginPage = () => {
                 <div className="auth-email-sent auth-email-sent--compact">
                   <img
                     src="/media/img/logo.jpg"
-                    alt="Da Nang Paragliding logo"
+                    alt="Logo Dù lượn Đà Nẵng"
                     className="h-30 w-30 object-cover"
                   />
                   <h1>Đăng nhập bằng email</h1>
-                  <p>Nhập email, Da Nang Paragliding sẽ gửi link xác thực. Không cần mật khẩu và không cần đăng ký riêng.</p>
+                  <p>Nhập email, Dù lượn Đà Nẵng sẽ gửi liên kết xác thực. Không cần mật khẩu và không cần đăng ký riêng.</p>
                 </div>
 
                 <Field label="Email">
                   <Input
                     type="email"
                     autoComplete="email"
-                    placeholder="customer@danangparagliding.vn"
+                    placeholder="khachhang@danangparagliding.vn"
                     {...loginForm.register("email", {
-                      required: "Email la bat buoc.",
+                      required: "Email là bắt buộc.",
                       pattern: {
                         value: emailPattern,
-                        message: "Email khong hop le."
+                        message: "Email không hợp lệ."
                       },
                       setValueAs: (value) => normalizeEmail(String(value ?? ""))
                     })}

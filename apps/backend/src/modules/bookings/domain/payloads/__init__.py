@@ -22,6 +22,8 @@ class BookingPayload:
     notes: str | None
     pickup_option: str
     pickup_address: str | None
+    pickup_lat: float | None
+    pickup_lng: float | None
     pickup_fee: Decimal
     unit_price: Decimal
     original_total: Decimal

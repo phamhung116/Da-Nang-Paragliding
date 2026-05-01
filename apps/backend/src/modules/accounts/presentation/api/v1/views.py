@@ -57,7 +57,7 @@ class RegisterAccountApi(APIView):
                 {
                     "account": AccountReadSerializer(serialize_entity(result["account"])).data,
                     "email_verification_required": result["email_verification_required"],
-                    "message": "Tai khoan da duoc tao. Vui long kiem tra email de xac thuc truoc khi dang nhap.",
+                    "message": "Tài khoản đã được tạo. Vui lòng kiểm tra email để xác thực trước khi đăng nhập.",
                 },
                 status.HTTP_201_CREATED,
             )
@@ -100,7 +100,7 @@ class ResendVerificationEmailApi(APIView):
             return success(
                 {
                     "resent": result["resent"],
-                    "message": "Neu email nay can xac thuc, he thong da gui lai link moi.",
+                    "message": "Nếu email này cần xác thực, hệ thống đã gửi lại liên kết mới.",
                 }
             )
         except DomainError as exc:
@@ -122,7 +122,7 @@ class StartEmailAuthApi(APIView):
                 {
                     "sent": result["sent"],
                     "poll_token": result.get("poll_token"),
-                    "message": "Neu email hop le, he thong da gui link xac thuc dang nhap.",
+                    "message": "Nếu email hợp lệ, hệ thống đã gửi liên kết xác thực đăng nhập.",
                 }
             )
         except DomainError as exc:
@@ -269,7 +269,7 @@ class AdminAccountDetailApi(APIView):
 
     def delete(self, request, account_id: str):
         if account_id == request.user.id:
-            return error("Khong the xoa tai khoan dang dang nhap.", status.HTTP_400_BAD_REQUEST)
+            return error("Không thể xóa tài khoản đang đăng nhập.", status.HTTP_400_BAD_REQUEST)
         try:
             delete_managed_account_use_case().execute(account_id)
             return success({"id": account_id})

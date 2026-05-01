@@ -34,7 +34,13 @@ from modules.payments.domain.repositories import PaymentTransactionRepository
 from modules.payments.application.interfaces import PaymentGateway
 from modules.tracking.domain.repositories import TrackingRepository
 from shared.exceptions import NotFoundError, ValidationError
-from shared.utils import generate_booking_code, normalize_phone, quantize_money
+from shared.utils import (
+    generate_booking_code,
+    geocode_address,
+    geocode_address_candidates,
+    normalize_phone,
+    quantize_money,
+)
 
 PICKUP_FEE = Decimal("50000")
 
@@ -66,16 +72,28 @@ class CreateBookingUseCase:
     def execute(self, request: BookingCreateRequest) -> dict[str, object]:
         service_package = self.service_package_repository.get_by_slug(request.service_slug)
         if service_package is None or not service_package.active:
-            raise NotFoundError("Khong tim thay goi dich vu.")
+            raise NotFoundError("Không tìm thấy gói dịch vụ.")
         if request.adults + request.children <= 0:
-            raise ValidationError("So luong khach phai lon hon 0.")
+            raise ValidationError("Số lượng khách phải lớn hơn 0.")
         pickup_option = request.pickup_option or PICKUP_OPTION_SELF
         if pickup_option not in {PICKUP_OPTION_SELF, PICKUP_OPTION_SHUTTLE}:
-            raise ValidationError("Lua chon dua don khong hop le.")
+            raise ValidationError("Lựa chọn đưa đón không hợp lệ.")
         pickup_address = request.pickup_address.strip() if request.pickup_address else None
         if pickup_option == PICKUP_OPTION_SHUTTLE and not pickup_address:
-            raise ValidationError("Vui long nhap dia chi don.")
+            raise ValidationError("Vui lòng nhập địa chỉ đón.")
         pickup_fee = PICKUP_FEE if pickup_option == PICKUP_OPTION_SHUTTLE else Decimal("0")
+        pickup_lat = request.pickup_lat
+        pickup_lng = request.pickup_lng
+        if pickup_option == PICKUP_OPTION_SHUTTLE:
+            if pickup_lat is None or pickup_lng is None:
+                geocoded = geocode_address(pickup_address or "")
+                pickup_lat = geocoded.get("lat") if geocoded else None
+                pickup_lng = geocoded.get("lng") if geocoded else None
+            if pickup_lat is None or pickup_lng is None:
+                raise ValidationError("Không xác định được điểm đón. Vui lòng chọn lại trên bản đồ.")
+        else:
+            pickup_lat = None
+            pickup_lng = None
 
         active_pilot_count = self._active_pilot_count()
         current_reserved = self.booking_repository.count_reserved_for_slot(
@@ -84,7 +102,7 @@ class CreateBookingUseCase:
             request.flight_time,
         )
         if current_reserved >= active_pilot_count:
-            raise ValidationError("Khung gio nay da het pilot kha dung.")
+            raise ValidationError("Khung giờ này đã hết phi công khả dụng.")
 
         self.availability_repository.reserve_slot(
             request.service_slug,
@@ -122,6 +140,8 @@ class CreateBookingUseCase:
                 notes=request.notes.strip() if request.notes else None,
                 pickup_option=pickup_option,
                 pickup_address=pickup_address,
+                pickup_lat=pickup_lat,
+                pickup_lng=pickup_lng,
                 pickup_fee=pickup_fee,
                 unit_price=service_package.price,
                 original_total=pricing.original_total,
@@ -178,7 +198,7 @@ class CreateBookingUseCase:
         return {"booking": booking, "payment_session": payment_session}
 
     def _active_pilot_count(self) -> int:
-        return len(self.account_repository.list(role="PILOT", is_active=True))
+        return self.account_repository.count(role="PILOT", is_active=True)
 
 
 class LookupBookingsByPhoneUseCase:
@@ -190,6 +210,27 @@ class LookupBookingsByPhoneUseCase:
         if "@" in identifier:
             return self.booking_repository.list_by_email(identifier.lower())
         return self.booking_repository.list_by_phone(normalize_phone(identifier))
+
+
+class ResolvePickupLocationUseCase:
+    def execute(self, address: str) -> dict[str, object]:
+        normalized = address.strip()
+        if not normalized:
+            raise ValidationError("Vui lòng nhập địa chỉ đón.")
+        geocoded = geocode_address(normalized)
+        if not geocoded:
+            raise ValidationError("Không tìm thấy điểm đón phù hợp. Hãy nhập địa chỉ cụ thể hơn.")
+        return {
+            "name": normalized,
+            "lat": geocoded["lat"],
+            "lng": geocoded["lng"],
+        }
+
+    def suggest(self, address: str) -> list[dict[str, object]]:
+        normalized = address.strip()
+        if len(normalized) < 3:
+            return []
+        return geocode_address_candidates(normalized, limit=5)
 
 
 class ListBookingRequestsUseCase:
@@ -207,7 +248,7 @@ class GetBookingUseCase:
     def execute(self, code: str) -> Booking:
         booking = self.booking_repository.get_by_code(code)
         if booking is None:
-            raise NotFoundError("Khong tim thay booking.")
+            raise NotFoundError("Không tìm thấy lịch đặt.")
         return booking
 
 
@@ -230,13 +271,13 @@ class ReviewBookingUseCase:
     def execute(self, booking_code: str, request: ReviewBookingRequest) -> Booking:
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
-            raise NotFoundError("Khong tim thay booking.")
+            raise NotFoundError("Không tìm thấy lịch đặt.")
         if booking.approval_status != BOOKING_APPROVAL_PENDING:
-            raise ValidationError("Booking nay da duoc xu ly truoc do.")
+            raise ValidationError("Lịch đặt này đã được xử lý trước đó.")
 
         if request.decision == "confirm":
             if not request.pilot_name or not request.pilot_phone:
-                raise ValidationError("Can chon pilot kha dung khi xac nhan booking.")
+                raise ValidationError("Cần chọn phi công khả dụng khi xác nhận lịch đặt.")
             booking.approval_status = BOOKING_APPROVAL_CONFIRMED
             booking.rejection_reason = None
             booking.flight_status = FLIGHT_STATUS_WAITING
@@ -248,10 +289,10 @@ class ReviewBookingUseCase:
                 booking_code=updated_booking.code,
                 pilot_name=updated_booking.assigned_pilot_name,
             )
-            message = f"Booking {updated_booking.code} da duoc xac nhan va gan pilot {updated_booking.assigned_pilot_name}."
+            message = f"Lịch đặt {updated_booking.code} đã được xác nhận và gán phi công {updated_booking.assigned_pilot_name}."
         elif request.decision == "reject":
             if not request.reason:
-                raise ValidationError("Ly do tu choi la bat buoc.")
+                raise ValidationError("Lý do từ chối là bắt buộc.")
             booking.approval_status = BOOKING_APPROVAL_CANCELLED
             booking.rejection_reason = request.reason
             updated_booking = self.booking_repository.update(booking)
@@ -268,21 +309,21 @@ class ReviewBookingUseCase:
                 capacity=active_pilot_count,
                 booked=current_reserved,
             )
-            message = f"Booking {booking.code} bi tu choi. Ly do: {request.reason}"
+            message = f"Lịch đặt {booking.code} bị từ chối. Lý do: {request.reason}"
         else:
-            raise ValidationError("Quyet dinh khong hop le.")
+            raise ValidationError("Quyết định không hợp lệ.")
 
         self.notification_gateway.send_booking_update(updated_booking, message)
         return updated_booking
 
     def _active_pilot_count(self) -> int:
-        return len(self.account_repository.list(role="PILOT", is_active=True))
+        return self.account_repository.count(role="PILOT", is_active=True)
 
     def _ensure_pilot_available(self, booking: Booking) -> None:
         pilot_phone = normalize_phone(booking.assigned_pilot_phone or "")
         pilot = self.account_repository.get_by_phone(pilot_phone)
         if pilot is None or not pilot.is_active or pilot.role != "PILOT":
-            raise ValidationError("Pilot duoc chon khong hop le hoac da bi vo hieu hoa.")
+            raise ValidationError("Phi công được chọn không hợp lệ hoặc đã bị vô hiệu hóa.")
 
         occupied_pilot_phones = {
             normalize_phone(phone)
@@ -293,7 +334,7 @@ class ReviewBookingUseCase:
             )
         }
         if pilot_phone in occupied_pilot_phones:
-            raise ValidationError("Pilot nay da duoc gan cho mot booking khac trong cung khung gio.")
+            raise ValidationError("Phi công này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
 
 
 class ListConfirmedBookingsUseCase:
@@ -321,13 +362,13 @@ class CancelBookingUseCase:
     def execute(self, booking_code: str, request: CancelBookingRequest, *, customer_email: str | None = None) -> Booking:
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
-            raise NotFoundError("Khong tim thay booking.")
+            raise NotFoundError("Không tìm thấy lịch đặt.")
         if customer_email and booking.email.lower() != customer_email.lower().strip():
-            raise ValidationError("Ban khong co quyen huy booking nay.")
+            raise ValidationError("Bạn không có quyền hủy lịch đặt này.")
         if booking.approval_status in {BOOKING_APPROVAL_CANCELLED, BOOKING_APPROVAL_REJECTED}:
-            raise ValidationError("Booking nay da bi huy truoc do.")
+            raise ValidationError("Lịch đặt này đã bị hủy trước đó.")
         if not request.reason.strip():
-            raise ValidationError("Ly do huy booking la bat buoc.")
+            raise ValidationError("Lý do hủy lịch đặt là bắt buộc.")
 
         booking.approval_status = BOOKING_APPROVAL_CANCELLED
         booking.rejection_reason = self._build_reason(request)
@@ -335,24 +376,24 @@ class CancelBookingUseCase:
         self._release_reserved_slot(updated_booking)
         self.notification_gateway.send_booking_update(
             updated_booking,
-            f"Booking {updated_booking.code} da bi huy. Ly do: {request.reason.strip()}",
+            f"Lịch đặt {updated_booking.code} đã bị hủy. Lý do: {request.reason.strip()}",
         )
         return updated_booking
 
     def _build_reason(self, request: CancelBookingRequest) -> str:
         reason = request.reason.strip()
         refund_parts = [
-            ("Ngan hang", request.refund_bank),
-            ("So tai khoan", request.refund_account_number),
-            ("Chu tai khoan", request.refund_account_name),
+            ("Ngân hàng", request.refund_bank),
+            ("Số tài khoản", request.refund_account_number),
+            ("Chủ tài khoản", request.refund_account_name),
         ]
         details = [f"{label}: {value.strip()}" for label, value in refund_parts if value and value.strip()]
         if not details:
             return reason
-        return f"{reason}\nThong tin hoan coc: " + "; ".join(details)
+        return f"{reason}\nThông tin hoàn cọc: " + "; ".join(details)
 
     def _release_reserved_slot(self, booking: Booking) -> None:
-        active_pilot_count = len(self.account_repository.list(role="PILOT", is_active=True))
+        active_pilot_count = self.account_repository.count(role="PILOT", is_active=True)
         current_reserved = self.booking_repository.count_reserved_for_slot(
             booking.service_slug,
             booking.flight_date,
@@ -384,9 +425,9 @@ class AssignPilotUseCase:
     def execute(self, booking_code: str, request: AssignPilotRequest) -> Booking:
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
-            raise NotFoundError("Khong tim thay booking.")
+            raise NotFoundError("Không tìm thấy lịch đặt.")
         if booking.approval_status != BOOKING_APPROVAL_CONFIRMED:
-            raise ValidationError("Chi booking da xac nhan moi duoc gan pilot.")
+            raise ValidationError("Chỉ lịch đặt đã xác nhận mới được gán phi công.")
 
         booking.assigned_pilot_name = request.pilot_name.strip()
         booking.assigned_pilot_phone = normalize_phone(request.pilot_phone)
@@ -398,7 +439,7 @@ class AssignPilotUseCase:
         )
         self.notification_gateway.send_booking_update(
             updated_booking,
-            f"Booking {updated_booking.code} da duoc gan pilot {updated_booking.assigned_pilot_name}.",
+            f"Lịch đặt {updated_booking.code} đã được gán phi công {updated_booking.assigned_pilot_name}.",
         )
         return updated_booking
 
@@ -406,7 +447,7 @@ class AssignPilotUseCase:
         pilot_phone = normalize_phone(booking.assigned_pilot_phone or "")
         pilot = self.account_repository.get_by_phone(pilot_phone)
         if pilot is None or not pilot.is_active or pilot.role != "PILOT":
-            raise ValidationError("Pilot duoc chon khong hop le hoac da bi vo hieu hoa.")
+            raise ValidationError("Phi công được chọn không hợp lệ hoặc đã bị vô hiệu hóa.")
 
         occupied_pilot_phones = {
             normalize_phone(phone)
@@ -417,7 +458,7 @@ class AssignPilotUseCase:
             )
         }
         if pilot_phone in occupied_pilot_phones:
-            raise ValidationError("Pilot nay da duoc gan cho mot booking khac trong cung khung gio.")
+            raise ValidationError("Phi công này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
 
 
 class ListPilotFlightsUseCase:

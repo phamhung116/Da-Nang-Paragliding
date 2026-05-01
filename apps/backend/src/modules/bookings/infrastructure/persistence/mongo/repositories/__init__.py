@@ -13,6 +13,8 @@ from modules.bookings.domain.value_objects import (
 from modules.bookings.infrastructure.persistence.mongo.documents import BookingDocument
 from shared.exceptions import NotFoundError
 
+ACTIVE_BOOKING_APPROVAL_STATUSES = [BOOKING_APPROVAL_PENDING, BOOKING_APPROVAL_CONFIRMED]
+
 
 def _to_domain(document: BookingDocument) -> Booking:
     return Booking(
@@ -32,6 +34,8 @@ def _to_domain(document: BookingDocument) -> Booking:
         notes=document.notes,
         pickup_option=getattr(document, "pickup_option", "self"),
         pickup_address=getattr(document, "pickup_address", None),
+        pickup_lat=getattr(document, "pickup_lat", None),
+        pickup_lng=getattr(document, "pickup_lng", None),
         pickup_fee=getattr(document, "pickup_fee", 0),
         unit_price=document.unit_price,
         original_total=document.original_total,
@@ -68,6 +72,8 @@ class MongoBookingRepository:
             notes=payload.notes,
             pickup_option=payload.pickup_option,
             pickup_address=payload.pickup_address,
+            pickup_lat=payload.pickup_lat,
+            pickup_lng=payload.pickup_lng,
             pickup_fee=payload.pickup_fee,
             unit_price=payload.unit_price,
             original_total=payload.original_total,
@@ -89,10 +95,10 @@ class MongoBookingRepository:
         return _to_domain(document) if document else None
 
     def list_by_phone(self, phone: str) -> list[Booking]:
-        return [_to_domain(document) for document in BookingDocument.objects.filter(phone=phone)]
+        return [_to_domain(document) for document in BookingDocument.objects.filter(phone=phone).order_by("-created_at")]
 
     def list_by_email(self, email: str) -> list[Booking]:
-        return [_to_domain(document) for document in BookingDocument.objects.filter(email=email)]
+        return [_to_domain(document) for document in BookingDocument.objects.filter(email=email).order_by("-created_at")]
 
     def list_all(self) -> list[Booking]:
         return [_to_domain(document) for document in BookingDocument.objects.all().order_by("-created_at")]
@@ -125,16 +131,12 @@ class MongoBookingRepository:
         ]
 
     def count_reserved_for_slot(self, service_slug: str, flight_date, flight_time: str) -> int:
-        return (
-            BookingDocument.objects.filter(
-                service_slug=service_slug,
-                flight_date=flight_date,
-                flight_time=flight_time,
-            )
-            .exclude(approval_status=BOOKING_APPROVAL_REJECTED)
-            .exclude(approval_status=BOOKING_APPROVAL_CANCELLED)
-            .count()
-        )
+        return BookingDocument.objects.filter(
+            service_slug=service_slug,
+            flight_date=flight_date,
+            flight_time=flight_time,
+            approval_status__in=ACTIVE_BOOKING_APPROVAL_STATUSES,
+        ).count()
 
     def reserved_counts_for_month(self, service_slug: str, year: int, month: int) -> dict[str, dict[str, int]]:
         counts: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -143,13 +145,13 @@ class MongoBookingRepository:
                 service_slug=service_slug,
                 flight_date__year=year,
                 flight_date__month=month,
+                approval_status__in=ACTIVE_BOOKING_APPROVAL_STATUSES,
             )
-            .exclude(approval_status=BOOKING_APPROVAL_REJECTED)
-            .exclude(approval_status=BOOKING_APPROVAL_CANCELLED)
+            .values_list("flight_date", "flight_time")
         )
-        for document in queryset:
-            date_key = document.flight_date.isoformat()
-            counts[date_key][document.flight_time] += 1
+        for flight_date, flight_time in queryset:
+            date_key = flight_date.isoformat()
+            counts[date_key][flight_time] += 1
         return {date_key: dict(time_counts) for date_key, time_counts in counts.items()}
 
     def list_assigned_pilot_phones_for_slot(self, flight_date, flight_time: str, *, exclude_code: str | None = None) -> list[str]:
@@ -166,7 +168,7 @@ class MongoBookingRepository:
     def update(self, booking: Booking) -> Booking:
         document = BookingDocument.objects.filter(code=booking.code).first()
         if document is None:
-            raise NotFoundError("Không tìm thấy booking.")
+            raise NotFoundError("Không tìm thấy lịch đặt.")
 
         for field in [
             "payment_status",
@@ -176,6 +178,8 @@ class MongoBookingRepository:
             "notes",
             "pickup_option",
             "pickup_address",
+            "pickup_lat",
+            "pickup_lng",
             "pickup_fee",
             "deposit_amount",
             "deposit_percentage",

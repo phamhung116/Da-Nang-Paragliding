@@ -103,13 +103,13 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   <div className="h-10 w-10 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
                     <img
                       src="/media/img/logo.jpg"
-                      alt="Logo Da Nang Paragliding"
+                      alt="Logo Dù lượn Đà Nẵng"
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div>
                     <h1 className="text-xl font-bold tracking-tight text-brand">ĐÀ NẴNG</h1>
-                    <p className="-mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500">Paragliding</p>
+                    <p className="-mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500">Dù lượn</p>
                   </div>
                 </Link>
 
@@ -175,13 +175,13 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 <span className="site-brand__icon overflow-hidden bg-white p-0">
                   <img
                     src="/media/img/logo.jpg"
-                    alt="Logo Da Nang Paragliding"
+                    alt="Logo Dù lượn Đà Nẵng"
                     className="h-full w-full object-cover"
                   />
                 </span>
                 <span className="site-brand__copy">
                   <strong>{businessInfo.shortName}</strong>
-                  <small>Đà Nẵng Paragliding</small>
+                  <small>Dù lượn Đà Nẵng</small>
                 </span>
               </div>
             </div>
@@ -231,7 +231,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold">Da Nang Paragliding</span>
+                  <span className="text-xl font-bold">Dù lượn Đà Nẵng</span>
                 </div>
                 <p className="text-sm leading-relaxed text-stone-400">
                   Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp của bán đảo Sơn Trà từ trên cao.
@@ -282,7 +282,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </div>
 
             <div className="mt-16 border-t border-stone-800 pt-8 text-center text-xs text-stone-500">
-              © 2024 Da Nang Paragliding. Bảo lưu mọi quyền.
+              © 2024 Dù lượn Đà Nẵng. Bảo lưu mọi quyền.
             </div>
           </div>
         </footer>

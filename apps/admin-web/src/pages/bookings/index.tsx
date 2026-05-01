@@ -11,12 +11,19 @@ import { DataTable } from "@/widgets/data-table/data-table";
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 
 const flightLabels: Record<string, string> = {
-  WAITING_CONFIRMATION: "Cho xac nhan",
-  WAITING: "Dang cho",
-  PICKING_UP: "Dang di chuyen den diem don",
-  EN_ROUTE: "Dang di chuyen",
-  FLYING: "Dang bay",
-  LANDED: "Da ha canh"
+  WAITING_CONFIRMATION: "Chờ xác nhận",
+  WAITING: "Đang chờ",
+  PICKING_UP: "Phi công đang đến điểm đón",
+  EN_ROUTE: "Đang di chuyển",
+  FLYING: "Đang bay",
+  LANDED: "Đã hạ cánh"
+};
+
+const paymentLabels: Record<string, string> = {
+  PENDING: "Chờ thanh toán",
+  PAID: "Đã thanh toán",
+  FAILED: "Thanh toán thất bại",
+  REFUNDED: "Đã hoàn tiền"
 };
 
 const formatDateTime = (booking: Booking) => `${booking.flight_date} - ${booking.flight_time}`;
@@ -62,12 +69,12 @@ export const BookingsPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge tone="success">Bookings</Badge>
-            <h1>Booking operations</h1>
-            <p>Click vao mot booking de xem chi tiet, gan pilot hoac huy booking.</p>
+            <Badge tone="success">Đặt lịch</Badge>
+            <h1>Quản lý đặt lịch</h1>
+            <p>Bấm vào một lịch đặt để xem chi tiết, gán phi công hoặc hủy.</p>
           </div>
           <div className="portal-heading__note">
-            Booking da huy duoc tach sang tab rieng de danh sach dang van hanh gon hon.
+            Lịch đặt đã hủy được tách sang tab riêng để danh sách đang vận hành gọn hơn.
           </div>
         </div>
 
@@ -75,26 +82,26 @@ export const BookingsPage = () => {
           <Panel className="admin-stack">
             <div className="admin-card__header">
               <div>
-                <h3>Danh sach booking</h3>
-                <p>Bang chi hien booking va trang thai bay. Thao tac huy nam trong trang chi tiet.</p>
+                <h3>Danh sách đặt lịch</h3>
+                <p>Bảng chỉ hiển thị lịch đặt và trạng thái bay. Thao tác hủy nằm trong trang chi tiết.</p>
               </div>
               <Tabs value={tab} onValueChange={(value) => setTab(value as "active" | "cancelled")}>
                 <TabsList className="admin-tabs">
                   <TabsTrigger value="active">
-                    Danh sach bookings <span>{activeBookings.length}</span>
+                    Đang hoạt động <span>{activeBookings.length}</span>
                   </TabsTrigger>
                   <TabsTrigger value="cancelled">
-                    Bookings da huy <span>{cancelledBookings.length}</span>
+                    Đã hủy <span>{cancelledBookings.length}</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
             </div>
 
             <div className="admin-filter-bar">
-              <Field label="Loc theo pilot">
+              <Field label="Lọc theo phi công">
                 <Select value={pilotFilter} onChange={(event) => setPilotFilter(event.target.value)}>
-                  <option value="">Tat ca pilot</option>
-                  <option value="__unassigned">Chua gan pilot</option>
+                  <option value="">Tất cả phi công</option>
+                  <option value="__unassigned">Chưa gán phi công</option>
                   {pilots.map((pilot) => (
                     <option key={pilot.id} value={pilot.phone}>
                       {pilot.full_name} - {pilot.phone}
@@ -102,16 +109,16 @@ export const BookingsPage = () => {
                   ))}
                 </Select>
               </Field>
-              <Field label="Loc theo trang thai">
+              <Field label="Lọc theo trạng thái">
                 <Select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                  <option value="">Tat ca trang thai</option>
-                  <option value="WAITING_CONFIRMATION">Cho xac nhan</option>
-                  <option value="WAITING">Dang cho</option>
-                  <option value="PICKING_UP">Dang di chuyen den diem don</option>
-                  <option value="EN_ROUTE">Dang di chuyen</option>
-                  <option value="FLYING">Dang bay</option>
-                  <option value="LANDED">Da ha canh</option>
-                  <option value="CANCELLED">Da huy</option>
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="WAITING_CONFIRMATION">Chờ xác nhận</option>
+                  <option value="WAITING">Đang chờ</option>
+                  <option value="PICKING_UP">Phi công đang đến điểm đón</option>
+                  <option value="EN_ROUTE">Đang di chuyển</option>
+                  <option value="FLYING">Đang bay</option>
+                  <option value="LANDED">Đã hạ cánh</option>
+                  <option value="CANCELLED">Đã hủy</option>
                 </Select>
               </Field>
             </div>
@@ -123,7 +130,7 @@ export const BookingsPage = () => {
               columns={[
                 {
                   key: "booking",
-                  title: "Booking",
+                  title: "Đặt lịch",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.code}</strong>
@@ -134,37 +141,37 @@ export const BookingsPage = () => {
                 },
                 {
                   key: "service",
-                  title: "Dich vu",
+                  title: "Dịch vụ",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{row.service_name}</strong>
                       <span>{formatDateTime(row)}</span>
-                      <small>{row.adults + row.children} khach</small>
+                      <small>{row.adults + row.children} khách</small>
                     </div>
                   )
                 },
                 {
                   key: "flight",
-                  title: "Trang thai",
+                  title: "Trạng thái",
                   render: (row) => <Badge>{flightLabels[row.flight_status] ?? row.flight_status}</Badge>
                 },
                 {
                   key: "pilot",
-                  title: "Pilot",
+                  title: "Phi công",
                   render: (row) => (
                     <div className="row-meta">
-                      <strong>{row.assigned_pilot_name ?? "Chua gan"}</strong>
-                      <span>{row.assigned_pilot_phone ?? "Gan trong chi tiet"}</span>
+                      <strong>{row.assigned_pilot_name ?? "Chưa gán"}</strong>
+                      <span>{row.assigned_pilot_phone ?? "Gán trong chi tiết"}</span>
                     </div>
                   )
                 },
                 {
                   key: "payment",
-                  title: "Thanh toan",
+                  title: "Thanh toán",
                   render: (row) => (
                     <div className="row-meta">
                       <strong>{formatCurrency(row.final_total)}</strong>
-                      <span>{row.payment_status}</span>
+                      <span>{paymentLabels[row.payment_status] ?? row.payment_status}</span>
                     </div>
                   )
                 },
@@ -179,7 +186,7 @@ export const BookingsPage = () => {
                         navigate(`/bookings/${row.code}`);
                       }}
                     >
-                      Xem chi tiet
+                      Xem chi tiết
                     </Button>
                   )
                 }

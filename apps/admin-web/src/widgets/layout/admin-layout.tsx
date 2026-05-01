@@ -5,15 +5,15 @@ import { useAdminAuth } from "@/shared/providers/auth-provider";
 import { routes } from "@/shared/config/routes";
 
 const navItems = [
-  { to: routes.bookings, label: "Bookings" },
-  { to: routes.services, label: "Services" },
-  { to: routes.accounts, label: "Accounts" },
-  { to: routes.posts, label: "Posts" }
+  { to: routes.bookings, label: "Đặt lịch" },
+  { to: routes.services, label: "Dịch vụ" },
+  { to: routes.accounts, label: "Tài khoản" },
+  { to: routes.posts, label: "Bài viết" }
 ];
 
 export const AdminLayout = ({ children }: PropsWithChildren) => {
   const { account, logout } = useAdminAuth();
-  const initials = (account?.full_name ?? "Admin")
+  const initials = (account?.full_name ?? "Quản trị")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
@@ -26,14 +26,14 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
         <div className="portal-sidebar__brandmark">
           <span className="portal-sidebar__icon">DP</span>
           <div className="portal-sidebar__brand">
-            <span>Da Nang Paragliding</span>
-            <small>Admin workspace</small>
+            <span>Dù lượn Đà Nẵng</span>
+            <small>Khu vực quản trị</small>
           </div>
         </div>
 
         <div className="portal-sidebar__meta">
-          <Badge>ADMIN</Badge>
-          <p>Review bookings, assign available pilots and manage publishing from one workspace.</p>
+          <Badge>Quản trị</Badge>
+          <p>Duyệt lịch đặt, phân công phi công khả dụng và quản lý nội dung xuất bản trong một khu vực.</p>
         </div>
 
         <nav className="portal-sidebar__nav">
@@ -49,8 +49,8 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
         <header className="portal-topbar">
           <Container className="portal-topbar__inner">
             <div>
-              <strong>Da Nang Paragliding Control Room</strong>
-              <p>Bookings are approval records. Flight progress is updated from the pilot workspace.</p>
+              <strong>Phòng điều phối Dù lượn Đà Nẵng</strong>
+              <p>Lịch đặt là hồ sơ cần duyệt. Tiến độ chuyến bay được cập nhật từ khu vực phi công.</p>
             </div>
             <div className="admin-topbar-actions">
               <div className="portal-topbar__profile">
@@ -61,7 +61,7 @@ export const AdminLayout = ({ children }: PropsWithChildren) => {
                 </div>
               </div>
               <Button variant="ghost" onClick={() => void logout()}>
-                Sign out
+                Đăng xuất
               </Button>
             </div>
           </Container>

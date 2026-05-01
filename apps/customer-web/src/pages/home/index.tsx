@@ -4,11 +4,11 @@ import { Link } from "react-router-dom";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { Camera, ChevronRight, MapPin, Navigation, ShieldCheck } from "lucide-react";
 import { motion } from "motion/react";
-import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
 import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
+import { availabilityQueryOptions, postsQueryOptions, servicesQueryOptions } from "@/shared/lib/query-options";
 import { HomeHero } from "@/widgets/hero/home-hero";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
@@ -34,12 +34,10 @@ export const HomePage = () => {
   const video1YoutubeWatchUrl = "https://www.youtube.com/watch?v=r8uhrlAQ-Tk";
   const video1YoutubeEmbedUrl = toYouTubeEmbedUrl(video1YoutubeWatchUrl);
   const { data: services = [] } = useQuery({
-    queryKey: ["featured-services"],
-    queryFn: () => customerApi.listServices()
+    ...servicesQueryOptions()
   });
   const { data: posts = [] } = useQuery({
-    queryKey: ["home-posts"],
-    queryFn: () => customerApi.listPosts()
+    ...postsQueryOptions()
   });
 
   const weatherServiceSlug = services[0]?.slug;
@@ -47,8 +45,7 @@ export const HomePage = () => {
   const forecastMonthKeys = useMemo(() => getForecastMonthKeys(today, WEATHER_FORECAST_DAYS), [today]);
   const forecastQueries = useQueries({
     queries: forecastMonthKeys.map(({ year, month }) => ({
-      queryKey: ["home-weather", weatherServiceSlug, year, month],
-      queryFn: () => customerApi.getAvailability(weatherServiceSlug ?? "", year, month),
+      ...availabilityQueryOptions(weatherServiceSlug ?? "", year, month),
       enabled: Boolean(weatherServiceSlug)
     }))
   });
@@ -246,6 +243,8 @@ export const HomePage = () => {
                       referrerPolicy="no-referrer"
                       src={post.cover_image}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
                   </div>
@@ -265,7 +264,7 @@ export const HomePage = () => {
               <Panel className="stack-sm">
                 <Badge>Bài viết</Badge>
                 <strong>Blog đang được cập nhật.</strong>
-                <p>Khi admin đăng bài mới, khách hàng và pilot sẽ thấy nội dung tại đây.</p>
+                <p>Khi quản trị viên đăng bài mới, khách hàng và phi công sẽ thấy nội dung tại đây.</p>
               </Panel>
             </Card>
           )}

@@ -99,7 +99,7 @@ class MongoAvailabilityRepository:
     ) -> AvailabilityDay:
         document = AvailabilityDayDocument.objects.filter(service_slug=service_slug, date=flight_date).first()
         if document is None:
-            raise NotFoundError("Khong tim thay lich bay.")
+            raise NotFoundError("Không tìm thấy lịch bay.")
         document.slots = self._sync_slot_booking(
             document.slots,
             flight_time,
@@ -121,7 +121,7 @@ class MongoAvailabilityRepository:
     ) -> AvailabilityDay:
         document = AvailabilityDayDocument.objects.filter(service_slug=service_slug, date=flight_date).first()
         if document is None:
-            raise NotFoundError("Khong tim thay lich bay.")
+            raise NotFoundError("Không tìm thấy lịch bay.")
         document.slots = self._sync_slot_booking(
             document.slots,
             flight_time,
@@ -150,14 +150,14 @@ class MongoAvailabilityRepository:
                 slot_found = True
                 is_locked = bool(slot["is_locked"])
                 if validate_reserve and (is_locked or capacity <= 0):
-                    raise ValidationError("Khung gio nay dang bi khoa hoac khong con pilot kha dung.")
+                    raise ValidationError("Khung giờ này đang bị khóa hoặc không còn phi công khả dụng.")
                 if validate_reserve and booked > capacity:
-                    raise ValidationError("Khung gio nay da day.")
+                    raise ValidationError("Khung giờ này đã đầy.")
                 new_slot["capacity"] = max(0, capacity)
                 new_slot["booked"] = max(0, booked)
             updated_slots.append(new_slot)
 
         if not slot_found:
-            raise NotFoundError("Khong tim thay khung gio da chon.")
+            raise NotFoundError("Không tìm thấy khung giờ đã chọn.")
 
         return updated_slots

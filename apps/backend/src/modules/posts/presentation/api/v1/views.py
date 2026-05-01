@@ -34,7 +34,7 @@ class PublicPostDetailApi(APIView):
         try:
             post = get_post_use_case().execute(slug)
             if not post.published:
-                return error("Khong tim thay bai viet.", status.HTTP_404_NOT_FOUND)
+                return error("Không tìm thấy bài viết.", status.HTTP_404_NOT_FOUND)
             return success(PostReadSerializer(serialize_entity(post)).data)
         except DomainError as exc:
             return error(str(exc), status.HTTP_404_NOT_FOUND)

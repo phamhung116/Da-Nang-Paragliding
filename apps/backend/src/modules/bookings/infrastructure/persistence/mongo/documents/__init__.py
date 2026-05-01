@@ -15,12 +15,14 @@ class BookingDocument(models.Model):
     flight_time = models.CharField(max_length=5)
     customer_name = models.CharField(max_length=120)
     phone = models.CharField(max_length=20, db_index=True)
-    email = models.EmailField()
+    email = models.EmailField(db_index=True)
     adults = models.PositiveIntegerField()
     children = models.PositiveIntegerField(default=0)
     notes = models.TextField(blank=True, null=True)
     pickup_option = models.CharField(max_length=20, default="self")
     pickup_address = models.TextField(blank=True, null=True)
+    pickup_lat = models.FloatField(blank=True, null=True)
+    pickup_lng = models.FloatField(blank=True, null=True)
     pickup_fee = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     original_total = models.DecimalField(max_digits=10, decimal_places=2)
@@ -40,6 +42,17 @@ class BookingDocument(models.Model):
     class Meta:
         db_table = "bookings"
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["service_slug", "flight_date", "flight_time", "approval_status"],
+                name="bookings_slot_active_idx",
+            ),
+            models.Index(
+                fields=["assigned_pilot_phone", "approval_status", "flight_date", "flight_time"],
+                name="bookings_pilot_slot_idx",
+            ),
+            models.Index(fields=["email", "-created_at"], name="bookings_email_created_idx"),
+        ]
 
     def __str__(self) -> str:
         return self.code

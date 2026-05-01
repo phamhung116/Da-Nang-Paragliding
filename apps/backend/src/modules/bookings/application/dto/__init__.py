@@ -20,6 +20,8 @@ class BookingCreateRequest:
     payment_method: str
     pickup_option: str = "self"
     pickup_address: str | None = None
+    pickup_lat: float | None = None
+    pickup_lng: float | None = None
 
 
 @dataclass(slots=True)

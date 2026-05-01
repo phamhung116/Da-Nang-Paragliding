@@ -16,14 +16,14 @@ from modules.accounts.application.dto import (
 from shared.utils import normalize_phone
 
 PASSWORD_COMPLEXITY_MESSAGE = (
-    "Mat khau phai co it nhat 8 ky tu, bao gom chu hoa, chu thuong, so va ky tu dac biet."
+    "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, số và ký tự đặc biệt."
 )
 
 
 def _validate_full_name(value: str) -> str:
     normalized = value.strip()
     if len(normalized) < 2:
-        raise serializers.ValidationError("Ho ten phai co it nhat 2 ky tu.")
+        raise serializers.ValidationError("Họ tên phải có ít nhất 2 ký tự.")
     return normalized
 
 
@@ -31,7 +31,7 @@ def _validate_phone(value: str) -> str:
     normalized = normalize_phone(value)
     digits_only = normalized.replace("+", "")
     if len(digits_only) < 9 or len(digits_only) > 15:
-        raise serializers.ValidationError("So dien thoai khong hop le.")
+        raise serializers.ValidationError("Số điện thoại không hợp lệ.")
     return normalized
 
 

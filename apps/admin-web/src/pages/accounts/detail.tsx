@@ -19,6 +19,17 @@ const toPayload = (account: NonNullable<Awaited<ReturnType<typeof adminApi.getAc
   is_active: true
 });
 
+const roleLabels: Record<string, string> = {
+  ADMIN: "Quản trị viên",
+  PILOT: "Phi công",
+  CUSTOMER: "Khách hàng"
+};
+
+const languageLabels: Record<string, string> = {
+  vi: "Tiếng Việt",
+  en: "Tiếng Anh"
+};
+
 export const AccountDetailPage = () => {
   const { accountId = "" } = useParams();
   const navigate = useNavigate();
@@ -91,12 +102,12 @@ export const AccountDetailPage = () => {
       <div className="portal-stack">
         <div className="portal-heading">
           <div className="portal-heading__text">
-            <Badge>Account detail</Badge>
-            <h1>{account?.full_name ?? "Account"}</h1>
-            <p>Trang nay chi hien thong tin chi tiet cua account dang chon.</p>
+            <Badge>Chi tiết tài khoản</Badge>
+            <h1>{account?.full_name ?? "Tài khoản"}</h1>
+            <p>Trang này hiển thị thông tin chi tiết của tài khoản đang chọn.</p>
           </div>
           <Link to={routes.accounts}>
-            <Button variant="secondary">Quay lai danh sach</Button>
+            <Button variant="secondary">Quay lại danh sách</Button>
           </Link>
         </div>
 
@@ -107,19 +118,19 @@ export const AccountDetailPage = () => {
             <Panel className="admin-stack">
               <div className="admin-card__header">
                 <div>
-                  <Badge>{account.role}</Badge>
+                  <Badge>{roleLabels[account.role] ?? account.role}</Badge>
                   <h3>{account.email}</h3>
                   <p>{account.phone}</p>
                 </div>
                 <div className="table-actions--inline">
                   {canEdit ? (
                     <Button variant="secondary" onClick={() => setEditing((current) => !current)}>
-                      {editing ? "Huy sua" : "Chinh sua"}
+                      {editing ? "Hủy sửa" : "Chỉnh sửa"}
                     </Button>
                   ) : null}
                   {canDelete ? (
                     <Button variant="secondary" disabled={deleteMutation.isPending} onClick={() => setDeleteDialogOpen(true)}>
-                      Xoa account
+                      Xóa tài khoản
                     </Button>
                   ) : null}
                 </div>
@@ -128,27 +139,27 @@ export const AccountDetailPage = () => {
               {editing && canEdit ? (
                 <form className="admin-form admin-form--compact" onSubmit={form.handleSubmit((values) => updateMutation.mutate(values))}>
                   <div className="inline-field-grid inline-field-grid--three">
-                    <Field label="Ho va ten">
+                    <Field label="Họ và tên">
                       <Input {...form.register("full_name")} />
                     </Field>
                     <Field label="Email">
                       <Input type="email" {...form.register("email")} />
                     </Field>
-                    <Field label="So dien thoai">
+                    <Field label="Số điện thoại">
                       <Input {...form.register("phone")} />
                     </Field>
                   </div>
                   <div className="inline-field-grid inline-field-grid--two">
-                    <Field label="Role">
+                    <Field label="Vai trò">
                       <Select {...form.register("role")}>
-                        <option value="PILOT">Pilot</option>
-                        <option value="ADMIN">Admin</option>
+                        <option value="PILOT">Phi công</option>
+                        <option value="ADMIN">Quản trị viên</option>
                       </Select>
                     </Field>
-                    <Field label="Ngon ngu">
+                    <Field label="Ngôn ngữ">
                       <Select {...form.register("preferred_language")}>
-                        <option value="vi">Vietnamese</option>
-                        <option value="en">English</option>
+                        <option value="vi">Tiếng Việt</option>
+                        <option value="en">Tiếng Anh</option>
                       </Select>
                     </Field>
                   </div>
@@ -160,13 +171,13 @@ export const AccountDetailPage = () => {
                   <p className="row-muted">Khi đổi email hoặc mật khẩu của account đăng nhập, toàn bộ thiết bị sẽ bị đăng xuất và cần đăng nhập lại.</p>
                   {updateMutation.error instanceof Error ? <p className="form-error">{updateMutation.error.message}</p> : null}
                   <Button disabled={updateMutation.isPending}>
-                    {updateMutation.isPending ? "Dang luu..." : "Luu thay doi"}
+                    {updateMutation.isPending ? "Đang lưu..." : "Lưu thay đổi"}
                   </Button>
                 </form>
               ) : (
                 <div className="detail-list">
                   <div>
-                    <span>Ho va ten</span>
+                    <span>Họ và tên</span>
                     <strong>{account.full_name}</strong>
                   </div>
                   <div>
@@ -174,31 +185,31 @@ export const AccountDetailPage = () => {
                     <strong>{account.email}</strong>
                   </div>
                   <div>
-                    <span>So dien thoai</span>
+                    <span>Số điện thoại</span>
                     <strong>{account.phone}</strong>
                   </div>
                   <div>
-                    <span>Role</span>
-                    <strong>{account.role}</strong>
+                    <span>Vai trò</span>
+                    <strong>{roleLabels[account.role] ?? account.role}</strong>
                   </div>
                   <div>
-                    <span>Ngon ngu</span>
-                    <strong>{account.preferred_language}</strong>
+                    <span>Ngôn ngữ</span>
+                    <strong>{languageLabels[account.preferred_language] ?? account.preferred_language}</strong>
                   </div>
                   <div>
-                    <span>Ngay tao</span>
+                    <span>Ngày tạo</span>
                     <strong>{account.created_at ? new Date(account.created_at).toLocaleString("vi-VN") : "-"}</strong>
                   </div>
                 </div>
               )}
 
-              {!canEdit ? <p className="row-muted">Account customer chi duoc xem trong admin, khong sua va khong xoa.</p> : null}
+              {!canEdit ? <p className="row-muted">Tài khoản khách hàng chỉ được xem trong khu vực quản trị, không sửa và không xóa.</p> : null}
               {deleteMutation.error instanceof Error ? <p className="form-error">{deleteMutation.error.message}</p> : null}
             </Panel>
           </Card>
         ) : (
           <Card>
-            <Panel>Dang tai account...</Panel>
+            <Panel>Đang tải tài khoản...</Panel>
           </Card>
         )}
 
@@ -209,21 +220,21 @@ export const AccountDetailPage = () => {
               setDeleteDialogOpen(open);
             }
           }}
-          title={`Xoa account ${account?.email ?? ""}`}
-          description="Account sau khi xoa se khong con dang nhap duoc vao he thong."
+          title={`Xóa tài khoản ${account?.email ?? ""}`}
+          description="Tài khoản sau khi xóa sẽ không còn đăng nhập được vào hệ thống."
           icon="!"
           footer={
             <>
               <Button type="button" variant="secondary" onClick={() => setDeleteDialogOpen(false)}>
-                Dong
+                Đóng
               </Button>
               <Button type="button" disabled={deleteMutation.isPending} onClick={deleteAccount}>
-                {deleteMutation.isPending ? "Dang xoa..." : "Xoa account"}
+                {deleteMutation.isPending ? "Đang xóa..." : "Xóa tài khoản"}
               </Button>
             </>
           }
         >
-          <p className="row-muted">Vui long xac nhan truoc khi xoa. Account customer van chi duoc xem, khong xoa trong admin.</p>
+          <p className="row-muted">Vui lòng xác nhận trước khi xóa. Tài khoản khách hàng vẫn chỉ được xem, không xóa trong khu vực quản trị.</p>
           {deleteMutation.error instanceof Error ? <p className="form-error">{deleteMutation.error.message}</p> : null}
         </Dialog>
       </div>

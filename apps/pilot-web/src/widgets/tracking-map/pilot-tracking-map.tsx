@@ -10,11 +10,11 @@ export const PilotTrackingMap = ({ tracking }: PilotTrackingMapProps) => {
     .map((point) => ({
       lat: Number(point.lat),
       lng: Number(point.lng),
-      name: String(point.name ?? "Tracking point")
+      name: String(point.name ?? "Điểm theo dõi")
     }))
     .filter((point) => Number.isFinite(point.lat) && Number.isFinite(point.lng));
 
-  const center = points[points.length - 1] ?? { lat: 16.093, lng: 108.247, name: "Da Nang" };
+  const center = points[points.length - 1] ?? { lat: 16.093, lng: 108.247, name: "Đà Nẵng" };
 
   return (
     <div className="pilot-map">

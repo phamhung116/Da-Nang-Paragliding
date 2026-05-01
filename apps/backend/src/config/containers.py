@@ -37,6 +37,7 @@ from modules.bookings.application.use_cases import (
     ListConfirmedBookingsUseCase,
     ListPilotFlightsUseCase,
     LookupBookingsByPhoneUseCase,
+    ResolvePickupLocationUseCase,
     ReviewBookingUseCase,
 )
 from modules.bookings.domain.services import PricingPolicy
@@ -315,6 +316,10 @@ def lookup_bookings_by_phone_use_case() -> LookupBookingsByPhoneUseCase:
     return LookupBookingsByPhoneUseCase(booking_repository())
 
 
+def resolve_pickup_location_use_case() -> ResolvePickupLocationUseCase:
+    return ResolvePickupLocationUseCase()
+
+
 def list_booking_requests_use_case() -> ListBookingRequestsUseCase:
     return ListBookingRequestsUseCase(booking_repository())
 
@@ -367,6 +372,7 @@ def complete_online_payment_use_case() -> CompleteOnlinePaymentUseCase:
         booking_repository=booking_repository(),
         payment_transaction_repository=payment_transaction_repository(),
         payment_gateway=payment_gateway(),
+        notification_gateway=notification_gateway(),
     )
 
 

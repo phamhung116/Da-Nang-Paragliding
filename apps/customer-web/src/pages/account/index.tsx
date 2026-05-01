@@ -7,6 +7,7 @@ import type { UpdateProfilePayload } from "@paragliding/api-client";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { customerApi } from "@/shared/config/api";
 import { accountSupportNotes } from "@/shared/constants/customer-content";
+import { flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { routes } from "@/shared/config/routes";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -81,9 +82,9 @@ export const AccountPage = () => {
           <div className="section-heading">
             <div>
               <Badge>Tài khoản</Badge>
-              <h2>Quản lý thông tin cá nhân và lịch sử booking</h2>
+              <h2>Quản lý thông tin cá nhân và lịch sử đặt lịch</h2>
             </div>
-            <p>Customer có thể cập nhật thông tin liên hệ để booking sau được điền nhanh và chính xác hơn.</p>
+            <p>Khách hàng có thể cập nhật thông tin liên hệ để lần đặt lịch sau được điền nhanh và chính xác hơn.</p>
           </div>
 
           <div className="account-layout">
@@ -147,12 +148,12 @@ export const AccountPage = () => {
 
             <Card>
               <Panel className="stack">
-                <Badge>Lịch sử booking</Badge>
+                <Badge>Lịch sử đặt lịch</Badge>
                 {bookings.length === 0 ? (
                   <div className="account-bookings">
                     <article className="account-booking-card">
-                      <strong>Chưa có booking nào trong tài khoản này.</strong>
-                      <span>Hãy chọn một gói dịch vụ và đặt lịch để bắt đầu lưu lịch sử booking.</span>
+                      <strong>Chưa có lịch đặt nào trong tài khoản này.</strong>
+                      <span>Hãy chọn một gói dịch vụ và đặt lịch để bắt đầu lưu lịch sử đặt lịch.</span>
                     </article>
                   </div>
                 ) : (
@@ -164,11 +165,12 @@ export const AccountPage = () => {
                           {booking.flight_date} - {booking.flight_time}
                         </span>
                         <span>
-                          {booking.payment_status} / {booking.flight_status}
+                          {paymentStatusLabels[booking.payment_status] ?? booking.payment_status} /{" "}
+                          {flightStatusLabels[booking.flight_status] ?? booking.flight_status}
                         </span>
-                        <span>Mã booking: {booking.code}</span>
+                        <span>Mã đặt lịch: {booking.code}</span>
                         <Link to={`/account/bookings/${booking.code}`}>
-                          <Button variant="secondary">Xem chi tiet booking</Button>
+                          <Button variant="secondary">Xem chi tiết đặt lịch</Button>
                         </Link>
                       </article>
                     ))}

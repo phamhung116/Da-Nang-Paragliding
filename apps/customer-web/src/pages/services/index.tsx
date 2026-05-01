@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { Badge, Card, Panel } from "@paragliding/ui";
-import { customerApi } from "@/shared/config/api";
+import { servicesQueryOptions } from "@/shared/lib/query-options";
 import { SiteLayout, Banner } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
 
 export const ServicesPage = () => {
   const { data: services = [] } = useQuery({
-    queryKey: ["services"],
-    queryFn: () => customerApi.listServices()
+    ...servicesQueryOptions()
   });
 
   return (

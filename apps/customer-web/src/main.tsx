@@ -12,8 +12,8 @@ import { I18nProvider } from "@/app/providers/i18n-provider";
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 60_000,
-      gcTime: 5 * 60_000,
+      staleTime: 2 * 60_000,
+      gcTime: 15 * 60_000,
       refetchOnWindowFocus: false,
       retry: 1
     }

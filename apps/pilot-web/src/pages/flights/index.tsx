@@ -7,9 +7,9 @@ import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
-const statusOptions = ["WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const statusOptions = ["WAITING", "FLYING"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
-const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
+const MAP_VISIBLE_STATUSES = new Set(["EN_ROUTE", "FLYING", "LANDED"]);
 
 type LivePosition = {
   lat: number;
@@ -28,36 +28,36 @@ type TrackingSession = {
 };
 
 const statusLabels: Record<string, string> = {
-  WAITING: "Dang cho",
-  PICKING_UP: "Dang di chuyen den diem don",
-  EN_ROUTE: "Dang di chuyen den diem bay",
-  FLYING: "Dang bay",
-  LANDED: "Da ha canh"
+  WAITING: "Đang chờ",
+  PICKING_UP: "Phi công đang đi đón khách",
+  EN_ROUTE: "Đang di chuyển đến điểm bay",
+  FLYING: "Đang bay",
+  LANDED: "Đã hạ cánh"
 };
 
 const getErrorMessage = (error: unknown) => {
   if (error instanceof Error) {
     return error.message;
   }
-  return "Khong the cap nhat vi tri pilot luc nay.";
+  return "Không thể cập nhật vị trí phi công lúc này.";
 };
 
 const getGeoErrorMessage = (error: GeolocationPositionError) => {
   switch (error.code) {
     case error.PERMISSION_DENIED:
-      return "Pilot can cap quyen truy cap vi tri de bat dau tracking.";
+      return "Phi công cần cấp quyền truy cập vị trí để bắt đầu theo dõi GPS.";
     case error.POSITION_UNAVAILABLE:
-      return "Khong lay duoc GPS hien tai. Hay thu lai sau.";
+      return "Không lấy được GPS hiện tại. Hãy thử lại sau.";
     case error.TIMEOUT:
-      return "Lay vi tri GPS qua lau. Hay thu lai.";
+      return "Lấy vị trí GPS quá lâu. Hãy thử lại.";
     default:
-      return "Co loi khi lay vi tri GPS cua pilot.";
+      return "Có lỗi khi lấy vị trí GPS của phi công.";
   }
 };
 
 const formatCurrentLocation = (tracking: Tracking | null) => {
   const label = tracking?.current_location?.name;
-  return typeof label === "string" && label.trim() ? label : "Dang cho cap nhat GPS";
+  return typeof label === "string" && label.trim() ? label : "Đang chờ cập nhật GPS";
 };
 
 const getFallbackPosition = (flight: PilotFlight, livePosition?: LivePosition | null): LivePosition | null => {
@@ -70,7 +70,7 @@ const getFallbackPosition = (flight: PilotFlight, livePosition?: LivePosition | 
     return {
       lat: currentLocation.lat,
       lng: currentLocation.lng,
-      name: typeof currentLocation.name === "string" ? currentLocation.name : "Vi tri hien tai"
+      name: typeof currentLocation.name === "string" ? currentLocation.name : "Vị trí hiện tại"
     };
   }
 
@@ -87,6 +87,7 @@ export const FlightsPage = () => {
   const [geoError, setGeoError] = useState<string | null>(null);
   const [activeTrackingCode, setActiveTrackingCode] = useState<string | null>(null);
   const [trackingActionCode, setTrackingActionCode] = useState<string | null>(null);
+  const [statusActionCode, setStatusActionCode] = useState<string | null>(null);
   const [livePositions, setLivePositions] = useState<Record<string, LivePosition>>({});
 
   const queryKey = ["pilot-flights", account?.id];
@@ -122,12 +123,12 @@ export const FlightsPage = () => {
   const stats = useMemo(() => {
     const flights = flightsQuery.data ?? [];
     return [
-      { label: "Assigned", value: flights.length },
+      { label: "Được phân công", value: flights.length },
       {
-        label: "Tracking live",
+        label: "Đang theo dõi",
         value: flights.filter((flight) => isTrackingActive(flight, activeTrackingCode)).length
       },
-      { label: "Flying", value: flights.filter((item) => item.booking.flight_status === "FLYING").length }
+      { label: "Đang bay", value: flights.filter((item) => item.booking.flight_status === "FLYING").length }
     ];
   }, [activeTrackingCode, flightsQuery.data]);
 
@@ -154,14 +155,43 @@ export const FlightsPage = () => {
     }
   });
 
+  const resolveStatusPosition = (flight: PilotFlight) =>
+    new Promise<LivePosition | null>((resolve) => {
+      const livePosition = livePositions[flight.booking.code];
+      if (livePosition) {
+        resolve(livePosition);
+        return;
+      }
+
+      if (!navigator.geolocation) {
+        resolve(getFallbackPosition(flight));
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) =>
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+            name: "GPS trực tiếp của phi công"
+          }),
+        () => resolve(getFallbackPosition(flight)),
+        {
+          enableHighAccuracy: true,
+          timeout: 5000,
+          maximumAge: 5000
+        }
+      );
+    });
+
   const startLiveTracking = (flight: PilotFlight, options?: { resume?: boolean }) => {
     if (!navigator.geolocation) {
-      setGeoError("Trinh duyet nay khong ho tro GPS real-time cho pilot.");
+      setGeoError("Trình duyệt này không hỗ trợ GPS thời gian thực cho phi công.");
       return;
     }
 
     if (trackingSessionRef.current && trackingSessionRef.current.code !== flight.booking.code) {
-      setGeoError("Dang co mot hanh trinh duoc tracking. Hay dung hanh trinh hien tai truoc.");
+      setGeoError("Đang có một hành trình được theo dõi GPS. Hãy dừng hành trình hiện tại trước.");
       return;
     }
 
@@ -184,7 +214,7 @@ export const FlightsPage = () => {
         const payload: LivePosition = {
           lat: position.coords.latitude,
           lng: position.coords.longitude,
-          name: "Pilot GPS live"
+          name: "GPS trực tiếp của phi công"
         };
 
         session.lastPosition = payload;
@@ -276,7 +306,7 @@ export const FlightsPage = () => {
       if (session?.code === flight.booking.code) {
         session.phase = "started";
       }
-      setGeoError("Can co it nhat mot vi tri GPS hop le truoc khi dung tracking.");
+      setGeoError("Cần có ít nhất một vị trí GPS hợp lệ trước khi dừng theo dõi.");
       return;
     }
 
@@ -303,7 +333,8 @@ export const FlightsPage = () => {
   };
 
   const statusMutation = useMutation({
-    mutationFn: ({ code, status }: { code: string; status: string }) => pilotApi.updateFlightStatus(code, status),
+    mutationFn: ({ code, status, payload }: { code: string; status: string; payload?: LivePosition | null }) =>
+      pilotApi.updateFlightStatus(code, status, payload ?? undefined),
     onSuccess: (result) => {
       updateFlightCache(result);
       if (!result.tracking?.tracking_active && trackingSessionRef.current?.code === result.booking.code) {
@@ -312,6 +343,18 @@ export const FlightsPage = () => {
       }
     }
   });
+
+  const submitStatusUpdate = async (flight: PilotFlight, status: string) => {
+    setStatusActionCode(flight.booking.code);
+    try {
+      const payload = await resolveStatusPosition(flight);
+      await statusMutation.mutateAsync({ code: flight.booking.code, status, payload });
+    } catch (error) {
+      setGeoError(getErrorMessage(error));
+    } finally {
+      setStatusActionCode(null);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -335,9 +378,9 @@ export const FlightsPage = () => {
       <div className="pilot-stack">
         <div className="pilot-heading">
           <div>
-            <Badge tone="success">Flight desk</Badge>
-            <h1>Assigned flights</h1>
-            <p>Tracking chi bat dau tu luc pilot bam bat dau chuyen di va ket thuc khi bam ket thuc chuyen di.</p>
+            <Badge tone="success">Bảng chuyến bay</Badge>
+            <h1>Chuyến bay được phân công</h1>
+            <p>Theo dõi GPS chỉ bắt đầu khi phi công đã đón khách và bấm đưa khách tới điểm bay.</p>
           </div>
           <div className="pilot-quick-stats">
             {stats.map((item) => (
@@ -355,11 +398,23 @@ export const FlightsPage = () => {
         <div className="pilot-flight-grid">
           {(flightsQuery.data ?? []).map((flight) => {
             const hasTrackingStarted = isTrackingActive(flight, activeTrackingCode);
-            const isActionPending = trackingActionCode === flight.booking.code || trackingMutation.isPending;
+            const isTripFinished = flight.booking.flight_status === "LANDED";
+            const isActionPending =
+              trackingActionCode === flight.booking.code ||
+              statusActionCode === flight.booking.code ||
+              trackingMutation.isPending ||
+              statusMutation.isPending;
             const shouldShowMap =
               MAP_VISIBLE_STATUSES.has(flight.booking.flight_status) ||
               hasTrackingStarted ||
               Boolean((flight.tracking?.route_points.length ?? 0) > 1);
+            const trackingButtonLabel = isTripFinished
+              ? "Đã kết thúc theo dõi"
+                : hasTrackingStarted
+                  ? "Kết thúc theo dõi khi hạ cánh"
+                : flight.booking.pickup_option === "pickup"
+                  ? "Bắt đầu đưa khách tới điểm bay"
+                  : "Bắt đầu đi tới điểm bay";
 
             return (
               <Card key={flight.booking.code}>
@@ -369,7 +424,7 @@ export const FlightsPage = () => {
                       <Badge tone="success">
                         {statusLabels[flight.booking.flight_status] ?? flight.booking.flight_status}
                       </Badge>
-                      {hasTrackingStarted ? <Badge>GPS live</Badge> : null}
+                      {hasTrackingStarted ? <Badge>GPS trực tiếp</Badge> : null}
                     </div>
                     <h2>{flight.booking.service_name}</h2>
                     <span>{flight.booking.code}</span>
@@ -379,42 +434,42 @@ export const FlightsPage = () => {
                     <div className="pilot-flight-summary">
                       <div className="pilot-card-grid">
                         <article>
-                          <span>Customer</span>
+                          <span>Khách hàng</span>
                           <strong>{flight.booking.customer_name}</strong>
                         </article>
                         <article>
-                          <span>Schedule</span>
+                          <span>Lịch bay</span>
                           <strong>
                             {flight.booking.flight_date} - {flight.booking.flight_time}
                           </strong>
                         </article>
                         <article>
-                          <span>Current location</span>
+                          <span>Vị trí hiện tại</span>
                           <strong>{formatCurrentLocation(flight.tracking)}</strong>
                         </article>
                         <article>
-                          <span>Pickup</span>
+                          <span>Điểm đón</span>
                           <strong>
                             {flight.booking.pickup_option === "pickup"
-                              ? flight.booking.pickup_address ?? "Dia chi don"
-                              : "Khach tu den"}
+                              ? flight.booking.pickup_address ?? "Địa chỉ đón"
+                              : "Khách tự đến"}
                           </strong>
                         </article>
                         <article>
-                          <span>Route points</span>
+                          <span>Điểm GPS</span>
                           <strong>{flight.tracking?.route_points.length ?? 0}</strong>
                         </article>
                       </div>
 
                       <div className="pilot-live-panel">
                         <div className="pilot-live-panel__copy">
-                          <strong>GPS flight tracking</strong>
-                          <p>Route chi duoc luu ke tu diem GPS dau tien khi pilot bam bat dau chuyen di.</p>
+                          <strong>Theo dõi GPS chuyến bay</strong>
+                          <p>Không theo dõi đoạn phi công tự đi tới điểm đón. Lộ trình bắt đầu từ lúc khách đã lên xe.</p>
                         </div>
                         <Button
                           type="button"
                           variant={hasTrackingStarted ? "secondary" : "primary"}
-                          disabled={isActionPending || statusMutation.isPending}
+                          disabled={isActionPending || statusMutation.isPending || (!hasTrackingStarted && isTripFinished)}
                           onClick={() => {
                             if (hasTrackingStarted) {
                               void stopLiveTracking(flight);
@@ -423,23 +478,23 @@ export const FlightsPage = () => {
                             startLiveTracking(flight);
                           }}
                         >
-                          {hasTrackingStarted ? "Ket thuc chuyen di" : "Bat dau chuyen di"}
+                          {trackingButtonLabel}
                         </Button>
                       </div>
 
                       <div className="pilot-status-actions">
-                        {statusOptions
-                          .filter((status) => status !== "PICKING_UP" || flight.booking.pickup_option === "pickup")
-                          .map((status) => (
-                            <Button
-                              key={status}
-                              variant={flight.booking.flight_status === status ? "primary" : "secondary"}
-                              disabled={statusMutation.isPending || isActionPending}
-                              onClick={() => statusMutation.mutate({ code: flight.booking.code, status })}
-                            >
-                              {statusLabels[status]}
-                            </Button>
-                          ))}
+                        {statusOptions.map((status) => (
+                          <Button
+                            key={status}
+                            variant={flight.booking.flight_status === status ? "primary" : "secondary"}
+                            disabled={statusMutation.isPending || isActionPending || (status === "FLYING" && !hasTrackingStarted)}
+                            onClick={() => {
+                              void submitStatusUpdate(flight, status);
+                            }}
+                          >
+                            {statusLabels[status]}
+                          </Button>
+                        ))}
                       </div>
                     </div>
 
@@ -448,8 +503,8 @@ export const FlightsPage = () => {
                         <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
 
                         <div className="pilot-map-note">
-                          <strong>Flight path</strong>
-                          <p>Chi nhung diem GPS tu luc bat dau chuyen di den khi ket thuc chuyen di moi duoc dua vao route.</p>
+                          <strong>Lộ trình bay</strong>
+                          <p>Chỉ những điểm GPS sau khi khách đã lên xe mới được đưa vào lộ trình.</p>
                         </div>
                       </div>
                     ) : null}
@@ -471,7 +526,7 @@ export const FlightsPage = () => {
 
         {!flightsQuery.isLoading && (flightsQuery.data ?? []).length === 0 ? (
           <Card>
-            <Panel className="pilot-empty">Khong co booking nao duoc gan cho pilot nay.</Panel>
+            <Panel className="pilot-empty">Không có lịch đặt nào được gán cho phi công này.</Panel>
           </Card>
         ) : null}
       </div>

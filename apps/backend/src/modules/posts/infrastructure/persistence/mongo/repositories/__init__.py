@@ -26,7 +26,7 @@ class MongoPostRepository:
     def update(self, slug: str, payload: PostPayload) -> Post:
         document = PostDocument.objects.filter(slug=slug).first()
         if document is None:
-            raise NotFoundError("Khong tim thay bai viet.")
+            raise NotFoundError("Không tìm thấy bài viết.")
 
         for field, value in to_document_defaults(payload).items():
             setattr(document, field, value)
@@ -40,4 +40,4 @@ class MongoPostRepository:
     def delete(self, slug: str) -> None:
         deleted, _ = PostDocument.objects.filter(slug=slug).delete()
         if not deleted:
-            raise NotFoundError("Khong tim thay bai viet.")
+            raise NotFoundError("Không tìm thấy bài viết.")
