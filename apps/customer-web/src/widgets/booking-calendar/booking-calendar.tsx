@@ -274,9 +274,10 @@ export const BookingCalendar = ({
   const tableMinWidth = weatherAside ? "min-w-[300px]" : "min-w-[260px]";
   const wrapperWidth = weatherAside ? "min-w-[300px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl";
   const timeHeaderWidth = weatherAside ? "w-12 md:w-14" : "w-11 md:w-12";
-  const timeLabelClass = "text-[9px] md:text-[11px]";
-  const weekdayClass = "text-[8px] md:text-[10px]";
-  const dayNumberClass = "text-[10px] md:text-[12px]";
+  const timeLabelClass = weatherAside ? "text-[11px] md:text-[14px]" : "text-[9px] md:text-[11px]";
+  const weekdayClass = weatherAside ? "text-[10px] md:text-[13px]" : "text-[8px] md:text-[10px]";
+  const dayNumberClass = weatherAside ? "text-[12px] md:text-[15px]" : "text-[10px] md:text-[12px]";
+  const monthYearClass = weatherAside ? "flex items-center gap-1 text-[13px] md:text-[15px] font-bold text-stone-700 transition-colors hover:text-brand" : "flex items-center gap-1 text-sm font-bold text-stone-700 transition-colors hover:text-brand";
   const cellPaddingClass = weatherAside ? "p-[5px]" : "p-[2px]";
   const slotSizeClass = weatherAside ? "h-10 w-10 md:h-11 md:w-11" : "h-9 w-9 md:h-10 md:w-10";
 
@@ -293,7 +294,7 @@ export const BookingCalendar = ({
               <div className="flex gap-2">
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-sm font-bold text-stone-700 transition-colors hover:text-brand"
+                  className={monthYearClass}
                   onClick={() => {
                     setShowMonthMenu((current) => !current);
                     setShowYearMenu(false);
@@ -304,7 +305,7 @@ export const BookingCalendar = ({
                 </button>
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-sm font-bold text-stone-700 transition-colors hover:text-brand"
+                  className={monthYearClass}
                   onClick={() => {
                     setShowYearMenu((current) => !current);
                     setShowMonthMenu(false);
