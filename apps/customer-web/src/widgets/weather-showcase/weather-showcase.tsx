@@ -124,7 +124,6 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
       icon: <Wind size={22} />,
       title: "Sức gió",
       value: `${today.wind_kph} km/h`,
-      description: getStatDescription("wind"),
       iconClass: "text-rose-400"
     },
     {
@@ -219,15 +218,10 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                   </div>
 
                   <div className="flex flex-col gap-3 sm:flex-row">
-                    <Link to={routes.booking} className="sm:flex-1">
+                    <Link to={routes.services} className="sm:flex-1">
                       <Button className="btn-primary flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-bold shadow-lg shadow-brand/20">
                         Đặt lịch ngay
                         <MoveRight size={16} />
-                      </Button>
-                    </Link>
-                    <Link to={routes.services} className="sm:flex-1">
-                      <Button className="btn-secondary flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-4 text-sm font-bold">
-                        Xem lịch trống
                       </Button>
                     </Link>
                   </div>
@@ -282,7 +276,7 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Sun size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
-                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.uv_index}</span>
+                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.uv_index} UV</span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <Eye size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
