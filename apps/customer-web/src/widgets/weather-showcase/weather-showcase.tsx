@@ -271,34 +271,36 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 {visibleForecast.map((item) => (
                   <article
                     key={item.date}
-                    className={`flex items-center gap-2 rounded-xl p-2 transition-colors md:gap-4 md:p-3 ${
+                    className={`flex flex-wrap items-center gap-2 rounded-xl p-2 transition-colors md:flex-nowrap md:gap-4 md:p-3 ${
                       isDark ? "hover:bg-white/5" : "hover:bg-stone-100"
                     }`}
                   >
-                    <span className="w-14 text-[10px] font-medium md:w-16 md:text-sm">
+                    <span className="w-14 shrink-0 text-[10px] font-medium md:w-16 md:text-sm">
                       {formatDate(item.date, {
                         weekday: "short",
                         day: "2-digit",
                         month: "2-digit"
                       })}
                     </span>
-                    <Badge tone={getWeatherTone(item.flight_condition)}>{repairFlightConditionLabel(item.flight_condition)}</Badge>
-                    <div className="grid flex-1 grid-cols-3 gap-1 md:gap-2">
-                      <div className="flex items-center gap-1">
-                        <Wind size={10} className="text-stone-400" />
-                        <span className="text-[9px] font-bold md:text-[11px]">{item.wind_kph} km/h</span>
+                    <div className="shrink-0 text-[10px] md:text-[11px]">
+                      <Badge tone={getWeatherTone(item.flight_condition)}>{repairFlightConditionLabel(item.flight_condition)}</Badge>
+                    </div>
+                    <div className="grid min-w-0 flex-1 grid-cols-3 gap-2 md:gap-3">
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <Wind size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
+                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.wind_kph} km/h</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Sun size={10} className="text-stone-400" />
-                        <span className="text-[9px] font-bold md:text-[11px]">{item.uv_index}</span>
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <Sun size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
+                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.uv_index}</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Eye size={10} className="text-stone-400" />
-                        <span className="text-[9px] font-bold md:text-[11px]">{item.visibility_km} km</span>
+                      <div className="flex min-w-0 items-center gap-1.5">
+                        <Eye size={12} className="shrink-0 text-stone-400 md:h-[14px] md:w-[14px]" />
+                        <span className="truncate whitespace-nowrap text-[11px] font-bold md:text-sm">{item.visibility_km} km</span>
                       </div>
                     </div>
 
-                    <span className="text-[10px] font-bold md:text-sm">{item.temperature_c}°C</span>
+                    <span className="shrink-0 text-[11px] font-bold md:text-sm">{item.temperature_c}°C</span>
                   </article>
                 ))}
 
