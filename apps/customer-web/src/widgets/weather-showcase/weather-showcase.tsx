@@ -265,8 +265,8 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 {visibleForecast.map((item) => (
                   <article
                     key={item.date}
-                    className={`rounded-xl p-3 transition-colors ${
-                      isDark ? "hover:bg-white/5" : "hover:bg-stone-100"
+                    className={`rounded-xl border-b p-3 transition-colors ${
+                      isDark ? "border-white/10 hover:bg-white/5" : "border-stone-200 hover:bg-stone-100"
                     }`}
                   >
                     <div className="flex items-center justify-between gap-3">

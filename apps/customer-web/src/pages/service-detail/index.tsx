@@ -95,10 +95,10 @@ export const ServiceDetailPage = () => {
         image={servicePackage.hero_image}
       />
 
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-          <div className="order-first space-y-8 lg:order-last lg:col-span-1 lg:col-start-3">
-            <div className="glass-card sticky top-24 rounded-[32px] p-6">
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Container className="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,1.35fr)_minmax(380px,0.95fr)]">
+          <div className="order-first space-y-8 lg:order-last">
+            <div className="glass-card sticky top-24 rounded-[32px] border border-stone-200/80 p-7">
               <div className="mb-6">
                 <div className="mb-4 flex items-center justify-between gap-4">
                   <h2 className="text-3xl font-bold text-red-600">{formatCurrency(servicePackage.price)}</h2>
@@ -142,7 +142,7 @@ export const ServiceDetailPage = () => {
             </div>
           </div>
 
-          <div className="space-y-6 lg:col-span-2 lg:space-y-12">
+          <div className="space-y-6 lg:space-y-12">
             <section className="overflow-hidden rounded-3xl bg-white lg:rounded-none lg:bg-transparent">
               <button
                 type="button"

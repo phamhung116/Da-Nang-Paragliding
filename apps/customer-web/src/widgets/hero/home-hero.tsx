@@ -9,7 +9,7 @@ export const HomeHero = () => {
   const { t } = useI18n();
 
   return (
-    <section className="relative h-[90vh] flex items-center overflow-hidden">
+    <section className="relative mt-20 flex h-[calc(90vh-5rem)] items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
           src="/media/img/banner.png"

@@ -12,7 +12,7 @@ import { useI18n } from "@/shared/providers/i18n-provider";
 
 export const Banner = ({ title, subtitle, image }: { title: string; subtitle?: string; image: string }) => {
   return (
-    <section className="relative mb-12 flex h-[40vh] items-center overflow-hidden md:mb-20 md:h-[50vh]">
+    <section className="relative mt-20 mb-12 flex h-[40vh] items-center overflow-hidden md:mb-20 md:h-[50vh]">
       <div className="absolute inset-0 z-0">
         <img src={image} alt={title} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />

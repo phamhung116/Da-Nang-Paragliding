@@ -127,6 +127,7 @@ export const BookingPage = () => {
                 selectedSlot={selectedSlot}
                 onMonthChange={(year, month) => setCalendarState({ year, month })}
                 onSelectSlot={setSelectedSlot}
+                weatherAside
               />
             </Panel>
           </Card>
