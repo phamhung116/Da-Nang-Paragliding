@@ -14,6 +14,33 @@ import { SiteLayout } from "@/widgets/layout/site-layout";
 import { ServiceCard } from "@/widgets/service-card/service-card";
 import { WeatherShowcase } from "@/widgets/weather-showcase/weather-showcase";
 
+const homeFeatures = [
+  {
+    icon: <Navigation size={24} />,
+    title: "Phi công chuyên nghiệp",
+    desc: "Đội ngũ phi công 500+ giờ bay thực tế tại Sơn Trà, đồng hành an toàn trong suốt hành trình.",
+    image: "/media/img/anh24.jpg"
+  },
+  {
+    icon: <MapPin size={24} />,
+    title: "Miễn phí trung chuyển",
+    desc: "Đón tận nơi trong nội thành Đà Nẵng và đưa đến điểm bay để bạn không phải lo di chuyển.",
+    image: "/media/img/anh2.jpg"
+  },
+  {
+    icon: <Camera size={24} />,
+    title: "Lưu giữ khoảnh khắc",
+    desc: "Quay video GoPro 4K, chụp ảnh flycam và lưu lại trọn vẹn chuyến bay đáng nhớ.",
+    image: "/media/img/anh15.jpg"
+  },
+  {
+    icon: <ShieldCheck size={24} />,
+    title: "Đảm bảo an toàn",
+    desc: "Trang bị hiện đại, quy trình kiểm tra kỹ lưỡng và bảo hiểm cho từng khách hàng.",
+    image: "/media/img/anh6.jpg"
+  }
+];
+
 const toYouTubeEmbedUrl = (value: string) => {
   try {
     const url = new URL(value);
@@ -76,16 +103,11 @@ export const HomePage = () => {
               viewport={{ once: true }}
               className="rounded-[32px] border border-white/10 bg-black/20 p-6 backdrop-blur-lg md:rounded-[40px] md:p-12"
             >
-              <h2 className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 md:mb-4 md:text-xs">
-                Về chúng tôi
-              </h2>
-              <p className="mb-3 text-xl font-bold leading-tight text-white md:mb-4 md:text-3xl">
-                CHINH PHỤC BẦU TRỜI ĐÀ NẴNG
-              </p>
+              <h2 className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 md:mb-4 md:text-xs">Về chúng tôi</h2>
+              <p className="mb-3 text-xl font-bold leading-tight text-white md:mb-4 md:text-3xl">CHINH PHỤC BẦU TRỜI ĐÀ NẴNG</p>
               <p className="mx-auto mb-6 max-w-2xl text-sm font-medium leading-relaxed text-stone-200 md:mb-8 md:text-lg">
-                Chúng tôi là đơn vị hàng đầu cung cấp dịch vụ bay dù lượn đôi tại Đà Nẵng. Với sứ mệnh mang đến trải
-                nghiệm bay an toàn và đầy cảm xúc, chúng tôi đã đồng hành cùng hàng ngàn du khách chinh phục bầu trời
-                Sơn Trà.
+                Chúng tôi là đơn vị hàng đầu cung cấp dịch vụ bay dù lượn đôi tại Đà Nẵng. Với sứ mệnh mang đến trải nghiệm bay an
+                toàn và đầy cảm xúc, chúng tôi đã đồng hành cùng hàng ngàn du khách chinh phục bầu trời Sơn Trà.
               </p>
               <Link to={routes.gallery} className="btn-primary px-6 py-3 text-sm md:px-8 md:py-4 md:text-base">
                 Xem chi tiết về chúng tôi
@@ -94,56 +116,43 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 gap-3 md:gap-6 lg:grid-cols-4">
-            {[
-              {
-                icon: <Navigation size={24} />,
-                title: "Phi công chuyên nghiệp",
-                desc: "Đội ngũ phi công có hàng ngàn giờ bay."
-              },
-              {
-                icon: <MapPin size={24} />,
-                title: "Miễn phí trung chuyển",
-                desc: "Xe đưa đón tận nơi từ điểm tập kết."
-              },
-              {
-                icon: <Camera size={24} />,
-                title: "Lưu giữ khoảnh khắc",
-                desc: "Quay video GoPro 4K và Flycam."
-              },
-              {
-                icon: <ShieldCheck size={24} />,
-                title: "Đảm bảo an toàn",
-                desc: "Trang thiết bị hiện đại, bảo hiểm 100tr."
-              }
-            ].map((feature, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="glass-card flex flex-row items-center gap-3 rounded-2xl border border-stone-100 p-3 transition-all hover:shadow-lg md:gap-4 md:rounded-3xl md:p-8 lg:flex-col lg:text-center"
-              >
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand/10 text-brand md:h-16 md:w-16 md:rounded-2xl">
-                  <div className="md:hidden">
-                    {React.cloneElement(feature.icon as React.ReactElement, { size: 20 })}
+        <section className="relative bg-[#091a2f] pb-24 pt-10 md:pb-28 md:pt-14">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+              {homeFeatures.map((feature, index) => (
+                <motion.article
+                  key={feature.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.08 }}
+                  className="rounded-[24px] border border-white/10 bg-[#0d1f35] shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition-transform duration-300 hover:-translate-y-1"
+                >
+                  <div className="relative px-4 pt-4">
+                    <div className="relative h-40 overflow-hidden rounded-[20px] md:h-44">
+                      <img
+                        src={feature.image}
+                        alt={feature.title}
+                        className="h-full w-full object-cover"
+                        referrerPolicy="no-referrer"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35] via-[#0d1f35]/10 to-transparent" />
+                    </div>
+                    <div className="absolute -bottom-6 left-8 z-10 flex h-14 w-14 items-center justify-center rounded-full border-4 border-[#0d1f35] bg-[#b63c2f] text-white shadow-lg">
+                      {React.cloneElement(feature.icon as React.ReactElement, { size: 24 })}
+                    </div>
                   </div>
-                  <div className="hidden md:block">
-                    {React.cloneElement(feature.icon as React.ReactElement, { size: 32 })}
+                  <div className="px-5 pb-5 pt-10 text-white">
+                    <h3 className="text-lg font-bold leading-tight">{feature.title}</h3>
+                    <p className="mt-3 text-sm leading-6 text-slate-300">{feature.desc}</p>
                   </div>
-                </div>
-                <div className="flex flex-col">
-                  <h3 className="text-xs font-bold leading-tight text-stone-900 md:text-lg">{feature.title}</h3>
-                  <p className="mt-1 hidden text-[10px] leading-tight text-stone-500 md:block md:text-sm">{feature.desc}</p>
-                </div>
-              </motion.div>
-            ))}
+                </motion.article>
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="section section--tight-top">
+        <section className="-mt-14 section section--tight-top md:-mt-20">
           <Container className="stack">
             {upcomingForecast.length > 0 ? (
               <WeatherShowcase days={upcomingForecast} />
@@ -182,7 +191,7 @@ export const HomePage = () => {
             </Card>
           )}
           <div className="flex justify-center">
-            <Link to="/services">
+            <Link to={routes.services}>
               <Button className="btn-secondary group flex items-center gap-2 px-6 py-3 text-sm md:px-8 md:py-4 md:text-base">
                 Xem tất cả các gói
               </Button>
@@ -190,7 +199,7 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-0 pb-12 md:px-4 md:pb-20 sm:px-6 lg:px-8">
+        <section className="mx-auto max-w-7xl px-0 pb-12 sm:px-6 md:px-4 md:pb-20 lg:px-8">
           <div className="group relative mx-auto aspect-video max-w-5xl overflow-hidden shadow-2xl md:rounded-[40px]">
             <iframe
               src={video1YoutubeEmbedUrl}
@@ -210,9 +219,7 @@ export const HomePage = () => {
               Xem trên YouTube
             </a>
             <div className="absolute bottom-4 left-4 text-left text-white md:bottom-8 md:left-8">
-              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest opacity-80 md:mb-2 md:text-xs">
-                Trải nghiệm thực tế
-              </p>
+              <p className="mb-1 text-[10px] font-bold uppercase tracking-widest opacity-80 md:mb-2 md:text-xs">Trải nghiệm thực tế</p>
             </div>
           </div>
         </section>
@@ -221,11 +228,9 @@ export const HomePage = () => {
           <div className="mb-12 flex flex-col items-end justify-between gap-6 md:flex-row">
             <div className="max-w-2xl">
               <h2 className="mb-4 text-3xl font-bold text-stone-900 md:text-5xl">Tin Tức Mới Nhất</h2>
-              <p className="text-sm text-stone-500 md:text-base">
-                Cập nhật những thông tin, kinh nghiệm và câu chuyện thú vị về dù lượn.
-              </p>
+              <p className="text-sm text-stone-500 md:text-base">Cập nhật những thông tin, kinh nghiệm và câu chuyện thú vị về dù lượn.</p>
             </div>
-            <Link to="/posts">
+            <Link to={routes.posts}>
               <Button className="group flex items-center gap-2 font-bold text-white transition-all hover:gap-4 hover:text-white">
                 Xem tất cả bài viết
                 <ChevronRight size={20} className="transition-transform group-hover:translate-x-1" />
