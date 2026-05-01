@@ -240,7 +240,7 @@ export const BookingCalendar = ({
         <>
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-bold uppercase text-stone-400">
-              Du bao {activeSlot ? `${activeSlot} - ` : ""}Ngay {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
+              Dự báo {activeSlot ? `${activeSlot} - ` : ""}Ngày {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
             </span>
             <Sun size={15} className="text-yellow-500" />
           </div>
@@ -250,23 +250,23 @@ export const BookingCalendar = ({
               <span className="pb-0.5 text-[10px] font-medium text-stone-600">{weather.condition}</span>
             </div>
             <div className="flex flex-col justify-center">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Dieu kien bay</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">Điều kiện bay</span>
               <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 border-t border-stone-200 pt-2">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Suc gio</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">Sức gió</span>
               <span className="text-xs font-bold">{weather.wind} km/h</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Chi so UV</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">Chỉ số UV</span>
               <span className="text-xs font-bold">{weather.uv}</span>
             </div>
           </div>
         </>
       ) : (
-        <p className="text-xs text-stone-500">Chua co du lieu thoi tiet thuc te tu API cho lich bay nay.</p>
+        <p className="text-xs text-stone-500">Chưa có dữ liệu thời tiết cho lịch bay này</p>
       )}
     </div>
   );
@@ -274,8 +274,6 @@ export const BookingCalendar = ({
   return (
     <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-sm lg:max-w-none"}`}>
       <div className="space-y-3">
-        {!weatherAside ? weatherCard : null}
-
         <div className="space-y-3">
           <div className="relative">
             <div className="mb-3 flex items-center justify-between">
@@ -421,7 +419,7 @@ export const BookingCalendar = ({
                                 <td key={`${day.key}-${time}`} className="p-0.5">
                                   <button
                                     type="button"
-                                    className={`flex ${weatherAside ? "h-7" : "h-6"} w-full items-center justify-center rounded-md border-2 transition-all ${
+                                    className={`mx-auto flex ${weatherAside ? "h-7 w-7" : "h-6 w-6"} items-center justify-center rounded-md border-2 transition-all ${
                                       !slot || isBlocked
                                         ? "cursor-default border-stone-300 bg-stone-100 text-stone-400"
                                         : isSelected
