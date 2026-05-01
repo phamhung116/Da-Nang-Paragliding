@@ -51,7 +51,7 @@ const toYouTubeEmbedUrl = (value: string) => {
       return value;
     }
 
-    return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1`;
+    return `https://www.youtube-nocookie.com/embed/${videoId}?rel=0&modestbranding=1&playsinline=1&autoplay=1&mute=1`;
   } catch {
     return value;
   }
@@ -199,8 +199,8 @@ export const HomePage = () => {
           </div>
         </section>
 
-        <section className="mx-auto max-w-7xl px-0 pb-12 sm:px-6 md:px-4 md:pb-20 lg:px-8">
-          <div className="group relative mx-auto aspect-video max-w-5xl overflow-hidden shadow-2xl md:rounded-[40px]">
+        <section className="mx-auto max-w-[96rem] px-0 pb-12 sm:px-4 md:px-6 md:pb-20 lg:px-8">
+          <div className="group relative mx-auto aspect-video max-w-7xl overflow-hidden shadow-2xl md:rounded-[40px]">
             <iframe
               src={video1YoutubeEmbedUrl}
               title="Video trải nghiệm dù lượn"
