@@ -273,12 +273,12 @@ export const BookingCalendar = ({
 
   const tableMinWidth = weatherAside ? "min-w-[300px]" : "min-w-[260px]";
   const wrapperWidth = weatherAside ? "min-w-[300px] max-w-3xl" : "min-w-[260px] mx-auto max-w-xl";
-  const timeHeaderWidth = weatherAside ? "w-12" : "w-11";
-  const timeLabelClass = weatherAside ? "text-[10px]" : "text-[10px]";
-  const weekdayClass = weatherAside ? "text-[9px]" : "text-[9px]";
-  const dayNumberClass = weatherAside ? "text-[11px]" : "text-[11px]";
+  const timeHeaderWidth = weatherAside ? "w-12 md:w-14" : "w-11 md:w-12";
+  const timeLabelClass = "text-[10px] md:text-[12px]";
+  const weekdayClass = "text-[9px] md:text-[11px]";
+  const dayNumberClass = "text-[11px] md:text-[13px]";
   const cellPaddingClass = weatherAside ? "p-[10px]" : "p-[5px]";
-  const slotSizeClass = weatherAside ? "h-8 w-8" : "h-7 w-7";
+  const slotSizeClass = "h-9 w-9 md:h-10 md:w-10";
 
   return (
     <div className={`mx-auto ${weatherAside ? "max-w-3xl" : "max-w-sm lg:max-w-none"}`}>
@@ -428,7 +428,7 @@ export const BookingCalendar = ({
                                 <td key={`${day.key}-${time}`} className={cellPaddingClass}>
                                   <button
                                     type="button"
-                                    className={`mx-auto flex ${slotSizeClass} items-center justify-center rounded-md border-2 transition-all ${
+                                    className={`mx-auto flex ${slotSizeClass} items-center justify-center rounded-[10px] border-2 transition-all ${
                                       !slot || isBlocked
                                         ? "cursor-default border-stone-300 bg-stone-100 text-stone-400"
                                         : isSelected
