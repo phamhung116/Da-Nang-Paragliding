@@ -17,6 +17,8 @@ import type {
   PickupLocation,
   ResendVerificationResult,
   ServicePackage,
+  TranslatePayload,
+  TranslateResult,
   Tracking,
   UpdateProfilePayload
 } from "../types";
@@ -105,6 +107,11 @@ export const createCustomerApi = (baseUrl: string, getAccessToken?: () => string
     lookupTracking: (query: string) =>
       http.request<{ booking: Booking; tracking: Tracking }>(
         `/tracking/lookup/?query=${encodeURIComponent(query)}`
-      )
+      ),
+    translate: (payload: TranslatePayload) =>
+      http.request<TranslateResult>("/translate/", {
+        method: "POST",
+        body: JSON.stringify(payload)
+      })
   };
 };

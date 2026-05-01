@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleMarker, MapContainer, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
+import { divIcon } from "leaflet";
+import { CircleMarker, MapContainer, Marker, Polyline, Popup, TileLayer, useMap } from "react-leaflet";
 import type { Booking, Tracking } from "@paragliding/api-client";
 
 type TrackingMapProps = {
@@ -65,15 +66,22 @@ const normalizeName = (value: string) =>
 
 const isBaseLocationName = (value: string) => normalizeName(value).includes("chua buu dai son");
 
+const toFiniteNumber = (value: unknown) => {
+  const nextValue = Number(value);
+  return Number.isFinite(nextValue) ? nextValue : null;
+};
+
 const findPickupPoint = (booking: Booking, trackedRoutePoints: MapPoint[]): MapPoint | null => {
   if (booking.pickup_option !== "pickup") {
     return null;
   }
 
-  if (typeof booking.pickup_lat === "number" && typeof booking.pickup_lng === "number") {
+  const pickupLat = toFiniteNumber(booking.pickup_lat);
+  const pickupLng = toFiniteNumber(booking.pickup_lng);
+  if (pickupLat !== null && pickupLng !== null) {
     return {
-      lat: booking.pickup_lat,
-      lng: booking.pickup_lng,
+      lat: pickupLat,
+      lng: pickupLng,
       name: booking.pickup_address?.trim() || "Điểm đón",
     };
   }
@@ -97,6 +105,25 @@ const getActiveSegmentPoints = (tracking: Tracking, flightStatus: string) => {
 };
 
 const resolveActiveRoute = (booking: Booking, currentLocation: MapPoint, pickupPoint: MapPoint | null) => {
+  const pickupDestination =
+    pickupPoint && !isSamePoint(currentLocation, pickupPoint)
+      ? pickupPoint
+      : booking.flight_status === "PICKING_UP"
+        ? {
+            ...launchPoint,
+            name: booking.pickup_address?.trim() || "Diem don",
+          }
+        : pickupPoint;
+
+  if (booking.flight_status === "PICKING_UP" && pickupDestination) {
+    return {
+      origin: currentLocation,
+      destination: pickupDestination,
+      markers: dedupePoints([currentLocation, pickupDestination]),
+      useRoadRouting: true,
+    };
+  }
+
   if (booking.flight_status === "EN_ROUTE") {
     return {
       origin: currentLocation,
@@ -134,6 +161,22 @@ const resolveActiveRoute = (booking: Booking, currentLocation: MapPoint, pickupP
 
 const routeKey = (origin: MapPoint | null, destination: MapPoint | null) =>
   origin && destination ? `${origin.lng},${origin.lat};${destination.lng},${destination.lat}` : "";
+
+const pilotCarIcon = divIcon({
+  className: "tracking-map-marker tracking-map-marker--car",
+  html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17h10M5 17h14v-5l-2-5H7l-2 5v5Zm2.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3Zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3ZM7 12h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 17],
+  popupAnchor: [0, -18],
+});
+
+const destinationIcon = divIcon({
+  className: "tracking-map-marker tracking-map-marker--destination",
+  html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s7-5.1 7-12a7 7 0 1 0-14 0c0 6.9 7 12 7 12Z" fill="currentColor"/><circle cx="12" cy="10" r="2.5" fill="white"/></svg>',
+  iconSize: [34, 34],
+  iconAnchor: [17, 32],
+  popupAnchor: [0, -30],
+});
 
 const MapViewport = ({ points, viewKey }: { points: MapPoint[]; viewKey: string }) => {
   const map = useMap();
@@ -185,18 +228,15 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
     origin && destination ? ([[origin.lat, origin.lng], [destination.lat, destination.lng]] as Array<[number, number]>) : [];
 
   const routePositions = useMemo(() => {
+    if (useRoadRouting && origin && destination) {
+      return roadRoute.length ? roadRoute : fallbackRoute;
+    }
+
     if (activeTrackedPoints.length > 1) {
       return activeTrackedPoints.map((point) => [point.lat, point.lng] as [number, number]);
     }
 
-    if (origin && destination) {
-      if (!useRoadRouting) {
-        return fallbackRoute;
-      }
-      return roadRoute.length ? roadRoute : fallbackRoute;
-    }
-
-    return [];
+    return fallbackRoute;
   }, [activeTrackedPoints, destination, fallbackRoute, origin, roadRoute, useRoadRouting]);
 
   const viewportPoints = useMemo(
@@ -205,7 +245,7 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
   );
 
   const center = markers[markers.length - 1] ?? currentLocation;
-  const viewKey = `${booking.code}:${booking.flight_status}:${pickupPoint?.lat ?? "none"}:${pickupPoint?.lng ?? "none"}`;
+  const viewKey = `${booking.code}:${booking.flight_status}:${currentLocation.lat}:${currentLocation.lng}:${destination?.lat ?? "none"}:${destination?.lng ?? "none"}`;
 
   useEffect(() => {
     if (!activeRouteKey) {
@@ -255,16 +295,41 @@ export const TrackingMap = ({ booking, tracking }: TrackingMapProps) => {
         />
         <MapViewport points={viewportPoints} viewKey={viewKey} />
         {routePositions.length > 1 ? (
-          <Polyline positions={routePositions} color="#e8702a" weight={5} opacity={0.9} />
+          <Polyline positions={routePositions} color="#2563eb" weight={5} opacity={0.9} />
         ) : null}
-        {markers.map((point, index) => (
-          <CircleMarker key={`${point.lat}-${point.lng}-${index}`} center={[point.lat, point.lng]} radius={8}>
-            <Popup>
-              <strong>{point.name}</strong>
-              {point.recordedAt ? <div>{point.recordedAt}</div> : null}
-            </Popup>
-          </CircleMarker>
-        ))}
+        {markers.map((point, index) => {
+          const isCurrentLocation = isSamePoint(point, currentLocation);
+          const isDestination = Boolean(destination && isSamePoint(point, destination));
+
+          if (isCurrentLocation || isDestination) {
+            return (
+              <Marker
+                key={`${point.lat}-${point.lng}-${index}`}
+                position={[point.lat, point.lng]}
+                icon={isCurrentLocation ? pilotCarIcon : destinationIcon}
+              >
+                <Popup>
+                  <strong>{point.name}</strong>
+                  {point.recordedAt ? <div>{point.recordedAt}</div> : null}
+                </Popup>
+              </Marker>
+            );
+          }
+
+          return (
+            <CircleMarker
+              key={`${point.lat}-${point.lng}-${index}`}
+              center={[point.lat, point.lng]}
+              radius={6}
+              pathOptions={{ color: "#2563eb", fillColor: "#bfdbfe", fillOpacity: 0.9 }}
+            >
+              <Popup>
+                <strong>{point.name}</strong>
+                {point.recordedAt ? <div>{point.recordedAt}</div> : null}
+              </Popup>
+            </CircleMarker>
+          );
+        })}
       </MapContainer>
     </div>
   );

@@ -156,7 +156,7 @@ def flight_condition_for(
         if weather_code is not None
         else False
     )
-    bad_temperature = temperature_c is not None and (temperature_c < 13 or temperature_c > 40)
+    bad_temperature = temperature_c is not None and (temperature_c < 15 or temperature_c > 35)
     bad_gust = wind_gust_kph is not None and wind_gust_kph > 42
     if (
         blocking_weather_code
@@ -164,9 +164,9 @@ def flight_condition_for(
         or bad_gust
         or precip_mm > 4
         or chance_of_rain >= 85
-        or wind_kph > 34
-        or uv_index > 12
-        or visibility_km < 4.5
+        or wind_kph > 25
+        or uv_index > 10
+        or visibility_km < 5
     ):
         return BAD_FLIGHT_CONDITION
     return IDEAL_FLIGHT_CONDITION
@@ -198,6 +198,14 @@ def _weather_label(weather_code: int | None) -> str:
     if weather_code is None:
         return "Đang cập nhật"
     return OPEN_METEO_WEATHER_LABELS.get(weather_code, "Đang cập nhật")
+
+
+def _forecast_date_keys(start_date: date, end_date: date) -> list[str]:
+    return [forecast_date.isoformat() for forecast_date in daterange(start_date, end_date)]
+
+
+def _forecast_has_dates(forecast: dict[str, Any], date_keys: list[str]) -> bool:
+    return all(date_key in forecast for date_key in date_keys)
 
 
 def _fetch_open_meteo_forecast(
@@ -243,8 +251,9 @@ def _fetch_open_meteo_forecast(
         f"{round(latitude, 4)}:{round(longitude, 4)}:"
         f"{start_date.isoformat()}:{end_date.isoformat()}:{','.join(slot_times)}"
     )
+    date_keys = _forecast_date_keys(start_date, end_date)
     cached = cache.get(cache_key)
-    if isinstance(cached, dict):
+    if isinstance(cached, dict) and _forecast_has_dates(cached, date_keys):
         return cached
 
     try:
@@ -344,7 +353,8 @@ def fetch_weatherapi_forecast(
             end_date=end_date,
             slot_times=slot_times,
         )
-    plan_days = min(14, max(14, int(getattr(settings, "WEATHERAPI_FORECAST_DAYS", 14))))
+    configured_days = int(getattr(settings, "WEATHERAPI_FORECAST_DAYS", 14))
+    plan_days = max(1, min(14, configured_days))
     forecast_days = min(plan_days, max(1, (end_date - date.today()).days + 1))
     cache_key = (
         "weatherapi:v1:"
@@ -352,8 +362,9 @@ def fetch_weatherapi_forecast(
         f"{start_date.isoformat()}:{end_date.isoformat()}:{forecast_days}:"
         f"{','.join(slot_times)}"
     )
+    date_keys = _forecast_date_keys(start_date, end_date)
     cached = cache.get(cache_key)
-    if isinstance(cached, dict):
+    if isinstance(cached, dict) and _forecast_has_dates(cached, date_keys):
         return cached
 
     query = urlencode(
@@ -450,11 +461,7 @@ def fetch_weatherapi_forecast(
             }
         result[date_value] = day_weather
 
-    missing_dates = [
-        forecast_date.isoformat()
-        for forecast_date in daterange(start_date, end_date)
-        if forecast_date.isoformat() not in result
-    ]
+    missing_dates = [date_key for date_key in date_keys if date_key not in result]
     if missing_dates:
         fallback = _fetch_open_meteo_forecast(
             latitude=latitude,

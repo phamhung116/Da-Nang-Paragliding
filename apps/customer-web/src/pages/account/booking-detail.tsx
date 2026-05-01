@@ -7,6 +7,8 @@ import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
+import { useTranslatedText } from "@/shared/lib/use-translated-text";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
@@ -14,6 +16,7 @@ const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 export const AccountBookingDetailPage = () => {
   const { code = "" } = useParams();
   const { isAuthenticated } = useAuth();
+  const { tText } = useI18n();
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
   const [refundBank, setRefundBank] = useState("");
@@ -28,6 +31,7 @@ export const AccountBookingDetailPage = () => {
   });
 
   const booking = bookings.find((item) => item.code === code);
+  const translatedServiceName = useTranslatedText(booking?.service_name ?? "");
   const canRefundDeposit = useMemo(() => {
     if (!booking) {
       return false;
@@ -86,11 +90,11 @@ export const AccountBookingDetailPage = () => {
         <Container className="stack">
           <div className="section-heading">
             <div>
-              <Badge>Chi tiết đặt lịch</Badge>
+              <Badge>{tText("Chi tiết đặt lịch")}</Badge>
               <h2>{booking?.code ?? code}</h2>
             </div>
             <Link to={routes.account}>
-              <Button variant="secondary">Quay lại tài khoản</Button>
+              <Button variant="secondary">{tText("Quay lại tài khoản")}</Button>
             </Link>
           </div>
 
@@ -101,33 +105,33 @@ export const AccountBookingDetailPage = () => {
                   <div>
                     <Badge tone={cancelledStatuses.has(booking.approval_status) ? "danger" : "success"}>
                       {cancelledStatuses.has(booking.approval_status)
-                        ? "Đã hủy"
-                        : flightStatusLabels[booking.flight_status] ?? booking.flight_status}
+                        ? tText("Đã hủy")
+                        : tText(flightStatusLabels[booking.flight_status] ?? booking.flight_status)}
                     </Badge>
-                    <h3>{booking.service_name}</h3>
+                    <h3>{translatedServiceName || booking.service_name}</h3>
                   </div>
-                  <Badge>{paymentStatusLabels[booking.payment_status] ?? booking.payment_status}</Badge>
+                  <Badge>{tText(paymentStatusLabels[booking.payment_status] ?? booking.payment_status)}</Badge>
                 </div>
 
                 <div className="detail-list">
                   <div>
-                    <span>Mã đặt lịch</span>
+                    <span>{tText("Mã đặt lịch")}</span>
                     <strong>{booking.code}</strong>
                   </div>
                   <div>
-                    <span>Trạng thái</span>
-                    <strong>{approvalStatusLabels[booking.approval_status] ?? booking.approval_status}</strong>
+                    <span>{tText("Trạng thái")}</span>
+                    <strong>{tText(approvalStatusLabels[booking.approval_status] ?? booking.approval_status)}</strong>
                   </div>
                   <div>
-                    <span>Thời gian tạo đặt lịch</span>
+                    <span>{tText("Thời gian tạo đặt lịch")}</span>
                     <strong>{formatDateTime(booking.created_at)}</strong>
                   </div>
                   <div>
-                    <span>Họ và tên</span>
+                    <span>{tText("Họ và tên")}</span>
                     <strong>{booking.customer_name}</strong>
                   </div>
                   <div>
-                    <span>Số điện thoại</span>
+                    <span>{tText("Số điện thoại")}</span>
                     <strong>{booking.phone}</strong>
                   </div>
                   <div>
@@ -135,48 +139,48 @@ export const AccountBookingDetailPage = () => {
                     <strong>{booking.email}</strong>
                   </div>
                   <div>
-                    <span>Lịch bay</span>
+                    <span>{tText("Lịch bay")}</span>
                     <strong>
                       {booking.flight_date} - {booking.flight_time}
                     </strong>
                   </div>
                   <div>
-                    <span>Số người lớn</span>
+                    <span>{tText("Số người lớn")}</span>
                     <strong>{booking.adults}</strong>
                   </div>
                   <div>
-                    <span>Số trẻ em</span>
+                    <span>{tText("Số trẻ em")}</span>
                     <strong>{booking.children}</strong>
                   </div>
                   <div>
-                    <span>Ghi chú</span>
-                    <strong>{booking.notes || "Không có ghi chú"}</strong>
+                    <span>{tText("Ghi chú")}</span>
+                    <strong>{booking.notes || tText("Không có ghi chú")}</strong>
                   </div>
                   <div>
-                    <span>Phi công phụ trách</span>
-                    <strong>{booking.assigned_pilot_name ?? "Đang cập nhật"}</strong>
+                    <span>{tText("Phi công phụ trách")}</span>
+                    <strong>{booking.assigned_pilot_name ?? tText("Đang cập nhật")}</strong>
                   </div>
                   <div>
-                    <span>Tổng giá trị tour</span>
+                    <span>{tText("Tổng giá trị tour")}</span>
                     <strong>{formatCurrency(booking.final_total)}</strong>
                   </div>
                 </div>
 
                 {!cancelledStatuses.has(booking.approval_status) ? (
                   <Button variant="secondary" onClick={() => setCancelModalOpen(true)}>
-                    Hủy lịch đặt
+                    {tText("Hủy lịch đặt")}
                   </Button>
                 ) : (
                   <div className="booking-decision-card booking-decision-card--danger">
-                    <strong>Lý do hủy</strong>
-                    <p>{booking.rejection_reason ?? "Không có lý do"}</p>
+                    <strong>{tText("Lý do hủy")}</strong>
+                    <p>{booking.rejection_reason ?? tText("Không có lý do")}</p>
                   </div>
                 )}
               </Panel>
             </Card>
           ) : (
             <Card>
-              <Panel>Đang tải lịch đặt hoặc lịch đặt không tồn tại trong tài khoản này.</Panel>
+              <Panel>{tText("Đang tải lịch đặt hoặc lịch đặt không tồn tại trong tài khoản này.")}</Panel>
             </Card>
           )}
 
@@ -189,13 +193,13 @@ export const AccountBookingDetailPage = () => {
                 closeCancelDialog();
               }
             }}
-            title={`Hủy lịch đặt ${booking?.code ?? code}`}
-            description="Hủy trước ngày bay 5 ngày: hoàn 100% tiền cọc. Hủy sau mốc 5 ngày: không hoàn cọc."
+            title={`${tText("Hủy lịch đặt")} ${booking?.code ?? code}`}
+            description={tText("Hủy trước ngày bay 5 ngày: hoàn 100% tiền cọc. Hủy sau mốc 5 ngày: không hoàn cọc.")}
             icon="!"
             footer={
               <>
                 <Button type="button" variant="secondary" onClick={closeCancelDialog}>
-                  Đóng
+                  {tText("Đóng")}
                 </Button>
                 <Button
                   type="button"
@@ -206,23 +210,23 @@ export const AccountBookingDetailPage = () => {
                   }
                   onClick={cancelBooking}
                 >
-                  {cancelMutation.isPending ? "Đang hủy..." : "Hủy lịch đặt"}
+                  {cancelMutation.isPending ? tText("Đang hủy...") : tText("Hủy lịch đặt")}
                 </Button>
               </>
             }
           >
-            <Field label="Lý do hủy">
-              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder="Nhập lý do hủy lịch đặt" autoFocus />
+            <Field label={tText("Lý do hủy")}>
+              <Textarea value={reason} onChange={(event) => setReason(event.target.value)} placeholder={tText("Nhập lý do hủy lịch đặt")} autoFocus />
             </Field>
             {canRefundDeposit ? (
               <div className="inline-field-grid inline-field-grid--three">
-                <Field label="Ngân hàng">
+                <Field label={tText("Ngân hàng")}>
                   <Input value={refundBank} onChange={(event) => setRefundBank(event.target.value)} />
                 </Field>
-                <Field label="Số tài khoản">
+                <Field label={tText("Số tài khoản")}>
                   <Input value={refundAccountNumber} onChange={(event) => setRefundAccountNumber(event.target.value)} />
                 </Field>
-                <Field label="Chủ tài khoản">
+                <Field label={tText("Chủ tài khoản")}>
                   <Input value={refundAccountName} onChange={(event) => setRefundAccountName(event.target.value)} />
                 </Field>
               </div>

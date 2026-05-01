@@ -9,6 +9,8 @@ import { customerApi } from "@/shared/config/api";
 import { accountSupportNotes } from "@/shared/constants/customer-content";
 import { flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { routes } from "@/shared/config/routes";
+import { useTranslatedText } from "@/shared/lib/use-translated-text";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
 const normalizeFullName = (value: string) => value.trim().replace(/\s+/g, " ");
@@ -18,8 +20,33 @@ const normalizePhone = (value: string) => {
   return trimmed.startsWith("+") ? `+${digits}` : digits;
 };
 
+type AccountBooking = Awaited<ReturnType<typeof customerApi.getMyBookings>>[number];
+
+const AccountBookingCard = ({ booking }: { booking: AccountBooking }) => {
+  const { tText } = useI18n();
+  const serviceName = useTranslatedText(booking.service_name);
+
+  return (
+    <article className="account-booking-card">
+      <strong>{serviceName || booking.service_name}</strong>
+      <span>
+        {booking.flight_date} - {booking.flight_time}
+      </span>
+      <span>
+        {tText(paymentStatusLabels[booking.payment_status] ?? booking.payment_status)} /{" "}
+        {tText(flightStatusLabels[booking.flight_status] ?? booking.flight_status)}
+      </span>
+      <span>{tText("Mã đặt lịch")}: {booking.code}</span>
+      <Link to={`/account/bookings/${booking.code}`}>
+        <Button variant="secondary">{tText("Xem chi tiết đặt lịch")}</Button>
+      </Link>
+    </article>
+  );
+};
+
 export const AccountPage = () => {
   const { account, isAuthenticated, updateProfile } = useAuth();
+  const { tText } = useI18n();
 
   const form = useForm<UpdateProfilePayload>({
     defaultValues: {
@@ -82,7 +109,7 @@ export const AccountPage = () => {
           <div className="account-layout">
             <Card>
               <Panel className="stack">
-                <Badge>Hồ sơ cá nhân</Badge>
+                <Badge>{tText("Hồ sơ cá nhân")}</Badge>
                 <h2 className="detail-title">{account?.full_name}</h2>
                 <p className="detail-copy">{account?.email}</p>
                 <form
@@ -95,25 +122,25 @@ export const AccountPage = () => {
                     })
                   )}
                 >
-                  <Field label="Họ và tên">
+                  <Field label={tText("Họ và tên")}>
                     <Input
                       {...form.register("full_name", {
-                        required: "Họ và tên là bắt buộc.",
+                        required: tText("Họ và tên là bắt buộc."),
                         validate: (value) =>
-                          normalizeFullName(value ?? "").length >= 2 || "Họ và tên phải có ít nhất 2 ký tự."
+                          normalizeFullName(value ?? "").length >= 2 || tText("Họ và tên phải có ít nhất 2 ký tự.")
                       })}
                     />
                   </Field>
                   {form.formState.errors.full_name ? (
                     <p className="form-error">{form.formState.errors.full_name.message}</p>
                   ) : null}
-                  <Field label="Số điện thoại">
+                  <Field label={tText("Số điện thoại")}>
                     <Input
                       {...form.register("phone", {
-                        required: "Số điện thoại là bắt buộc.",
+                        required: tText("Số điện thoại là bắt buộc."),
                         validate: (value) => {
                           const digits = normalizePhone(value ?? "").replace("+", "");
-                          return digits.length >= 9 && digits.length <= 15 || "Số điện thoại không hợp lệ.";
+                          return digits.length >= 9 && digits.length <= 15 || tText("Số điện thoại không hợp lệ.");
                         }
                       })}
                     />
@@ -123,7 +150,7 @@ export const AccountPage = () => {
                   ) : null}
                   {updateProfileMutation.isSuccess ? (
                     <div className="account-form-status is-success" role="status" aria-live="polite">
-                      Đã lưu thông tin thành công.
+                      {tText("Đã lưu thông tin thành công.")}
                     </div>
                   ) : null}
                   {submitError ? (
@@ -132,7 +159,7 @@ export const AccountPage = () => {
                     </div>
                   ) : null}
                   <Button disabled={updateProfileMutation.isPending}>
-                    {updateProfileMutation.isPending ? "Đang lưu..." : "Lưu thông tin"}
+                    {updateProfileMutation.isPending ? tText("Đang lưu...") : tText("Lưu thông tin")}
                   </Button>
                 </form>
               </Panel>
@@ -140,31 +167,18 @@ export const AccountPage = () => {
 
             <Card>
               <Panel className="stack">
-                <Badge>Lịch sử đặt lịch</Badge>
+                <Badge>{tText("Lịch sử đặt lịch")}</Badge>
                 {bookings.length === 0 ? (
                   <div className="account-bookings">
                     <article className="account-booking-card">
-                      <strong>Chưa có lịch đặt nào trong tài khoản này.</strong>
-                      <span>Hãy chọn một gói dịch vụ và đặt lịch để bắt đầu lưu lịch sử đặt lịch.</span>
+                      <strong>{tText("Chưa có lịch đặt nào trong tài khoản này.")}</strong>
+                      <span>{tText("Hãy chọn một gói dịch vụ và đặt lịch để bắt đầu lưu lịch sử đặt lịch.")}</span>
                     </article>
                   </div>
                 ) : (
                   <div className="account-bookings">
                     {bookings.map((booking) => (
-                      <article key={booking.code} className="account-booking-card">
-                        <strong>{booking.service_name}</strong>
-                        <span>
-                          {booking.flight_date} - {booking.flight_time}
-                        </span>
-                        <span>
-                          {paymentStatusLabels[booking.payment_status] ?? booking.payment_status} /{" "}
-                          {flightStatusLabels[booking.flight_status] ?? booking.flight_status}
-                        </span>
-                        <span>Mã đặt lịch: {booking.code}</span>
-                        <Link to={`/account/bookings/${booking.code}`}>
-                          <Button variant="secondary">Xem chi tiết đặt lịch</Button>
-                        </Link>
-                      </article>
+                      <AccountBookingCard key={booking.code} booking={booking} />
                     ))}
                   </div>
                 )}
@@ -176,8 +190,8 @@ export const AccountPage = () => {
             {accountSupportNotes.map((item) => (
               <Card key={item} className="info-card">
                 <Panel className="stack-sm">
-                  <strong>Ghi chú hỗ trợ</strong>
-                  <p>{item}</p>
+                  <strong>{tText("Ghi chú hỗ trợ")}</strong>
+                  <p>{tText(item)}</p>
                 </Panel>
               </Card>
             ))}

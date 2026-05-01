@@ -8,20 +8,24 @@ import { motion } from "motion/react";
 import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
 import { useAuth } from "@/shared/providers/auth-provider";
-import { useI18n } from "@/shared/providers/i18n-provider";
+import { useI18n, type Locale } from "@/shared/providers/i18n-provider";
 
 export const Banner = ({ title, subtitle, image }: { title: string; subtitle?: string; image: string }) => {
+  const { tText } = useI18n();
+  const displayTitle = tText(title);
+  const displaySubtitle = subtitle ? tText(subtitle) : undefined;
+
   return (
     <section className="relative mt-20 mb-12 flex h-[40vh] items-center overflow-hidden md:mb-20 md:h-[50vh]">
       <div className="absolute inset-0 z-0">
-        <img src={image} alt={title} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
+        <img src={image} alt={displayTitle} className="h-full w-full object-cover" referrerPolicy="no-referrer" />
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-black/20" />
       </div>
       <div className="relative z-10 mx-auto w-full max-w-7xl px-4 text-white sm:px-6 lg:px-8">
         <motion.div initial={{ x: -50, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.8 }}>
-          <h1 className="mb-4 text-4xl font-black uppercase tracking-tighter md:text-7xl">{title}</h1>
-          {subtitle ? (
-            <p className="max-w-2xl text-lg font-medium leading-relaxed text-stone-300 md:text-xl">{subtitle}</p>
+          <h1 className="mb-4 text-4xl font-black uppercase tracking-tighter md:text-7xl">{displayTitle}</h1>
+          {displaySubtitle ? (
+            <p className="max-w-2xl text-lg font-medium leading-relaxed text-stone-300 md:text-xl">{displaySubtitle}</p>
           ) : null}
         </motion.div>
       </div>
@@ -36,7 +40,7 @@ type SiteLayoutProps = PropsWithChildren<{
 
 export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }: SiteLayoutProps) => {
   const { account, isAuthenticated, logout } = useAuth();
-  const { t } = useI18n();
+  const { isTranslating, locale, setLocale, t, tText } = useI18n();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
@@ -88,6 +92,30 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
       .join("");
   }, [account?.full_name]);
 
+  const renderLocaleSwitcher = () => {
+    const options: Array<{ label: string; value: Locale }> = [
+      { label: "VI", value: "vi" },
+      { label: "EN", value: "en" }
+    ];
+
+    return (
+      <div className="locale-switcher" role="group" aria-label={t("choose_language")} aria-busy={isTranslating}>
+        {options.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={option.value === locale ? "is-active" : ""}
+            aria-pressed={option.value === locale}
+            title={option.value === "vi" ? t("language_vi") : t("language_en")}
+            onClick={() => setLocale(option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   return (
     <div className="site-shell">
       {!hideHeader ? (
@@ -103,13 +131,13 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                   <div className="h-10 w-10 overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-stone-200">
                     <img
                       src="/media/img/logo.jpg"
-                      alt="Logo Dù lượn Đà Nẵng"
+                      alt={tText("Logo Dù lượn Đà Nẵng")}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div>
-                    <h1 className="text-xl font-bold tracking-tight text-brand">ĐÀ NẴNG</h1>
-                    <p className="-mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500">Dù lượn</p>
+                    <h1 className="text-xl font-bold tracking-tight text-brand">{tText("ĐÀ NẴNG")}</h1>
+                    <p className="-mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-stone-500">{tText("Dù lượn")}</p>
                   </div>
                 </Link>
 
@@ -124,6 +152,8 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                     </NavLink>
                   ))}
                 </nav>
+
+                <div className="hidden shrink-0 md:block">{renderLocaleSwitcher()}</div>
 
                 <div className="ml-4 hidden shrink-0 items-center border-l border-stone-200 pl-4 md:flex">
                   {isAuthenticated ? (
@@ -175,13 +205,13 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                 <span className="site-brand__icon overflow-hidden bg-white p-0">
                   <img
                     src="/media/img/logo.jpg"
-                    alt="Logo Dù lượn Đà Nẵng"
+                    alt={tText("Logo Dù lượn Đà Nẵng")}
                     className="h-full w-full object-cover"
                   />
                 </span>
                 <span className="site-brand__copy">
-                  <strong>{businessInfo.shortName}</strong>
-                  <small>Dù lượn Đà Nẵng</small>
+                  <strong>{tText(businessInfo.shortName)}</strong>
+                  <small>{tText("Dù lượn Đà Nẵng")}</small>
                 </span>
               </div>
             </div>
@@ -200,6 +230,8 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             </nav>
 
             <div className="mobile-menu__footer">
+              {renderLocaleSwitcher()}
+
               {isAuthenticated ? (
                 <>
                   <Link to={routes.account} className="site-account-chip site-account-chip--mobile">
@@ -231,15 +263,15 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
             <div className="grid grid-cols-1 gap-12 md:grid-cols-4">
               <div className="space-y-4">
                 <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold">Dù lượn Đà Nẵng</span>
+                  <span className="text-xl font-bold">{tText("Dù lượn Đà Nẵng")}</span>
                 </div>
                 <p className="text-sm leading-relaxed text-stone-400">
-                  Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp của bán đảo Sơn Trà từ trên cao.
+                  {tText("Trải nghiệm cảm giác tự do bay lượn trên bầu trời Đà Nẵng, ngắm nhìn vẻ đẹp của bán đảo Sơn Trà từ trên cao.")}
                 </p>
               </div>
 
               <div>
-                <h3 className="mb-6 font-bold">Liên kết</h3>
+                <h3 className="mb-6 font-bold">{tText("Liên kết")}</h3>
                 <ul className="space-y-3 text-sm text-stone-400">
                   {navItems.map((item) => (
                     <NavLink key={item.to} to={item.to} style={{ display: "block" }}>
@@ -250,10 +282,10 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
               </div>
 
               <div>
-                <h3 className="mb-6 font-bold">Liên hệ</h3>
+                <h3 className="mb-6 font-bold">{tText("Liên hệ")}</h3>
                 <ul className="space-y-3 text-sm text-stone-400">
                   <li className="flex items-center gap-2">
-                    <FaLocationDot size={16} /> Bán đảo Sơn Trà, Đà Nẵng
+                    <FaLocationDot size={16} /> {tText("Bán đảo Sơn Trà, Đà Nẵng")}
                   </li>
                   <li className="flex items-center gap-2">
                     <FaPhone size={16} /> +84 123 456 789
@@ -265,7 +297,7 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
               </div>
 
               <div>
-                <h3 className="mb-6 font-bold">Theo dõi</h3>
+                <h3 className="mb-6 font-bold">{tText("Theo dõi")}</h3>
                 <div className="flex gap-4">
                   <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-stone-800 transition-colors hover:bg-brand">
                     <a href="https://www.facebook.com/profile.php?id=100064087207931">
@@ -273,8 +305,8 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
                     </a>
                   </div>
                   <div className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-stone-800 transition-colors hover:bg-brand">
-                    <a href="https://zalo.me/0935101188" className="flex h-full w-full items-center justify-center">
-                      <img src="https://conex-agency.com/images/icon_zalo9.png" alt="" style={{ width: "50%" }} />
+                    <a href={businessInfo.zaloUrl} className="flex h-full w-full items-center justify-center">
+                      <img src="https://conex-agency.com/images/icon_zalo9.png" alt="Zalo" style={{ width: "50%" }} />
                     </a>
                   </div>
                 </div>
@@ -287,6 +319,16 @@ export const SiteLayout = ({ children, hideHeader = false, hideFooter = false }:
           </div>
         </footer>
       ) : null}
+
+      <a
+        className="zalo-sticky-button"
+        href={businessInfo.zaloUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`Chat Zalo ${businessInfo.zaloPhone}`}
+      >
+        <span>Zalo</span>
+      </a>
     </div>
   );
 };

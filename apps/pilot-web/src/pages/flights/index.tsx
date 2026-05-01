@@ -9,7 +9,7 @@ import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
 const statusOptions = ["WAITING", "FLYING"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
-const MAP_VISIBLE_STATUSES = new Set(["EN_ROUTE", "FLYING", "LANDED"]);
+const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
 type LivePosition = {
   lat: number;
@@ -380,7 +380,7 @@ export const FlightsPage = () => {
           <div>
             <Badge tone="success">Bảng chuyến bay</Badge>
             <h1>Chuyến bay được phân công</h1>
-            <p>Theo dõi GPS chỉ bắt đầu khi phi công đã đón khách và bấm đưa khách tới điểm bay.</p>
+            <p>Theo dõi GPS bắt đầu từ lúc phi công bấm đi đón khách hoặc đi tới điểm bay.</p>
           </div>
           <div className="pilot-quick-stats">
             {stats.map((item) => (
@@ -411,9 +411,11 @@ export const FlightsPage = () => {
             const trackingButtonLabel = isTripFinished
               ? "Đã kết thúc theo dõi"
                 : hasTrackingStarted
-                  ? "Kết thúc theo dõi khi hạ cánh"
+                  ? flight.booking.flight_status === "PICKING_UP"
+                    ? "Đã đón khách, đưa tới điểm bay"
+                    : "Kết thúc theo dõi khi hạ cánh"
                 : flight.booking.pickup_option === "pickup"
-                  ? "Bắt đầu đưa khách tới điểm bay"
+                  ? "Bắt đầu đi đón khách"
                   : "Bắt đầu đi tới điểm bay";
 
             return (
@@ -464,7 +466,7 @@ export const FlightsPage = () => {
                       <div className="pilot-live-panel">
                         <div className="pilot-live-panel__copy">
                           <strong>Theo dõi GPS chuyến bay</strong>
-                          <p>Không theo dõi đoạn phi công tự đi tới điểm đón. Lộ trình bắt đầu từ lúc khách đã lên xe.</p>
+                          <p>Với khách chọn xe đón, lộ trình GPS bắt đầu từ lúc phi công đi đón khách.</p>
                         </div>
                         <Button
                           type="button"
@@ -472,6 +474,10 @@ export const FlightsPage = () => {
                           disabled={isActionPending || statusMutation.isPending || (!hasTrackingStarted && isTripFinished)}
                           onClick={() => {
                             if (hasTrackingStarted) {
+                              if (flight.booking.flight_status === "PICKING_UP") {
+                                void submitStatusUpdate(flight, "EN_ROUTE");
+                                return;
+                              }
                               void stopLiveTracking(flight);
                               return;
                             }
@@ -500,11 +506,11 @@ export const FlightsPage = () => {
 
                     {shouldShowMap ? (
                       <div className="pilot-flight-visual">
-                        <PilotFlightMap tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
+                        <PilotFlightMap booking={flight.booking} tracking={flight.tracking} livePosition={livePositions[flight.booking.code]} />
 
                         <div className="pilot-map-note">
                           <strong>Lộ trình bay</strong>
-                          <p>Chỉ những điểm GPS sau khi khách đã lên xe mới được đưa vào lộ trình.</p>
+                          <p>Điểm GPS được cập nhật tự động khi phi công đang theo dõi chuyến bay.</p>
                         </div>
                       </div>
                     ) : null}

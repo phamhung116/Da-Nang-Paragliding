@@ -540,6 +540,85 @@
   color: white;
 }
 
+.translation-sync-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(10px);
+}
+
+.translation-sync-overlay__panel {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  padding: 0.95rem 1.15rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 0.9rem;
+  font-weight: 800;
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14);
+}
+
+.translation-sync-overlay__spinner {
+  width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  border: 2px solid rgba(201, 24, 66, 0.18);
+  border-top-color: var(--accent);
+  animation: translation-sync-spin 780ms linear infinite;
+}
+
+@keyframes translation-sync-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.zalo-sticky-button {
+  position: fixed;
+  right: max(1rem, env(safe-area-inset-right));
+  bottom: calc(5.25rem + env(safe-area-inset-bottom));
+  z-index: 70;
+  display: inline-flex;
+  width: 4rem;
+  height: 4rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 2px solid #1677ff;
+  background: #ffffff;
+  color: #1677ff;
+  font-size: 0.95rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  box-shadow: 0 16px 34px rgba(22, 119, 255, 0.22), 0 6px 14px rgba(15, 23, 42, 0.12);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.zalo-sticky-button::before {
+  content: "";
+  position: absolute;
+  inset: -0.45rem;
+  border-radius: inherit;
+  border: 1px solid rgba(22, 119, 255, 0.18);
+}
+
+.zalo-sticky-button span {
+  position: relative;
+  line-height: 1;
+}
+
+.zalo-sticky-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 42px rgba(22, 119, 255, 0.28), 0 8px 18px rgba(15, 23, 42, 0.16);
+}
+
 .auth-layout,
 .account-layout {
   display: grid;
@@ -2292,6 +2371,31 @@
     overflow: hidden;
     border-radius: var(--radius-lg);
   }
+
+.tracking-map-marker {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.tracking-map-marker svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.tracking-map-marker--car {
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+
+.tracking-map-marker--destination {
+  color: #dc2626;
+  background: transparent;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.2);
+}
 
 .pickup-location-map {
   height: 320px;

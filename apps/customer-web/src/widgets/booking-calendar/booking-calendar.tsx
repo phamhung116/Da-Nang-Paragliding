@@ -59,7 +59,19 @@ const sortTime = (left: string, right: string) => {
   return leftHour * 60 + leftMinute - (rightHour * 60 + rightMinute);
 };
 
-const getAvailableCount = (day: AvailabilityDay) => day.slots.filter((slot) => !slot.is_locked && !slot.is_full).length;
+const isPastTimeSlot = (dateKey: string, time: string, now: Date) => {
+  if (dateKey !== toDateKey(now)) {
+    return dateKey < toDateKey(now);
+  }
+
+  const [hour, minute] = time.split(":").map(Number);
+  const slotDate = new Date(now);
+  slotDate.setHours(hour || 0, minute || 0, 0, 0);
+  return slotDate <= now;
+};
+
+const getAvailableCount = (day: AvailabilityDay, now: Date) =>
+  day.slots.filter((slot) => !slot.is_locked && !slot.is_full && !isPastTimeSlot(day.date, slot.time, now)).length;
 
 export const BookingCalendar = ({
   year,
@@ -70,16 +82,17 @@ export const BookingCalendar = ({
   onSelectSlot,
   weatherAside = false
 }: BookingCalendarProps) => {
-  const { locale } = useI18n();
+  const { locale, tText } = useI18n();
   const [hoveredCell, setHoveredCell] = useState<SelectedSlot>(selectedSlot);
   const [showMonthMenu, setShowMonthMenu] = useState(false);
   const [showYearMenu, setShowYearMenu] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
   const [pendingPageEdge, setPendingPageEdge] = useState<"start" | "end" | null>(null);
   const [overlayAnchor, setOverlayAnchor] = useState<OverlayAnchor>(null);
+  const [now, setNow] = useState(() => new Date());
   const overlayHostRef = useRef<HTMLDivElement | null>(null);
 
-  const today = useMemo(() => new Date(), []);
+  const today = now;
   const todayKey = useMemo(() => toDateKey(today), [today]);
   const todayMonthStart = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
   const currentMonthStart = useMemo(() => new Date(year, month - 1, 1), [month, year]);
@@ -87,6 +100,11 @@ export const BookingCalendar = ({
   useEffect(() => {
     setHoveredCell(selectedSlot);
   }, [selectedSlot]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const sortedDays = useMemo(() => [...days].sort((left, right) => left.date.localeCompare(right.date)), [days]);
   const visibleDays = useMemo(() => sortedDays.filter((day) => day.date >= todayKey), [sortedDays, todayKey]);
@@ -168,9 +186,9 @@ export const BookingCalendar = ({
       }
     }
 
-    const firstPageWithAvailability = calendarPages.findIndex((page) => page.some((day) => day.day && getAvailableCount(day.day) > 0));
+    const firstPageWithAvailability = calendarPages.findIndex((page) => page.some((day) => day.day && getAvailableCount(day.day, today) > 0));
     setPageIndex(firstPageWithAvailability >= 0 ? firstPageWithAvailability : 0);
-  }, [calendarPages, pendingPageEdge, selectedSlot?.date]);
+  }, [calendarPages, pendingPageEdge, selectedSlot?.date, today]);
 
   const activePage = calendarPages[pageIndex] ?? [];
   const previewSlot = hoveredCell ? daysByDate.get(hoveredCell.date)?.slots.find((slot) => slot.time === hoveredCell.time) ?? null : null;
@@ -240,33 +258,33 @@ export const BookingCalendar = ({
         <>
           <div className="flex items-center justify-between gap-3">
             <span className="text-[10px] font-bold uppercase text-stone-400">
-              Dự báo {activeSlot ? `${activeSlot} - ` : ""}Ngày {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
+              {tText("Dự báo")} {activeSlot ? `${activeSlot} - ` : ""}{tText("Ngày")} {formatDate(activeDate, { day: "2-digit", month: "2-digit" })}
             </span>
             <Sun size={15} className="text-yellow-500" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="flex items-end gap-2">
               <span className="text-xl font-bold">{weather.temp}°C</span>
-              <span className="pb-0.5 text-[10px] font-medium text-stone-600">{weather.condition}</span>
+              <span className="pb-0.5 text-[10px] font-medium text-stone-600">{tText(weather.condition)}</span>
             </div>
             <div className="flex flex-col justify-center">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Điều kiện bay</span>
-              <span className="text-xs font-bold text-emerald-600">{weather.flight}</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Điều kiện bay")}</span>
+              <span className="text-xs font-bold text-emerald-600">{tText(weather.flight)}</span>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3 border-t border-stone-200 pt-2">
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Sức gió</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Sức gió")}</span>
               <span className="text-xs font-bold">{weather.wind} km/h</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[10px] font-bold uppercase text-stone-400">Chỉ số UV</span>
+              <span className="text-[10px] font-bold uppercase text-stone-400">{tText("Chỉ số UV")}</span>
               <span className="text-xs font-bold">{weather.uv}</span>
             </div>
           </div>
         </>
       ) : (
-        <p className="text-xs text-stone-500">Chưa có dữ liệu thời tiết cho lịch bay này</p>
+        <p className="text-xs text-stone-500">{tText("Chưa có dữ liệu thời tiết cho lịch bay này")}</p>
       )}
     </div>
   );
@@ -392,7 +410,7 @@ export const BookingCalendar = ({
                     <table className={`w-full table-fixed border-collapse ${tableMinWidth}`}>
                       <thead>
                         <tr>
-                          <th className={`${timeHeaderWidth} p-1`} aria-label="Khung gio" />
+                          <th className={`${timeHeaderWidth} p-1`} aria-label={tText("Khung giờ")} />
                           {activePage.map((day) => {
                             const isSelectedDay = Boolean(selectedSlot?.date && selectedSlot.date === day.isoDate);
                             return (
@@ -422,7 +440,7 @@ export const BookingCalendar = ({
                             </td>
                             {activePage.map((day) => {
                               const slot = day.day?.slots.find((item) => item.time === time) ?? null;
-                              const isBlocked = Boolean(slot?.is_locked || slot?.is_full);
+                              const isBlocked = Boolean(slot?.is_locked || slot?.is_full || (slot && isPastTimeSlot(day.isoDate, time, today)));
                               const isSelected = Boolean(slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time);
 
                               return (
@@ -469,19 +487,19 @@ export const BookingCalendar = ({
                   </div>
                 </div>
               ) : (
-                <div className="calendar-empty">Chua co du lieu kha dung cho thang nay.</div>
+                <div className="calendar-empty">{tText("Chưa có dữ liệu khả dụng cho tháng này.")}</div>
               )}
 
               <div className="flex items-center justify-between border-t border-stone-100 pt-2 text-[10px] text-stone-400">
                 <div className="flex items-center gap-1">
                   <div className="h-2 w-2 rounded-sm border-2 border-stone-300 bg-white" />
-                  <span>Trong</span>
+                  <span>{tText("Trống")}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <div className="flex h-2 w-2 items-center justify-center rounded-sm border-2 border-stone-300 bg-stone-100">
                     <X size={8} />
                   </div>
-                  <span>Da day</span>
+                  <span>{tText("Đã đầy")}</span>
                 </div>
               </div>
             </div>

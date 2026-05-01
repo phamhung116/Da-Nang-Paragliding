@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { PickupLocation } from "@paragliding/api-client";
+import { useI18n } from "@/shared/providers/i18n-provider";
 
 type PickupLocationMapProps = {
   point: PickupLocation;
@@ -18,6 +19,8 @@ const PickupViewport = ({ point }: { point: PickupLocation }) => {
 };
 
 const PickupSelectionLayer = ({ point, onChange }: PickupLocationMapProps) => {
+  const { tText } = useI18n();
+
   useMapEvents({
     click(event) {
       onChange({
@@ -32,7 +35,7 @@ const PickupSelectionLayer = ({ point, onChange }: PickupLocationMapProps) => {
     <CircleMarker center={[point.lat, point.lng]} radius={10} pathOptions={{ color: "#c91842", fillColor: "#e11d48", fillOpacity: 0.92 }}>
       <Popup>
         <strong>{point.name}</strong>
-        <div>Bấm vào vị trí khác trên bản đồ để chỉnh điểm đón chính xác.</div>
+        <div>{tText("Bấm vào vị trí khác trên bản đồ để chỉnh điểm đón chính xác.")}</div>
       </Popup>
     </CircleMarker>
   );

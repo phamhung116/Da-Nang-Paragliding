@@ -25,7 +25,6 @@ from modules.bookings.domain.value_objects import (
     PICKUP_OPTION_SHUTTLE,
     FLIGHT_STATUS_WAITING,
     ONLINE_PAYMENT_METHODS,
-    PAYMENT_STATUS_AWAITING_CASH,
     PAYMENT_STATUS_PENDING,
 )
 from modules.accounts.domain.repositories import AccountRepository
@@ -75,6 +74,8 @@ class CreateBookingUseCase:
             raise NotFoundError("Không tìm thấy gói dịch vụ.")
         if request.adults + request.children <= 0:
             raise ValidationError("Số lượng khách phải lớn hơn 0.")
+        if request.payment_method not in ONLINE_PAYMENT_METHODS:
+            raise ValidationError("Phương thức thanh toán không hợp lệ. Hiện chỉ hỗ trợ payOS.")
         pickup_option = request.pickup_option or PICKUP_OPTION_SELF
         if pickup_option not in {PICKUP_OPTION_SELF, PICKUP_OPTION_SHUTTLE}:
             raise ValidationError("Lựa chọn đưa đón không hợp lệ.")
@@ -120,9 +121,7 @@ class CreateBookingUseCase:
         )
         final_total = quantize_money(pricing.original_total + pickup_fee)
         deposit_amount = quantize_money((pricing.original_total * self.online_deposit_percent / 100) + pickup_fee)
-        payment_status = (
-            PAYMENT_STATUS_PENDING if request.payment_method in ONLINE_PAYMENT_METHODS else PAYMENT_STATUS_AWAITING_CASH
-        )
+        payment_status = PAYMENT_STATUS_PENDING
         booking = self.booking_repository.create(
             BookingPayload(
                 code=generate_booking_code(),
@@ -158,28 +157,26 @@ class CreateBookingUseCase:
             )
         )
 
-        payment_session = None
-        if request.payment_method in ONLINE_PAYMENT_METHODS:
-            expires_at = datetime.now(UTC) + timedelta(minutes=30)
-            payment_session = self.payment_gateway.create_payment_session(
-                booking_code=booking.code,
-                amount=deposit_amount,
-                method=request.payment_method,
-                deposit_percentage=self.online_deposit_percent,
-                expires_at=expires_at,
-            )
-            self.payment_transaction_repository.create_pending(
-                booking_code=booking.code,
-                method=request.payment_method,
-                amount=deposit_amount,
-                deposit_percentage=self.online_deposit_percent,
-                provider_name=payment_session["provider_name"],
-                provider_reference=payment_session["provider_reference"],
-                payment_url=payment_session["payment_url"],
-                qr_code_url=payment_session["qr_code_url"],
-                transfer_content=payment_session["transfer_content"],
-                expires_at=expires_at,
-            )
+        expires_at = datetime.now(UTC) + timedelta(minutes=30)
+        payment_session = self.payment_gateway.create_payment_session(
+            booking_code=booking.code,
+            amount=deposit_amount,
+            method=request.payment_method,
+            deposit_percentage=self.online_deposit_percent,
+            expires_at=expires_at,
+        )
+        self.payment_transaction_repository.create_pending(
+            booking_code=booking.code,
+            method=request.payment_method,
+            amount=deposit_amount,
+            deposit_percentage=self.online_deposit_percent,
+            provider_name=payment_session["provider_name"],
+            provider_reference=payment_session["provider_reference"],
+            payment_url=payment_session["payment_url"],
+            qr_code_url=payment_session["qr_code_url"],
+            transfer_content=payment_session["transfer_content"],
+            expires_at=expires_at,
+        )
 
         self.tracking_repository.create_initial(
             booking_code=booking.code,

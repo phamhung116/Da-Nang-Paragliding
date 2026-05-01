@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "modules.bookings",
     "modules.payments",
     "modules.tracking",
+    "modules.translation",
     "modules.notifications",
 ]
 
@@ -110,6 +111,7 @@ REST_FRAMEWORK = {
         "user": os.getenv("DRF_USER_THROTTLE_RATE", "600/minute" if IS_PRODUCTION_ENV else "5000/minute"),
         "auth": os.getenv("DRF_AUTH_THROTTLE_RATE", "10/minute" if IS_PRODUCTION_ENV else "60/minute"),
         "lookup": os.getenv("DRF_LOOKUP_THROTTLE_RATE", "30/minute" if IS_PRODUCTION_ENV else "300/minute"),
+        "translate": os.getenv("DRF_TRANSLATE_THROTTLE_RATE", "60/minute" if IS_PRODUCTION_ENV else "600/minute"),
     },
     "UNAUTHENTICATED_USER": None,
 }
@@ -117,7 +119,8 @@ REST_FRAMEWORK = {
 CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = _env_list(
     "CORS_ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:5174,http://localhost:5175",
+    "http://localhost:5173,http://localhost:5174,http://localhost:5175,"
+    "http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175",
 )
 CORS_ALLOW_CREDENTIALS = _env_bool("CORS_ALLOW_CREDENTIALS", True)
 CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
@@ -166,7 +169,7 @@ BUSINESS_INFO = {
 }
 
 NOTIFICATION_PROVIDER = os.getenv("NOTIFICATION_PROVIDER", "console")
-PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "mockpay")
+PAYMENT_PROVIDER = os.getenv("PAYMENT_PROVIDER", "payos")
 PAYOS_CLIENT_ID = os.getenv("PAYOS_CLIENT_ID", "")
 PAYOS_API_KEY = os.getenv("PAYOS_API_KEY", "")
 PAYOS_CHECKSUM_KEY = os.getenv("PAYOS_CHECKSUM_KEY", "")
@@ -181,6 +184,13 @@ WEATHERAPI_KEY = os.getenv("WEATHERAPI_KEY", "")
 WEATHERAPI_LANG = os.getenv("WEATHERAPI_LANG", "vi")
 WEATHERAPI_FORECAST_DAYS = int(os.getenv("WEATHERAPI_FORECAST_DAYS", "14"))
 WEATHER_API_CACHE_SECONDS = int(os.getenv("WEATHER_API_CACHE_SECONDS", "900"))
+LANGBLY_API_KEY = os.getenv("LANGBLY_API_KEY", "")
+LANGBLY_TRANSLATE_ENDPOINT = os.getenv(
+    "LANGBLY_TRANSLATE_ENDPOINT",
+    "https://api.langbly.com/language/translate/v2",
+)
+LANGBLY_TRANSLATE_QUALITY = os.getenv("LANGBLY_TRANSLATE_QUALITY", "standard")
+LANGBLY_TRANSLATE_CACHE_SECONDS = int(os.getenv("LANGBLY_TRANSLATE_CACHE_SECONDS", "2592000"))
 
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
 EMAIL_HOST = os.getenv("EMAIL_HOST", "")
@@ -224,16 +234,15 @@ def _validate_production_settings(values: dict[str, object] | None = None) -> No
         raise ImproperlyConfigured("CSRF_COOKIE_SECURE phải là true trong môi trường production.")
     if mongodb_uri.startswith("mongodb://127.0.0.1") or mongodb_uri.startswith("mongodb://localhost"):
         raise ImproperlyConfigured("MONGODB_URI phải trỏ đến cơ sở dữ liệu production.")
-    if payment_provider in {"", "mockpay"}:
-        raise ImproperlyConfigured("PAYMENT_PROVIDER phải là nhà cung cấp thanh toán thật trong production, ví dụ payos.")
-    if payment_provider == "payos":
-        missing = [
-            key
-            for key in ("PAYOS_CLIENT_ID", "PAYOS_API_KEY", "PAYOS_CHECKSUM_KEY", "PAYOS_RETURN_URL", "PAYOS_CANCEL_URL")
-            if not str(settings_values.get(key, "")).strip()
-        ]
-        if missing:
-            raise ImproperlyConfigured(f"Thiếu cấu hình PayOS cho production: {', '.join(missing)}.")
+    if payment_provider != "payos":
+        raise ImproperlyConfigured("PAYMENT_PROVIDER hiện chỉ hỗ trợ payos.")
+    missing = [
+        key
+        for key in ("PAYOS_CLIENT_ID", "PAYOS_API_KEY", "PAYOS_CHECKSUM_KEY", "PAYOS_RETURN_URL", "PAYOS_CANCEL_URL")
+        if not str(settings_values.get(key, "")).strip()
+    ]
+    if missing:
+        raise ImproperlyConfigured(f"Thiếu cấu hình PayOS cho production: {', '.join(missing)}.")
     if email_backend.endswith("console.EmailBackend"):
         raise ImproperlyConfigured("EMAIL_BACKEND phải gửi email thật trong môi trường production.")
 

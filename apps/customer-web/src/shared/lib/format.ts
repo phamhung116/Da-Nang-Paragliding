@@ -1,6 +1,6 @@
 export type AppLocale = "vi" | "en";
 
-export const resolveLocaleTag = (_locale?: AppLocale) => "vi-VN";
+export const resolveLocaleTag = (locale?: AppLocale) => (locale === "en" ? "en-US" : "vi-VN");
 
 export const formatCurrency = (value: string | number, locale?: AppLocale) =>
   new Intl.NumberFormat(resolveLocaleTag(locale), {

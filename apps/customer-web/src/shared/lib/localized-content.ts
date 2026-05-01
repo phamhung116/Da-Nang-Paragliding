@@ -1,51 +1,52 @@
 import type { Booking, Post, ServiceFeature, ServicePackage, Tracking } from "@paragliding/api-client";
 
 import { repairFlightConditionLabel } from "@/shared/lib/flight-condition";
+import type { Locale } from "@/shared/providers/i18n-provider";
 
-type Locale = "vi" | "en";
-
-const pickPrimaryText = (primary: string, secondary: string) => {
+const pickPrimaryText = (primary: string) => {
   const normalizedPrimary = String(primary ?? "").trim();
   if (normalizedPrimary) {
     return normalizedPrimary;
   }
 
-  return String(secondary ?? "").trim();
+  return "";
 };
 
-export const localizeServiceName = (service: Pick<ServicePackage, "name" | "name_en">, _locale?: Locale) =>
-  pickPrimaryText(service.name, service.name_en);
+const pickVietnameseSourceText = (primary: string, _locale?: Locale) => pickPrimaryText(primary);
+
+export const localizeServiceName = (service: Pick<ServicePackage, "name">, locale?: Locale) =>
+  pickVietnameseSourceText(service.name, locale);
 
 export const localizeServiceShortDescription = (
-  service: Pick<ServicePackage, "short_description" | "short_description_en">,
-  _locale?: Locale
-) => pickPrimaryText(service.short_description, service.short_description_en);
+  service: Pick<ServicePackage, "short_description">,
+  locale?: Locale
+) => pickVietnameseSourceText(service.short_description, locale);
 
 export const localizeServiceDescription = (
-  service: Pick<ServicePackage, "description" | "description_en">,
-  _locale?: Locale
-) => pickPrimaryText(service.description, service.description_en);
+  service: Pick<ServicePackage, "description">,
+  locale?: Locale
+) => pickVietnameseSourceText(service.description, locale);
 
-export const localizeFeatureName = (feature: Pick<ServiceFeature, "name" | "name_en">, _locale?: Locale) =>
-  pickPrimaryText(feature.name, feature.name_en);
+export const localizeFeatureName = (feature: Pick<ServiceFeature, "name">, locale?: Locale) =>
+  pickVietnameseSourceText(feature.name, locale);
 
 export const localizeFeatureDescription = (
-  feature: Pick<ServiceFeature, "description" | "description_en">,
-  _locale?: Locale
-) => pickPrimaryText(feature.description, feature.description_en);
+  feature: Pick<ServiceFeature, "description">,
+  locale?: Locale
+) => pickVietnameseSourceText(feature.description, locale);
 
-export const localizePostTitle = (post: Pick<Post, "title" | "title_en">, _locale?: Locale) =>
-  pickPrimaryText(post.title, post.title_en);
+export const localizePostTitle = (post: Pick<Post, "title">, locale?: Locale) =>
+  pickVietnameseSourceText(post.title, locale);
 
-export const localizePostExcerpt = (post: Pick<Post, "excerpt" | "excerpt_en">, _locale?: Locale) =>
-  pickPrimaryText(post.excerpt, post.excerpt_en);
+export const localizePostExcerpt = (post: Pick<Post, "excerpt">, locale?: Locale) =>
+  pickVietnameseSourceText(post.excerpt, locale);
 
-export const localizePostContent = (post: Pick<Post, "content" | "content_en">, _locale?: Locale) =>
-  pickPrimaryText(post.content, post.content_en);
+export const localizePostContent = (post: Pick<Post, "content">, locale?: Locale) =>
+  pickVietnameseSourceText(post.content, locale);
 
 export const localizeBookingServiceName = (
-  record: Pick<Booking, "service_name" | "service_name_en"> | Pick<Tracking, "service_name" | "service_name_en">,
-  _locale?: Locale
-) => pickPrimaryText(record.service_name, record.service_name_en);
+  record: Pick<Booking, "service_name"> | Pick<Tracking, "service_name">,
+  locale?: Locale
+) => pickVietnameseSourceText(record.service_name, locale);
 
 export { repairFlightConditionLabel };

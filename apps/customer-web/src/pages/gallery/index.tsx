@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Badge, Card, Container, Panel } from "@paragliding/ui";
 import { ChevronLeft, ChevronRight, Play, X } from "lucide-react";
 import { postsQueryOptions, servicesQueryOptions } from "@/shared/lib/query-options";
+import { useI18n } from "@/shared/providers/i18n-provider";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
 
 type MediaKind = "image" | "video";
@@ -66,6 +67,7 @@ const getDisplayName = (filepath: string) => {
 };
 
 export const GalleryPage = () => {
+  const { tText } = useI18n();
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
   const [visibleCount, setVisibleCount] = useState(0);
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -199,9 +201,9 @@ export const GalleryPage = () => {
           {!mediaItems.length ? (
             <Card className="empty-state-card">
               <Panel className="stack-sm">
-                <Badge>Bộ sưu tập</Badge>
-                <strong>Chưa có ảnh hoặc video để hiển thị.</strong>
-                <p>Khi thêm ảnh hoặc video cho frontend, thư viện sẽ hiện tại đây.</p>
+                <Badge>{tText("Bộ sưu tập")}</Badge>
+                <strong>{tText("Chưa có ảnh hoặc video để hiển thị.")}</strong>
+                <p>{tText("Khi thêm ảnh hoặc video cho frontend, thư viện sẽ hiện tại đây.")}</p>
               </Panel>
             </Card>
           ) : (
@@ -216,12 +218,12 @@ export const GalleryPage = () => {
                       type="button"
                       onClick={() => setActiveIndex(index)}
                       className="group relative block w-full cursor-zoom-in overflow-hidden bg-stone-950"
-                      aria-label={`Xem ${item.kind === "video" ? "video" : "ảnh"} ${item.name}`}
+                      aria-label={`${tText("Xem")} ${item.kind === "video" ? "video" : tText("ảnh")} ${tText(item.name)}`}
                     >
                       {item.kind === "image" ? (
                         <img
                           src={item.src}
-                          alt={item.name}
+                          alt={tText(item.name)}
                           loading="lazy"
                           className="h-[320px] w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />
@@ -249,7 +251,7 @@ export const GalleryPage = () => {
 
               {visibleCount < mediaItems.length ? (
                 <div ref={loadMoreRef} className="py-6 text-center text-sm font-medium text-stone-500">
-                  Đang tải thêm nội dung...
+                  {tText("Đang tải thêm nội dung...")}
                 </div>
               ) : null}
             </>
@@ -267,7 +269,7 @@ export const GalleryPage = () => {
               type="button"
               onClick={() => setActiveIndex(null)}
               className="absolute right-4 top-4 z-[101] flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-              aria-label="Đóng trình xem media"
+              aria-label={tText("Đóng trình xem media")}
             >
               <X size={20} />
             </button>
@@ -277,7 +279,7 @@ export const GalleryPage = () => {
                 type="button"
                 onClick={() => setActiveIndex((current) => (current === null ? current : Math.max(0, current - 1)))}
                 className="absolute left-4 top-1/2 z-[101] flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-                aria-label="Xem media trước"
+                aria-label={tText("Xem media trước")}
               >
                 <ChevronLeft size={24} />
               </button>
@@ -292,7 +294,7 @@ export const GalleryPage = () => {
                   )
                 }
                 className="absolute right-4 top-1/2 z-[101] flex h-12 w-12 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
-                aria-label="Xem media tiếp theo"
+                aria-label={tText("Xem media tiếp theo")}
               >
                 <ChevronRight size={24} />
               </button>
@@ -301,7 +303,7 @@ export const GalleryPage = () => {
             {activeItem.kind === "image" ? (
               <img
                 src={activeItem.src}
-                alt={activeItem.name}
+                alt={tText(activeItem.name)}
                 className="max-h-full max-w-full rounded-2xl object-contain shadow-2xl"
               />
             ) : (
