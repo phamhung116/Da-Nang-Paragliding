@@ -63,28 +63,17 @@ const getConditionSummary = (condition: string) => {
   return "Thời tiết đang ổn định và có thể theo dõi thêm để chọn giờ đẹp.";
 };
 
-const getStatDescription = (kind: "wind" | "uv" | "temperature" | "visibility", value: number) => {
-  if (kind === "wind") {
-    if (value <= 10) return "Gió nhẹ, ổn định";
-    if (value <= 18) return "Gió vừa, dễ quan sát";
-    return "Gió mạnh hơn, cần theo dõi";
-  }
+const getStatDescription = (kind: "wind" | "uv" | "temperature" | "visibility") => {
+  if (kind === "wind") return "Dữ liệu tốc độ gió từ API weather";
+  if (kind === "uv") return "Chỉ số bức xạ UV từ API weather";
+  if (kind === "temperature") return "Nhiệt độ dự báo từ API weather";
+  return "Tầm nhìn dự báo từ API weather";
+};
 
-  if (kind === "uv") {
-    if (value <= 2) return "Mức thấp";
-    if (value <= 5) return "Mức trung bình";
-    return "Nắng khá gắt";
-  }
-
-  if (kind === "temperature") {
-    if (value <= 24) return "Dịu mát";
-    if (value <= 30) return "Mát mẻ, dễ chịu";
-    return "Khá nóng";
-  }
-
-  if (value >= 10) return "Tầm nhìn rất tốt";
-  if (value >= 7) return "Quan sát khá rõ";
-  return "Tầm nhìn trung bình";
+const formatForecastWeekday = (date: string) => {
+  const day = new Date(date).getDay();
+  const weekdayMap = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+  return weekdayMap[day] ?? "N/A";
 };
 
 export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) => {
@@ -135,28 +124,28 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
       icon: <Wind size={22} />,
       title: "Sức gió",
       value: `${today.wind_kph} km/h`,
-      description: getStatDescription("wind", Number(today.wind_kph)),
+      description: getStatDescription("wind"),
       iconClass: "text-rose-400"
     },
     {
       icon: <Sun size={22} />,
       title: "Chỉ số UV",
       value: `${today.uv_index}`,
-      description: getStatDescription("uv", Number(today.uv_index)),
+      description: getStatDescription("uv"),
       iconClass: "text-amber-400"
     },
     {
       icon: <Thermometer size={22} />,
       title: "Nhiệt độ",
       value: `${today.temperature_c}°C`,
-      description: getStatDescription("temperature", Number(today.temperature_c)),
+      description: getStatDescription("temperature"),
       iconClass: "text-sky-400"
     },
     {
       icon: <Eye size={22} />,
       title: "Tầm nhìn",
       value: `${today.visibility_km} km`,
-      description: getStatDescription("visibility", Number(today.visibility_km)),
+      description: getStatDescription("visibility"),
       iconClass: "text-yellow-500"
     }
   ];
@@ -271,35 +260,35 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                 {visibleForecast.map((item) => (
                   <article
                     key={item.date}
-                    className={`grid grid-cols-[64px_minmax(0,1fr)] gap-x-3 gap-y-2 rounded-xl p-3 transition-colors md:grid-cols-[72px_110px_minmax(76px,1fr)_minmax(52px,0.7fr)_minmax(92px,1fr)_70px] md:items-center md:gap-x-4 ${
+                    className={`rounded-xl p-3 transition-colors ${
                       isDark ? "hover:bg-white/5" : "hover:bg-stone-100"
                     }`}
                   >
-                    <span className="text-[11px] font-medium leading-4 md:text-sm">
-                      {formatDate(item.date, {
-                        weekday: "short",
-                        day: "2-digit",
-                        month: "2-digit"
-                      })}
-                    </span>
-                    <span
-                      className={`inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none md:text-[11px] ${getConditionCardClasses(item.flight_condition)}`}
-                    >
-                      {repairFlightConditionLabel(item.flight_condition)}
-                    </span>
-                    <div className="flex items-center gap-1.5 md:min-w-0">
-                      <Wind size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
-                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.wind_kph} km/h</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <span className="shrink-0 text-sm font-bold md:text-base">{formatForecastWeekday(item.date)}</span>
+                        <span
+                          className={`inline-flex max-w-full items-center rounded-full border px-2.5 py-1 text-[10px] font-semibold leading-none md:text-[11px] ${getConditionCardClasses(item.flight_condition)}`}
+                        >
+                          {repairFlightConditionLabel(item.flight_condition)}
+                        </span>
+                      </div>
+                      <span className="shrink-0 text-[13px] font-bold md:text-[15px]">{item.temperature_c}°C</span>
                     </div>
-                    <div className="flex items-center gap-1.5 md:min-w-0">
-                      <Sun size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
-                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.uv_index}</span>
+                    <div className="mt-3 grid grid-cols-3 gap-3">
+                      <div className="flex items-center gap-1.5">
+                        <Wind size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
+                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.wind_kph} km/h</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Sun size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
+                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.uv_index}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Eye size={14} className="shrink-0 text-stone-400 md:h-4 md:w-4" />
+                        <span className="whitespace-nowrap text-[13px] font-bold md:text-[14px]">{item.visibility_km} km</span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1.5 md:min-w-0">
-                      <Eye size={13} className="shrink-0 text-stone-400 md:h-[15px] md:w-[15px]" />
-                      <span className="whitespace-nowrap text-[12px] font-bold md:text-[13px]">{item.visibility_km} km</span>
-                    </div>
-                    <span className="text-[12px] font-bold md:text-[13px]">{item.temperature_c}°C</span>
                   </article>
                 ))}
 
