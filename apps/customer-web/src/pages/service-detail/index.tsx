@@ -12,7 +12,6 @@ import {
   localizeServiceShortDescription
 } from "@/shared/lib/localized-content";
 import { availabilityQueryOptions, serviceQueryOptions } from "@/shared/lib/query-options";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { BookingCalendar } from "@/widgets/booking-calendar/booking-calendar";
 import { Banner, SiteLayout } from "@/widgets/layout/site-layout";
@@ -38,7 +37,7 @@ const formatSelectedSlotLabel = (value: { date: string; time: string } | null, l
 
 const IncludedFeatureLabel = ({ feature }: { feature: ServiceFeature }) => {
   const { locale } = useI18n();
-  const label = useTranslatedText(localizeFeatureName(feature, locale));
+  const label = localizeFeatureName(feature, locale);
 
   return <span className="text-sm font-medium text-stone-700">{label}</span>;
 };
@@ -92,9 +91,9 @@ export const ServiceDetailPage = () => {
   const localizedServiceName = servicePackage ? localizeServiceName(servicePackage, locale) : "";
   const localizedServiceShortDescription = servicePackage ? localizeServiceShortDescription(servicePackage, locale) : "";
   const localizedServiceDescription = servicePackage ? localizeServiceDescription(servicePackage, locale) : "";
-  const serviceName = useTranslatedText(localizedServiceName);
-  const serviceShortDescription = useTranslatedText(localizedServiceShortDescription);
-  const serviceDescription = useTranslatedText(localizedServiceDescription);
+  const serviceName = localizedServiceName;
+  const serviceShortDescription = localizedServiceShortDescription;
+  const serviceDescription = localizedServiceDescription;
   const selectedSlotLabel = selectedSlot ? formatSelectedSlotLabel(selectedSlot, locale) : tText("Chưa chọn khung giờ");
 
   if (!servicePackage) {

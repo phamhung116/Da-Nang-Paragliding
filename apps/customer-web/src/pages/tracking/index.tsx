@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Badge, Button, Card, Container, Field, Input, Panel } from "@paragliding/ui";
 import { ChevronRight } from "lucide-react";
@@ -8,19 +8,22 @@ import { businessInfo } from "@/shared/constants/business";
 import { trackingSupportNotes } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatDateTime } from "@/shared/lib/format";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { trackingLookupStorage } from "@/shared/lib/storage";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
-import { TrackingMap } from "@/widgets/tracking-map/tracking-map";
 
 type LookupForm = { query: string };
 
-const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "EN_ROUTE", "FLYING", "LANDED"] as const;
-const mapVisibleStatuses = new Set(["EN_ROUTE", "FLYING", "LANDED"]);
+const statusOrder = ["WAITING_CONFIRMATION", "WAITING", "PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"] as const;
+const mapVisibleStatuses = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 const POLL_INTERVAL_MS = 3000;
 const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
+
+const TrackingMap = lazy(() =>
+  import("@/widgets/tracking-map/tracking-map").then((module) => ({ default: module.TrackingMap }))
+);
 
 export const TrackingPage = () => {
   const { account, isAuthenticated } = useAuth();
@@ -42,9 +45,9 @@ export const TrackingPage = () => {
   });
 
   const result = lookupQuery ? trackingQuery.data : undefined;
-  const translatedServiceName = useTranslatedText(result?.booking.service_name ?? "");
+  const serviceName = result ? localizeBookingServiceName(result.booking, locale) : "";
   const hasTrackingResult = Boolean(result);
-  const progressStatus = result?.booking.flight_status === "PICKING_UP" ? "WAITING" : result?.booking.flight_status;
+  const progressStatus = result?.booking.flight_status;
   const currentStepIndex = progressStatus
     ? Math.max(0, statusOrder.indexOf(progressStatus as (typeof statusOrder)[number]))
     : 0;
@@ -152,7 +155,7 @@ export const TrackingPage = () => {
                 <div className="tracking-status-header">
                   <div>
                     <Badge tone="success">{tText(flightStatusLabels[result.booking.flight_status])}</Badge>
-                    <h3>{translatedServiceName || result.booking.service_name}</h3>
+                    <h3>{serviceName || result.booking.service_name}</h3>
                   </div>
                   <div className="tracking-contact-actions">
                     <a href={`mailto:${result.booking.email}`}>{tText("Email khách")}</a>
@@ -231,14 +234,16 @@ export const TrackingPage = () => {
                       </Badge>
                     ) : null}
                   </div>
-                  <TrackingMap booking={result.booking} tracking={result.tracking} />
+                  <Suspense fallback={<div className="tracking-map" aria-hidden="true" />}>
+                    <TrackingMap booking={result.booking} tracking={result.tracking} />
+                  </Suspense>
                 </Panel>
               </Card>
             ) : (
               <Card>
                 <Panel className="stack-sm">
-                  <strong>{tText("Bản đồ sẽ hiển thị khi phi công bắt đầu đưa khách tới điểm bay.")}</strong>
-                  <p>{tText("Không còn theo dõi đoạn phi công tự di chuyển tới điểm đón, nên khách chỉ thấy GPS từ lúc đã lên xe.")}</p>
+                  <strong>{tText("Bản đồ sẽ hiển thị khi phi công bắt đầu theo dõi GPS.")}</strong>
+                  <p>{tText("Với lịch có xe đón, khách sẽ thấy GPS từ lúc phi công bắt đầu đi đón khách.")}</p>
                 </Panel>
               </Card>
             )}

@@ -202,16 +202,27 @@ class StartPilotTrackingUseCase:
         if booking.flight_status == FLIGHT_STATUS_LANDED:
             raise ValidationError("Chuyến đi này đã kết thúc.")
 
-        if booking.flight_status in {FLIGHT_STATUS_WAITING, FLIGHT_STATUS_PICKING_UP}:
-            booking.flight_status = FLIGHT_STATUS_EN_ROUTE
+        if booking.flight_status == FLIGHT_STATUS_WAITING:
+            booking.flight_status = (
+                FLIGHT_STATUS_PICKING_UP
+                if booking.pickup_option == PICKUP_OPTION_SHUTTLE
+                else FLIGHT_STATUS_EN_ROUTE
+            )
+        elif booking.flight_status == FLIGHT_STATUS_PICKING_UP:
+            booking.flight_status = FLIGHT_STATUS_PICKING_UP
         updated_booking = self.booking_repository.update(booking)
+        tracking_label = (
+            "Bắt đầu đi đón khách"
+            if updated_booking.flight_status == FLIGHT_STATUS_PICKING_UP
+            else "Bắt đầu đưa khách tới điểm bay"
+        )
         tracking = self.tracking_repository.update_status(
             booking_code,
             flight_status=updated_booking.flight_status,
             current_location={**location, "segment": updated_booking.flight_status},
             timeline_event={
                 "status": updated_booking.flight_status,
-                "label": "Bắt đầu đưa khách tới điểm bay",
+                "label": tracking_label,
                 "recorded_at": datetime.utcnow().isoformat(),
                 "type": "TRACKING_STARTED",
             },

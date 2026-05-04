@@ -8,7 +8,6 @@ import {
   localizeServiceName,
   localizeServiceShortDescription
 } from "@/shared/lib/localized-content";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useI18n } from "@/shared/providers/i18n-provider";
 
 type ServiceCardProps = {
@@ -17,17 +16,15 @@ type ServiceCardProps = {
 
 const ServiceFeatureChip = ({ feature }: { feature: ServiceFeature }) => {
   const { locale } = useI18n();
-  const label = useTranslatedText(localizeFeatureName(feature, locale));
+  const label = localizeFeatureName(feature, locale);
 
   return <span>{label}</span>;
 };
 
 const ServiceCardComponent = ({ item }: ServiceCardProps) => {
   const { locale, t } = useI18n();
-  const localizedName = localizeServiceName(item, locale);
-  const localizedShortDescription = localizeServiceShortDescription(item, locale);
-  const name = useTranslatedText(localizedName);
-  const shortDescription = useTranslatedText(localizedShortDescription);
+  const name = localizeServiceName(item, locale);
+  const shortDescription = localizeServiceShortDescription(item, locale);
 
   return (
     <Link to={`/services/${item.slug}`}>

@@ -7,7 +7,7 @@ import { customerApi } from "@/shared/config/api";
 import { routes } from "@/shared/config/routes";
 import { approvalStatusLabels, flightStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -16,7 +16,7 @@ const cancelledStatuses = new Set(["CANCELLED", "REJECTED"]);
 export const AccountBookingDetailPage = () => {
   const { code = "" } = useParams();
   const { isAuthenticated } = useAuth();
-  const { tText } = useI18n();
+  const { locale, tText } = useI18n();
   const queryClient = useQueryClient();
   const [reason, setReason] = useState("");
   const [refundBank, setRefundBank] = useState("");
@@ -31,7 +31,7 @@ export const AccountBookingDetailPage = () => {
   });
 
   const booking = bookings.find((item) => item.code === code);
-  const translatedServiceName = useTranslatedText(booking?.service_name ?? "");
+  const serviceName = booking ? localizeBookingServiceName(booking, locale) : "";
   const canRefundDeposit = useMemo(() => {
     if (!booking) {
       return false;
@@ -108,7 +108,7 @@ export const AccountBookingDetailPage = () => {
                         ? tText("Đã hủy")
                         : tText(flightStatusLabels[booking.flight_status] ?? booking.flight_status)}
                     </Badge>
-                    <h3>{translatedServiceName || booking.service_name}</h3>
+                    <h3>{serviceName || booking.service_name}</h3>
                   </div>
                   <Badge>{tText(paymentStatusLabels[booking.payment_status] ?? booking.payment_status)}</Badge>
                 </div>

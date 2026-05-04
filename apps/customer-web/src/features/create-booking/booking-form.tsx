@@ -1,17 +1,16 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import type { BookingCreatePayload, PickupLocation } from "@paragliding/api-client";
 import { Button, Card, Field, Input, Panel, Textarea } from "@paragliding/ui";
 import { customerApi } from "@/shared/config/api";
 import { formatCurrency } from "@/shared/lib/format";
+import { localizeFeatureName, localizeServiceName } from "@/shared/lib/localized-content";
 import { serviceQueryOptions } from "@/shared/lib/query-options";
 import { checkoutStorage, trackingLookupStorage } from "@/shared/lib/storage";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useAuth } from "@/shared/providers/auth-provider";
 import { useI18n } from "@/shared/providers/i18n-provider";
-import { PickupLocationMap } from "./pickup-location-map";
 
 type BookingFormProps = {
   serviceSlug: string;
@@ -27,10 +26,14 @@ const PICKUP_FEE = 50000;
 const DEPOSIT_PERCENT = 40;
 const PAYOS_PAYMENT_METHOD = "gateway";
 
+const PickupLocationMap = lazy(() =>
+  import("./pickup-location-map").then((module) => ({ default: module.PickupLocationMap }))
+);
+
 export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: BookingFormProps) => {
   const navigate = useNavigate();
   const { account } = useAuth();
-  const { tText } = useI18n();
+  const { locale, tText } = useI18n();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [pickupPoint, setPickupPoint] = useState<PickupLocation | null>(null);
   const [pickupConfirmed, setPickupConfirmed] = useState(false);
@@ -147,7 +150,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
     }
   }, [pickupAddress, pickupOption, resolvedPickupAddress, setValue]);
 
-  const serviceName = useTranslatedText(servicePackage?.name ?? serviceSlug);
+  const serviceName = servicePackage ? localizeServiceName(servicePackage, locale) : serviceSlug;
   const pickupNeedsConfirmation = pickupOption === "pickup";
   const pickupReady = !pickupNeedsConfirmation || Boolean(pickupConfirmed && pickupPoint);
 
@@ -219,7 +222,7 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
               <span>{tText("Dịch vụ đi kèm")}</span>
               <ul>
                 {servicePackage.included_features.map((feature) => (
-                  <li key={feature.id}>{tText(feature.name)}</li>
+                  <li key={feature.id}>{localizeFeatureName(feature, locale)}</li>
                 ))}
               </ul>
             </div>
@@ -340,7 +343,9 @@ export const BookingForm = ({ serviceSlug, selectedDate, selectedTime }: Booking
                       <p className="m-0 text-sm text-stone-600">
                         {tText("Chọn đúng ghim như app gọi xe. Nếu cần, bấm vào bản đồ để chỉnh lại vị trí rồi xác nhận điểm đón.")}
                       </p>
-                      <PickupLocationMap point={pickupPoint} onChange={handlePickupMapChange} />
+                      <Suspense fallback={<div className="pickup-location-map" aria-hidden="true" />}>
+                        <PickupLocationMap point={pickupPoint} onChange={handlePickupMapChange} />
+                      </Suspense>
                       <div className="flex flex-wrap items-center justify-between gap-3">
                         <span className="text-xs font-medium text-stone-500">
                           {pickupPoint.lat.toFixed(6)}, {pickupPoint.lng.toFixed(6)}

@@ -34,11 +34,17 @@ const staticGalleryImages = [
 ];
 
 const mediaModules = {
-  ...import.meta.glob("../../../media/**/*.{avif,gif,jpeg,jpg,mov,mp4,png,webm,webp}", {
+  ...import.meta.glob([
+    "../../../media/**/*.{avif,gif,jpeg,jpg,mov,mp4,png,webm,webp}",
+    "!../../../media/**/banner.png"
+  ], {
     eager: true,
     import: "default"
   }),
-  ...import.meta.glob("../../../public/media/**/*.{avif,gif,jpeg,jpg,mov,mp4,png,webm,webp}", {
+  ...import.meta.glob([
+    "../../../public/media/**/*.{avif,gif,jpeg,jpg,mov,mp4,png,webm,webp}",
+    "!../../../public/media/**/banner.png"
+  ], {
     eager: true,
     import: "default"
   })

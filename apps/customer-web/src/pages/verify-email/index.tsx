@@ -1,22 +1,20 @@
 import { useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button, Card, Panel } from "@paragliding/ui";
-import { useAuth } from "@/shared/providers/auth-provider";
+import { customerApi } from "@/shared/config/api";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { routes } from "@/shared/config/routes";
 
 export const VerifyEmailPage = () => {
-  const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { verifyEmail } = useAuth();
   const { tText } = useI18n();
   const token = params.get("token") ?? "";
 
   const mutation = useMutation({
-    mutationFn: (nextToken: string) => verifyEmail(nextToken),
+    mutationFn: (nextToken: string) => customerApi.verifyEmail(nextToken),
     onSuccess: () => {
-      window.setTimeout(() => navigate(routes.home, { replace: true }), 1200);
+      window.setTimeout(() => window.close(), 600);
     }
   });
 

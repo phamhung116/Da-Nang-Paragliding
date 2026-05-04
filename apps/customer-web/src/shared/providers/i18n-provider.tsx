@@ -309,6 +309,10 @@ const staticTextDictionary: Record<string, string> = {
     "The map will appear when the pilot starts taking the guest to the flight site.",
   "Không còn theo dõi đoạn phi công tự di chuyển tới điểm đón, nên khách chỉ thấy GPS từ lúc đã lên xe.":
     "The pilot's private route to pickup is no longer tracked; guests only see GPS after boarding.",
+  "Bản đồ sẽ hiển thị khi phi công bắt đầu theo dõi GPS.":
+    "The map will appear when the pilot starts GPS tracking.",
+  "Với lịch có xe đón, khách sẽ thấy GPS từ lúc phi công bắt đầu đi đón khách.":
+    "For bookings with pickup, guests will see GPS once the pilot starts heading to pick them up.",
   "Nhập thông tin đặt lịch để hiển thị dòng thời gian và vị trí GPS.":
     "Enter booking information to display the timeline and GPS location.",
   "Ngay sau khi khách hàng đặt lịch thành công, lịch đặt có thể được tra cứu lại từ trang này.":

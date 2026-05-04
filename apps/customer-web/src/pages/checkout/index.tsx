@@ -7,8 +7,8 @@ import { customerApi } from "@/shared/config/api";
 import { checkoutGuidelines } from "@/shared/constants/customer-content";
 import { approvalStatusLabels, paymentStatusLabels } from "@/shared/constants/status";
 import { formatCurrency, formatDateTime } from "@/shared/lib/format";
+import { localizeBookingServiceName } from "@/shared/lib/localized-content";
 import { checkoutStorage } from "@/shared/lib/storage";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { SiteLayout } from "@/widgets/layout/site-layout";
 
@@ -17,7 +17,7 @@ type CheckoutState = Awaited<ReturnType<typeof customerApi.createBooking>> & {
 };
 
 export const CheckoutPage = () => {
-  const { tText } = useI18n();
+  const { locale, tText } = useI18n();
   const [checkoutState, setCheckoutState] = useState<CheckoutState | null>(() =>
     checkoutStorage.get<CheckoutState>()
   );
@@ -44,7 +44,7 @@ export const CheckoutPage = () => {
     [paymentSession?.expires_at]
   );
   const isExpired = Boolean(expiresAt && expiresAt.getTime() <= Date.now());
-  const translatedServiceName = useTranslatedText(checkoutState?.booking.service_name ?? "");
+  const serviceName = checkoutState ? localizeBookingServiceName(checkoutState.booking, locale) : "";
 
   if (!checkoutState) {
     return (
@@ -100,7 +100,7 @@ export const CheckoutPage = () => {
                 <div className="checkout-summary-card__list">
                   <div className="booking-summary-card__fact">
                     <span>{tText("Dịch vụ")}</span>
-                    <strong>{translatedServiceName || booking.service_name}</strong>
+                    <strong>{serviceName || booking.service_name}</strong>
                   </div>
                   <div className="booking-summary-card__fact">
                     <span>{tText("Lịch bay")}</span>

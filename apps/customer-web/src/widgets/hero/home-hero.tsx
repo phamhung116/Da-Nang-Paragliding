@@ -1,33 +1,30 @@
 import { Link } from "react-router-dom";
 import { Button } from "@paragliding/ui";
 import { useI18n } from "@/shared/providers/i18n-provider";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { businessInfo } from "@/shared/constants/business";
 import { routes } from "@/shared/config/routes";
-import { motion } from 'motion/react';
 
 export const HomeHero = () => {
   const { t, tText } = useI18n();
-  const intro = useTranslatedText(businessInfo.intro);
+  const intro = tText(businessInfo.intro);
 
   return (
     <section className="relative mt-20 flex h-[calc(90vh-5rem)] items-center overflow-hidden">
       <div className="absolute inset-0 z-0">
         <img
-          src="/media/img/banner.png"
+          src="/media/img/banner-hero.jpg"
           alt={tText("Dù lượn tại Đà Nẵng")}
+          width={1920}
+          height={1072}
+          decoding="async"
+          fetchPriority="high"
           className="w-full h-full object-cover"
           referrerPolicy="no-referrer"
         />
         <div className="absolute inset-0 bg-black/40" />
       </div>
       <div className="relative z-10 w-full px-6 md:px-16 text-white">
-        <motion.div
-          initial={{ y: 50, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="max-w-2xl"
-        >
+        <div className="max-w-2xl">
           <span className="inline-block px-3 py-1 md:px-4 md:py-1 bg-brand/80 backdrop-blur-sm rounded-full text-[10px] md:text-xs font-bold tracking-widest uppercase mb-4 md:mb-6">
             {t("hero_kicker")}
           </span>
@@ -49,7 +46,7 @@ export const HomeHero = () => {
               <Button  className="btn-secondary border-white text-white hover:bg-white hover:text-brand text-sm md:text-lg px-6 py-3 md:px-10 md:py-4">{t("nav_gallery")}</Button>
             </Link>
           </div>
-        </motion.div>
+        </div>
         
       </div>
     </section>

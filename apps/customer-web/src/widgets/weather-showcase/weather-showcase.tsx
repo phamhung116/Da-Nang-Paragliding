@@ -212,6 +212,8 @@ export const WeatherShowcase = ({ days, isDark = false }: WeatherShowcaseProps) 
                     src="/media/img/anh21.jpg"
                     alt={tText("Bay dù lượn tại Sơn Trà")}
                     className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
                     referrerPolicy="no-referrer"
                   />
                   <div className="absolute inset-0 bg-gradient-to-r from-sky-900/35 via-transparent to-transparent" />

@@ -4,14 +4,12 @@ import { Link } from "react-router-dom";
 import type { Post } from "@paragliding/api-client";
 import { Badge, Button, Card, Container, Panel } from "@paragliding/ui";
 import { Camera, ChevronRight, MapPin, Navigation, ShieldCheck } from "lucide-react";
-import { motion } from "motion/react";
 import { routes } from "@/shared/config/routes";
 import { businessInfo } from "@/shared/constants/business";
 import { formatDate } from "@/shared/lib/format";
 import { getForecastMonthKeys, getUpcomingWeatherDays, WEATHER_FORECAST_DAYS } from "@/shared/lib/forecast";
 import { localizePostTitle } from "@/shared/lib/localized-content";
 import { availabilityQueryOptions, postsQueryOptions, servicesQueryOptions } from "@/shared/lib/query-options";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useI18n } from "@/shared/providers/i18n-provider";
 import { HomeHero } from "@/widgets/hero/home-hero";
 import { SiteLayout } from "@/widgets/layout/site-layout";
@@ -63,8 +61,7 @@ const toYouTubeEmbedUrl = (value: string) => {
 
 const HomePostPreview = ({ post }: { post: Post }) => {
   const { locale } = useI18n();
-  const sourceTitle = localizePostTitle(post, locale);
-  const title = useTranslatedText(sourceTitle);
+  const title = localizePostTitle(post, locale);
 
   return (
     <Link to={`/posts/${post.slug}`}>
@@ -142,7 +139,7 @@ export const HomePage = () => {
 
   return (
     <SiteLayout>
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-20 pb-20">
+      <div className="space-y-20 pb-20">
         <HomeHero />
 
         <section className="relative overflow-hidden py-20">
@@ -151,18 +148,15 @@ export const HomePage = () => {
               src="/media/img/tour-bay-du-luon-tu-do-paragliding-hon-en-nha-trang-1.webp"
               alt={tText("Phông nền dù lượn")}
               className="h-full w-full object-cover"
+              loading="lazy"
+              decoding="async"
               referrerPolicy="no-referrer"
             />
             <div className="absolute inset-0 bg-stone-900/60" />
           </div>
 
           <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="rounded-[32px] border border-white/10 bg-black/20 p-6 backdrop-blur-lg md:rounded-[40px] md:p-12"
-            >
+            <div className="rounded-[32px] border border-white/10 bg-black/20 p-6 backdrop-blur-lg md:rounded-[40px] md:p-12">
               <h2 className="mb-3 text-[10px] font-bold uppercase tracking-[0.2em] text-emerald-400 md:mb-4 md:text-xs">{tText("Về chúng tôi")}</h2>
               <p className="mb-3 text-xl font-bold leading-tight text-white md:mb-4 md:text-3xl">{tText("CHINH PHỤC BẦU TRỜI ĐÀ NẴNG")}</p>
               <p className="mx-auto mb-6 max-w-2xl text-sm font-medium leading-relaxed text-stone-200 md:mb-8 md:text-lg">
@@ -171,20 +165,16 @@ export const HomePage = () => {
               <Link to={routes.gallery} className="btn-primary px-6 py-3 text-sm md:px-8 md:py-4 md:text-base">
                 {tText("Xem chi tiết về chúng tôi")}
               </Link>
-            </motion.div>
+            </div>
           </div>
         </section>
 
         <section className="relative bg-[#091a2f] pb-24 pt-10 md:pb-28 md:pt-14">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-5">
-              {homeFeatures.map((feature, index) => (
-                <motion.article
+              {homeFeatures.map((feature) => (
+                <article
                   key={feature.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.08 }}
                   className="rounded-[24px] border border-white/10 bg-[#0d1f35] shadow-[0_18px_50px_rgba(0,0,0,0.22)] transition-transform duration-300 hover:-translate-y-1"
                 >
                   <div className="relative px-4 pt-4">
@@ -193,6 +183,8 @@ export const HomePage = () => {
                         src={feature.image}
                         alt={tText(feature.title)}
                         className="h-full w-full object-cover"
+                        loading="lazy"
+                        decoding="async"
                         referrerPolicy="no-referrer"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-[#0d1f35] via-[#0d1f35]/10 to-transparent" />
@@ -205,7 +197,7 @@ export const HomePage = () => {
                     <h3 className="text-lg font-bold leading-tight">{tText(feature.title)}</h3>
                     <p className="mt-3 text-sm leading-6 text-slate-300">{tText(feature.desc)}</p>
                   </div>
-                </motion.article>
+                </article>
               ))}
             </div>
           </div>
@@ -313,7 +305,7 @@ export const HomePage = () => {
             </Card>
           )}
         </section>
-      </motion.div>
+      </div>
     </SiteLayout>
   );
 };

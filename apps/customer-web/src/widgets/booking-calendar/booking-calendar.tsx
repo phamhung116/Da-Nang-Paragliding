@@ -59,7 +59,19 @@ const sortTime = (left: string, right: string) => {
   return leftHour * 60 + leftMinute - (rightHour * 60 + rightMinute);
 };
 
-const getAvailableCount = (day: AvailabilityDay) => day.slots.filter((slot) => !slot.is_locked && !slot.is_full).length;
+const isPastTimeSlot = (dateKey: string, time: string, now: Date) => {
+  if (dateKey !== toDateKey(now)) {
+    return dateKey < toDateKey(now);
+  }
+
+  const [hour, minute] = time.split(":").map(Number);
+  const slotDate = new Date(now);
+  slotDate.setHours(hour || 0, minute || 0, 0, 0);
+  return slotDate <= now;
+};
+
+const getAvailableCount = (day: AvailabilityDay, now: Date) =>
+  day.slots.filter((slot) => !slot.is_locked && !slot.is_full && !isPastTimeSlot(day.date, slot.time, now)).length;
 
 export const BookingCalendar = ({
   year,
@@ -77,9 +89,10 @@ export const BookingCalendar = ({
   const [pageIndex, setPageIndex] = useState(0);
   const [pendingPageEdge, setPendingPageEdge] = useState<"start" | "end" | null>(null);
   const [overlayAnchor, setOverlayAnchor] = useState<OverlayAnchor>(null);
+  const [now, setNow] = useState(() => new Date());
   const overlayHostRef = useRef<HTMLDivElement | null>(null);
 
-  const today = useMemo(() => new Date(), []);
+  const today = now;
   const todayKey = useMemo(() => toDateKey(today), [today]);
   const todayMonthStart = useMemo(() => new Date(today.getFullYear(), today.getMonth(), 1), [today]);
   const currentMonthStart = useMemo(() => new Date(year, month - 1, 1), [month, year]);
@@ -87,6 +100,11 @@ export const BookingCalendar = ({
   useEffect(() => {
     setHoveredCell(selectedSlot);
   }, [selectedSlot]);
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(new Date()), 30000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   const sortedDays = useMemo(() => [...days].sort((left, right) => left.date.localeCompare(right.date)), [days]);
   const visibleDays = useMemo(() => sortedDays.filter((day) => day.date >= todayKey), [sortedDays, todayKey]);
@@ -168,9 +186,9 @@ export const BookingCalendar = ({
       }
     }
 
-    const firstPageWithAvailability = calendarPages.findIndex((page) => page.some((day) => day.day && getAvailableCount(day.day) > 0));
+    const firstPageWithAvailability = calendarPages.findIndex((page) => page.some((day) => day.day && getAvailableCount(day.day, today) > 0));
     setPageIndex(firstPageWithAvailability >= 0 ? firstPageWithAvailability : 0);
-  }, [calendarPages, pendingPageEdge, selectedSlot?.date]);
+  }, [calendarPages, pendingPageEdge, selectedSlot?.date, today]);
 
   const activePage = calendarPages[pageIndex] ?? [];
   const previewSlot = hoveredCell ? daysByDate.get(hoveredCell.date)?.slots.find((slot) => slot.time === hoveredCell.time) ?? null : null;
@@ -422,7 +440,7 @@ export const BookingCalendar = ({
                             </td>
                             {activePage.map((day) => {
                               const slot = day.day?.slots.find((item) => item.time === time) ?? null;
-                              const isBlocked = Boolean(slot?.is_locked || slot?.is_full);
+                              const isBlocked = Boolean(slot?.is_locked || slot?.is_full || (slot && isPastTimeSlot(day.isoDate, time, today)));
                               const isSelected = Boolean(slot && selectedSlot?.date === day.isoDate && selectedSlot?.time === time);
 
                               return (

@@ -364,6 +364,31 @@ body {
   width: 100%;
 }
 
+.pilot-map-marker {
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.pilot-map-marker svg {
+  display: block;
+  width: 24px;
+  height: 24px;
+}
+
+.pilot-map-marker--car {
+  color: #2563eb;
+  border: 2px solid #2563eb;
+}
+
+.pilot-map-marker--destination {
+  color: #dc2626;
+  background: transparent;
+  box-shadow: 0 10px 24px rgba(220, 38, 38, 0.2);
+}
+
 .pilot-flight-map__empty {
   position: absolute;
   inset: auto 1rem 1rem 1rem;

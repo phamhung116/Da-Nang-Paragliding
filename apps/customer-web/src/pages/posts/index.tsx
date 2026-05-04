@@ -8,15 +8,12 @@ import { motion } from "motion/react"
 import { ChevronRight } from "lucide-react";
 import { formatDate } from "@/shared/lib/format";
 import { localizePostExcerpt, localizePostTitle } from "@/shared/lib/localized-content";
-import { useTranslatedText } from "@/shared/lib/use-translated-text";
 import { useI18n } from "@/shared/providers/i18n-provider";
 
 const PostListCard = ({ post }: { post: Post }) => {
   const { locale, t } = useI18n();
-  const sourceTitle = localizePostTitle(post, locale);
-  const sourceExcerpt = localizePostExcerpt(post, locale);
-  const title = useTranslatedText(sourceTitle);
-  const excerpt = useTranslatedText(sourceExcerpt);
+  const title = localizePostTitle(post, locale);
+  const excerpt = localizePostExcerpt(post, locale);
 
   return (
     <Link to={`/posts/${post.slug}`}>

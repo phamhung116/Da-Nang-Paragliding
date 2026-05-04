@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import "leaflet/dist/leaflet.css";
 import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from "react-leaflet";
 import type { PickupLocation } from "@paragliding/api-client";
 import { useI18n } from "@/shared/providers/i18n-provider";
