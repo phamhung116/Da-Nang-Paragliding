@@ -19,7 +19,14 @@ export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | 
   return {
     reviewBooking: (
       code: string,
-      payload: { decision: "confirm" | "reject"; reason?: string; pilot_name?: string; pilot_phone?: string }
+      payload: {
+        decision: "confirm" | "reject";
+        reason?: string;
+        driver_name?: string;
+        driver_phone?: string;
+        pilot_name?: string;
+        pilot_phone?: string;
+      }
     ) =>
       http.request<Booking>(`/bookings/${code}/review/`, {
         method: "POST",
@@ -33,7 +40,7 @@ export const createAdminApi = (baseUrl: string, getAccessToken?: () => string | 
         method: "POST",
         body: JSON.stringify(payload)
       }),
-    assignPilot: (code: string, payload: { pilot_name: string; pilot_phone: string }) =>
+    assignPilot: (code: string, payload: { driver_name: string; driver_phone: string; pilot_name: string; pilot_phone: string }) =>
       http.request<Booking>(`/bookings/${code}/pilot/`, {
         method: "PATCH",
         body: JSON.stringify(payload)

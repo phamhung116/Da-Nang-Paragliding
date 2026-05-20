@@ -20,6 +20,7 @@ type PilotAuthContextValue = {
 };
 
 const PilotAuthContext = createContext<PilotAuthContextValue | null>(null);
+const isFlightCrewRole = (role?: string | null) => role === "DRIVER" || role === "PILOT";
 
 export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
   const [account, setAccount] = useState<Account | null>(() => pilotAuthStorage.getAccount());
@@ -38,7 +39,7 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
         if (pilotAuthStorage.getToken() !== token) {
           return;
         }
-        if (nextAccount.role !== "PILOT") {
+        if (!isFlightCrewRole(nextAccount.role)) {
           pilotAuthStorage.clear();
           setAccount(null);
           return;
@@ -64,10 +65,10 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
     () => ({
       account,
       loading,
-      isAuthenticated: Boolean(account?.role === "PILOT"),
+      isAuthenticated: Boolean(isFlightCrewRole(account?.role)),
       completeHandoff(result) {
-        if (result.account.role !== "PILOT") {
-          throw new Error("Tài khoản này không có quyền phi công.");
+        if (!isFlightCrewRole(result.account.role)) {
+          throw new Error("Tài khoản này không có quyền vận hành.");
         }
         pilotAuthStorage.setSession(result.session);
         pilotAuthStorage.setAccount(result.account);
@@ -76,8 +77,8 @@ export const PilotAuthProvider = ({ children }: PropsWithChildren) => {
       },
       async login(payload) {
         const result = await authApi.login(payload);
-        if (result.account.role !== "PILOT") {
-          throw new Error("Tài khoản này không có quyền phi công.");
+        if (!isFlightCrewRole(result.account.role)) {
+          throw new Error("Tài khoản này không có quyền vận hành.");
         }
         pilotAuthStorage.setSession(result.session);
         pilotAuthStorage.setAccount(result.account);

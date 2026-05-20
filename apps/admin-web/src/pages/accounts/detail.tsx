@@ -21,6 +21,7 @@ const toPayload = (account: NonNullable<Awaited<ReturnType<typeof adminApi.getAc
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Quản trị viên",
+  DRIVER: "Tài xế",
   PILOT: "Phi công",
   CUSTOMER: "Khách hàng"
 };
@@ -152,6 +153,7 @@ export const AccountDetailPage = () => {
                   <div className="inline-field-grid inline-field-grid--two">
                     <Field label="Vai trò">
                       <Select {...form.register("role")}>
+                        <option value="DRIVER">Tài xế</option>
                         <option value="PILOT">Phi công</option>
                         <option value="ADMIN">Quản trị viên</option>
                       </Select>

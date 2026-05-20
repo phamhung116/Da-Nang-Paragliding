@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from modules.availability.domain.repositories import AvailabilityRepository
 from modules.bookings.application.dto import (
-    AssignPilotRequest,
+    AssignCrewRequest,
     BookingCreateRequest,
     BookingPayload,
     CancelBookingRequest,
@@ -152,6 +152,8 @@ class CreateBookingUseCase:
                 approval_status=BOOKING_APPROVAL_PENDING,
                 rejection_reason=None,
                 flight_status=FLIGHT_STATUS_WAITING_CONFIRMATION,
+                assigned_driver_name=None,
+                assigned_driver_phone=None,
                 assigned_pilot_name=None,
                 assigned_pilot_phone=None,
             )
@@ -273,13 +275,18 @@ class ReviewBookingUseCase:
             raise ValidationError("Lịch đặt này đã được xử lý trước đó.")
 
         if request.decision == "confirm":
+            if not request.driver_name or not request.driver_phone:
+                raise ValidationError("Cần chọn tài xế khả dụng khi xác nhận lịch đặt.")
             if not request.pilot_name or not request.pilot_phone:
                 raise ValidationError("Cần chọn phi công khả dụng khi xác nhận lịch đặt.")
             booking.approval_status = BOOKING_APPROVAL_CONFIRMED
             booking.rejection_reason = None
             booking.flight_status = FLIGHT_STATUS_WAITING
+            booking.assigned_driver_name = request.driver_name.strip()
+            booking.assigned_driver_phone = normalize_phone(request.driver_phone)
             booking.assigned_pilot_name = request.pilot_name.strip()
             booking.assigned_pilot_phone = normalize_phone(request.pilot_phone)
+            self._ensure_driver_available(booking)
             self._ensure_pilot_available(booking)
             updated_booking = self.booking_repository.update(booking)
             self.tracking_repository.assign_pilot(
@@ -332,6 +339,24 @@ class ReviewBookingUseCase:
         }
         if pilot_phone in occupied_pilot_phones:
             raise ValidationError("Phi công này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
+
+
+    def _ensure_driver_available(self, booking: Booking) -> None:
+        driver_phone = normalize_phone(booking.assigned_driver_phone or "")
+        driver = self.account_repository.get_by_phone(driver_phone)
+        if driver is None or not driver.is_active or driver.role != "DRIVER":
+            raise ValidationError("Tài xế được chọn không hợp lệ hoặc đã bị vô hiệu hóa.")
+
+        occupied_driver_phones = {
+            normalize_phone(phone)
+            for phone in self.booking_repository.list_assigned_driver_phones_for_slot(
+                booking.flight_date,
+                booking.flight_time,
+                exclude_code=booking.code,
+            )
+        }
+        if driver_phone in occupied_driver_phones:
+            raise ValidationError("Tài xế này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
 
 
 class ListConfirmedBookingsUseCase:
@@ -419,15 +444,18 @@ class AssignPilotUseCase:
         self.notification_gateway = notification_gateway
         self.account_repository = account_repository
 
-    def execute(self, booking_code: str, request: AssignPilotRequest) -> Booking:
+    def execute(self, booking_code: str, request: AssignCrewRequest) -> Booking:
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
         if booking.approval_status != BOOKING_APPROVAL_CONFIRMED:
             raise ValidationError("Chỉ lịch đặt đã xác nhận mới được gán phi công.")
 
+        booking.assigned_driver_name = request.driver_name.strip()
+        booking.assigned_driver_phone = normalize_phone(request.driver_phone)
         booking.assigned_pilot_name = request.pilot_name.strip()
         booking.assigned_pilot_phone = normalize_phone(request.pilot_phone)
+        self._ensure_driver_available(booking)
         self._ensure_pilot_available(booking)
         updated_booking = self.booking_repository.update(booking)
         self.tracking_repository.assign_pilot(
@@ -458,6 +486,24 @@ class AssignPilotUseCase:
             raise ValidationError("Phi công này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
 
 
+    def _ensure_driver_available(self, booking: Booking) -> None:
+        driver_phone = normalize_phone(booking.assigned_driver_phone or "")
+        driver = self.account_repository.get_by_phone(driver_phone)
+        if driver is None or not driver.is_active or driver.role != "DRIVER":
+            raise ValidationError("Tài xế được chọn không hợp lệ hoặc đã bị vô hiệu hóa.")
+
+        occupied_driver_phones = {
+            normalize_phone(phone)
+            for phone in self.booking_repository.list_assigned_driver_phones_for_slot(
+                booking.flight_date,
+                booking.flight_time,
+                exclude_code=booking.code,
+            )
+        }
+        if driver_phone in occupied_driver_phones:
+            raise ValidationError("Tài xế này đã được gán cho một lịch đặt khác trong cùng khung giờ.")
+
+
 class ListPilotFlightsUseCase:
     def __init__(
         self,
@@ -468,10 +514,15 @@ class ListPilotFlightsUseCase:
         self.booking_repository = booking_repository
         self.tracking_repository = tracking_repository
 
-    def execute(self, phone: str) -> list[dict[str, object]]:
+    def execute(self, phone: str, *, role: str = "PILOT") -> list[dict[str, object]]:
         normalized_phone = normalize_phone(phone)
         flights: list[dict[str, object]] = []
-        for booking in self.booking_repository.list_for_pilot(normalized_phone):
+        assigned_bookings = (
+            self.booking_repository.list_for_driver(normalized_phone)
+            if role == "DRIVER"
+            else self.booking_repository.list_for_pilot(normalized_phone)
+        )
+        for booking in assigned_bookings:
             tracking = self.tracking_repository.get_by_booking_code(booking.code)
             flights.append({"booking": booking, "tracking": tracking})
         return flights

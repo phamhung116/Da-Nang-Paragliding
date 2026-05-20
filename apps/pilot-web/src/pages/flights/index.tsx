@@ -10,7 +10,7 @@ import { usePilotAuth } from "@/shared/providers/auth-provider";
 import { PilotLayout } from "@/widgets/layout/pilot-layout";
 import { PilotFlightMap } from "@/widgets/flight-map/pilot-flight-map";
 
-const statusOptions = ["WAITING", "FLYING"] as const;
+const pilotStatusOptions = ["FLYING"] as const;
 const LIVE_PING_INTERVAL_MS = 5000;
 const MAP_VISIBLE_STATUSES = new Set(["PICKING_UP", "EN_ROUTE", "FLYING", "LANDED"]);
 
@@ -171,6 +171,7 @@ export const FlightDetailPage = () => {
   const { code = "" } = useParams();
   const queryClient = useQueryClient();
   const { account } = usePilotAuth();
+  const isDriver = account?.role === "DRIVER";
   const trackingSessionRef = useRef<TrackingSession | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
   const [activeTrackingCode, setActiveTrackingCode] = useState<string | null>(null);
@@ -479,7 +480,9 @@ export const FlightDetailPage = () => {
       : hasTrackingStarted
         ? flight.booking.flight_status === "PICKING_UP"
           ? "Đã đón khách, đưa tới điểm bay"
-          : "Kết thúc theo dõi khi hạ cánh"
+          : isDriver
+            ? "Đang đưa khách tới điểm bay"
+            : "Kết thúc theo dõi khi hạ cánh"
         : flight.booking.pickup_option === "pickup"
           ? "Bắt đầu đi đón khách"
           : "Bắt đầu đi tới điểm bay";
@@ -554,6 +557,9 @@ export const FlightDetailPage = () => {
                             void submitStatusUpdate(flight, "EN_ROUTE");
                             return;
                           }
+                          if (isDriver) {
+                            return;
+                          }
                           void stopLiveTracking(flight);
                           return;
                         }
@@ -565,7 +571,7 @@ export const FlightDetailPage = () => {
                   </div>
 
                   <div className="pilot-status-actions">
-                    {statusOptions.map((status) => (
+                    {!isDriver ? pilotStatusOptions.map((status) => (
                       <Button
                         key={status}
                         variant={flight.booking.flight_status === status ? "primary" : "secondary"}
@@ -576,7 +582,7 @@ export const FlightDetailPage = () => {
                       >
                         {statusLabels[status]}
                       </Button>
-                    ))}
+                    )) : null}
                   </div>
                 </div>
 

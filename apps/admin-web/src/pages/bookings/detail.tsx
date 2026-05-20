@@ -49,6 +49,7 @@ const formatDateTime = (value: string | null) => (value ? new Date(value).toLoca
 export const BookingDetailPage = () => {
   const { code = "" } = useParams();
   const queryClient = useQueryClient();
+  const [selectedDriverPhone, setSelectedDriverPhone] = useState("");
   const [selectedPilotPhone, setSelectedPilotPhone] = useState("");
   const [cancelReason, setCancelReason] = useState("");
   const [cancelModalOpen, setCancelModalOpen] = useState(false);
@@ -69,20 +70,48 @@ export const BookingDetailPage = () => {
     queryKey: ["admin-active-pilots"],
     queryFn: () => adminApi.listAccounts({ role: "PILOT", active: "true" })
   });
+  const { data: activeDrivers = [] } = useQuery({
+    queryKey: ["admin-active-drivers"],
+    queryFn: () => adminApi.listAccounts({ role: "DRIVER", active: "true" })
+  });
+  const { data: allBookings = [] } = useQuery({
+    queryKey: ["admin-bookings"],
+    queryFn: () => adminApi.listBookings()
+  });
 
   const booking = bookingQuery.data;
+  const driverTripCounts = allBookings.reduce<Record<string, number>>((acc, item) => {
+    if (item.assigned_driver_phone && item.flight_status === "LANDED") {
+      acc[item.assigned_driver_phone] = (acc[item.assigned_driver_phone] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
+  const pilotTripCounts = allBookings.reduce<Record<string, number>>((acc, item) => {
+    if (item.assigned_pilot_phone && item.flight_status === "LANDED") {
+      acc[item.assigned_pilot_phone] = (acc[item.assigned_pilot_phone] ?? 0) + 1;
+    }
+    return acc;
+  }, {});
+  const prioritizedDrivers = [...activeDrivers].sort((a, b) => (driverTripCounts[a.phone] ?? 0) - (driverTripCounts[b.phone] ?? 0));
+  const prioritizedPilots = [...activePilots].sort((a, b) => (pilotTripCounts[a.phone] ?? 0) - (pilotTripCounts[b.phone] ?? 0));
+  const selectedDriver = activeDrivers.find((driver) => driver.phone === selectedDriverPhone);
   const selectedPilot = activePilots.find((pilot) => pilot.phone === selectedPilotPhone);
 
   useEffect(() => {
+    if (booking && !selectedDriverPhone) {
+      setSelectedDriverPhone(booking.assigned_driver_phone ?? "");
+    }
     if (booking && !selectedPilotPhone) {
       setSelectedPilotPhone(booking.assigned_pilot_phone ?? "");
     }
-  }, [booking, selectedPilotPhone]);
+  }, [booking, selectedDriverPhone, selectedPilotPhone]);
 
   const reviewMutation = useMutation({
-    mutationFn: ({ pilot }: { pilot: Account }) =>
+    mutationFn: ({ driver, pilot }: { driver: Account; pilot: Account }) =>
       adminApi.reviewBooking(code, {
         decision: "confirm",
+        driver_name: driver.full_name,
+        driver_phone: driver.phone,
         pilot_name: pilot.full_name,
         pilot_phone: pilot.phone
       }),
@@ -95,8 +124,13 @@ export const BookingDetailPage = () => {
   });
 
   const assignPilotMutation = useMutation({
-    mutationFn: ({ pilot }: { pilot: Account }) =>
-      adminApi.assignPilot(code, { pilot_name: pilot.full_name, pilot_phone: pilot.phone }),
+    mutationFn: ({ driver, pilot }: { driver: Account; pilot: Account }) =>
+      adminApi.assignPilot(code, {
+        driver_name: driver.full_name,
+        driver_phone: driver.phone,
+        pilot_name: pilot.full_name,
+        pilot_phone: pilot.phone
+      }),
     onSuccess: (nextBooking) => {
       queryClient.setQueryData(["admin-booking", code], nextBooking);
       queryClient.invalidateQueries({ queryKey: ["admin-bookings"] });
@@ -118,14 +152,14 @@ export const BookingDetailPage = () => {
   }
 
   const savePilot = () => {
-    if (!booking || !selectedPilot) {
+    if (!booking || !selectedDriver || !selectedPilot) {
       return;
     }
     if (booking.approval_status === "PENDING") {
-      reviewMutation.mutate({ pilot: selectedPilot });
+      reviewMutation.mutate({ driver: selectedDriver, pilot: selectedPilot });
       return;
     }
-    assignPilotMutation.mutate({ pilot: selectedPilot });
+    assignPilotMutation.mutate({ driver: selectedDriver, pilot: selectedPilot });
   };
 
   const cancelBooking = () => {
@@ -238,21 +272,31 @@ export const BookingDetailPage = () => {
                     </div>
                     {booking.assigned_pilot_name ? <Badge>{booking.assigned_pilot_name}</Badge> : null}
                   </div>
+                  <Field label="Chọn tài xế">
+                    <Select value={selectedDriverPhone} onChange={(event) => setSelectedDriverPhone(event.target.value)}>
+                      <option value="">Chọn tài xế</option>
+                      {prioritizedDrivers.map((driver) => (
+                        <option key={driver.id} value={driver.phone}>
+                          {driver.full_name} - {driver.phone} ({driverTripCounts[driver.phone] ?? 0} chuyến)
+                        </option>
+                      ))}
+                    </Select>
+                  </Field>
                   <Field label="Chọn phi công">
                     <Select value={selectedPilotPhone} onChange={(event) => setSelectedPilotPhone(event.target.value)}>
                       <option value="">Chọn phi công</option>
-                      {activePilots.map((pilot) => (
+                      {prioritizedPilots.map((pilot) => (
                         <option key={pilot.id} value={pilot.phone}>
-                          {pilot.full_name} - {pilot.phone}
+                          {pilot.full_name} - {pilot.phone} ({pilotTripCounts[pilot.phone] ?? 0} chuyến)
                         </option>
                       ))}
                     </Select>
                   </Field>
                   <Button
-                    disabled={!selectedPilot || reviewMutation.isPending || assignPilotMutation.isPending}
+                    disabled={!selectedDriver || !selectedPilot || reviewMutation.isPending || assignPilotMutation.isPending}
                     onClick={savePilot}
                   >
-                    {booking.approval_status === "PENDING" ? "Xác nhận và gán phi công" : "Lưu phi công"}
+                    {booking.approval_status === "PENDING" ? "Xác nhận và gán nhân sự" : "Lưu nhân sự"}
                   </Button>
                 </div>
               ) : null}

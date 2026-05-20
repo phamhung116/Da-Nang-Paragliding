@@ -148,7 +148,7 @@ class ManagedAccountSerializer(serializers.Serializer):
     email = serializers.EmailField()
     phone = serializers.CharField(max_length=20)
     password = serializers.CharField(min_length=8, max_length=128, required=False, allow_blank=True)
-    role = serializers.ChoiceField(choices=["ADMIN", "PILOT", "CUSTOMER"])
+    role = serializers.ChoiceField(choices=["ADMIN", "DRIVER", "PILOT", "CUSTOMER"])
     preferred_language = serializers.ChoiceField(choices=["vi", "en"], default="vi")
     is_active = serializers.BooleanField(default=True)
 

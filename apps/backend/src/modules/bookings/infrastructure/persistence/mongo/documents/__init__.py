@@ -34,6 +34,8 @@ class BookingDocument(models.Model):
     approval_status = models.CharField(max_length=40, db_index=True)
     rejection_reason = models.TextField(blank=True, null=True)
     flight_status = models.CharField(max_length=40)
+    assigned_driver_name = models.CharField(max_length=120, blank=True, null=True)
+    assigned_driver_phone = models.CharField(max_length=20, blank=True, null=True, db_index=True)
     assigned_pilot_name = models.CharField(max_length=120, blank=True, null=True)
     assigned_pilot_phone = models.CharField(max_length=20, blank=True, null=True, db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -50,6 +52,10 @@ class BookingDocument(models.Model):
             models.Index(
                 fields=["assigned_pilot_phone", "approval_status", "flight_date", "flight_time"],
                 name="bookings_pilot_slot_idx",
+            ),
+            models.Index(
+                fields=["assigned_driver_phone", "approval_status", "flight_date", "flight_time"],
+                name="bookings_driver_slot_idx",
             ),
             models.Index(fields=["email", "-created_at"], name="bookings_email_created_idx"),
         ]

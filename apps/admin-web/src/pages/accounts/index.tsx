@@ -20,6 +20,7 @@ const blankValues: ManagedAccountPayload = {
 
 const roleLabels: Record<string, string> = {
   ADMIN: "Quản trị viên",
+  DRIVER: "Tài xế",
   PILOT: "Phi công",
   CUSTOMER: "Khách hàng"
 };
@@ -83,6 +84,7 @@ export const AccountsPage = () => {
                   </Field>
                   <Field label="Vai trò">
                     <Select {...form.register("role")}>
+                      <option value="DRIVER">Tài xế</option>
                       <option value="PILOT">Phi công</option>
                       <option value="ADMIN">Quản trị viên</option>
                     </Select>
@@ -110,6 +112,7 @@ export const AccountsPage = () => {
                 <Select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
                   <option value="">Tất cả vai trò</option>
                   <option value="ADMIN">Quản trị viên</option>
+                  <option value="DRIVER">Tài xế</option>
                   <option value="PILOT">Phi công</option>
                   <option value="CUSTOMER">Khách hàng</option>
                 </Select>

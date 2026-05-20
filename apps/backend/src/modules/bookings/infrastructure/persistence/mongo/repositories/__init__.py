@@ -47,6 +47,8 @@ def _to_domain(document: BookingDocument) -> Booking:
         approval_status=document.approval_status,
         rejection_reason=document.rejection_reason,
         flight_status=document.flight_status,
+        assigned_driver_name=getattr(document, "assigned_driver_name", None),
+        assigned_driver_phone=getattr(document, "assigned_driver_phone", None),
         assigned_pilot_name=document.assigned_pilot_name,
         assigned_pilot_phone=document.assigned_pilot_phone,
         created_at=document.created_at,
@@ -85,6 +87,8 @@ class MongoBookingRepository:
             approval_status=payload.approval_status,
             rejection_reason=payload.rejection_reason,
             flight_status=payload.flight_status,
+            assigned_driver_name=payload.assigned_driver_name,
+            assigned_driver_phone=payload.assigned_driver_phone,
             assigned_pilot_name=payload.assigned_pilot_name,
             assigned_pilot_phone=payload.assigned_pilot_phone,
         )
@@ -130,6 +134,15 @@ class MongoBookingRepository:
             )
         ]
 
+    def list_for_driver(self, phone: str) -> list[Booking]:
+        return [
+            _to_domain(document)
+            for document in BookingDocument.objects.filter(
+                approval_status=BOOKING_APPROVAL_CONFIRMED,
+                assigned_driver_phone=phone,
+            )
+        ]
+
     def count_reserved_for_slot(self, service_slug: str, flight_date, flight_time: str) -> int:
         return BookingDocument.objects.filter(
             service_slug=service_slug,
@@ -165,6 +178,17 @@ class MongoBookingRepository:
             queryset = queryset.exclude(code=exclude_code)
         return [str(phone) for phone in queryset.values_list("assigned_pilot_phone", flat=True) if phone]
 
+    def list_assigned_driver_phones_for_slot(self, flight_date, flight_time: str, *, exclude_code: str | None = None) -> list[str]:
+        queryset = BookingDocument.objects.filter(
+            flight_date=flight_date,
+            flight_time=flight_time,
+            approval_status=BOOKING_APPROVAL_CONFIRMED,
+            assigned_driver_phone__isnull=False,
+        )
+        if exclude_code:
+            queryset = queryset.exclude(code=exclude_code)
+        return [str(phone) for phone in queryset.values_list("assigned_driver_phone", flat=True) if phone]
+
     def update(self, booking: Booking) -> Booking:
         document = BookingDocument.objects.filter(code=booking.code).first()
         if document is None:
@@ -183,6 +207,8 @@ class MongoBookingRepository:
             "pickup_fee",
             "deposit_amount",
             "deposit_percentage",
+            "assigned_driver_name",
+            "assigned_driver_phone",
             "assigned_pilot_name",
             "assigned_pilot_phone",
         ]:

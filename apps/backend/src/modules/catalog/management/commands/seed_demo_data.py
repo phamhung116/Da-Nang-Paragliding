@@ -25,7 +25,7 @@ from config.containers import (
     update_flight_status_use_case,
 )
 from modules.accounts.application.dto import AccountPayload
-from modules.bookings.application.dto import AssignPilotRequest, BookingCreateRequest, ReviewBookingRequest
+from modules.bookings.application.dto import AssignCrewRequest, BookingCreateRequest, ReviewBookingRequest
 from modules.bookings.infrastructure.persistence.mongo.documents import BookingDocument
 from modules.catalog.application.dto import ServiceFeaturePayload, ServicePackagePayload
 from modules.posts.application.dto import PostPayload
@@ -128,6 +128,8 @@ class Command(BaseCommand):
                 confirmed_result["booking"].code,
                 ReviewBookingRequest(
                     decision="confirm",
+                    driver_name="Tài xế Sơn Trà 01",
+                    driver_phone="+84907000111",
                     pilot_name="Phi công Sơn Trà 01",
                     pilot_phone="+84908000111",
                 ),
@@ -159,7 +161,12 @@ class Command(BaseCommand):
             complete_online_payment_use_case().execute(online_result["booking"].code)
             assign_pilot_use_case().execute(
                 online_result["booking"].code,
-                AssignPilotRequest(pilot_name="Phi công Sơn Trà 02", pilot_phone="+84908000222"),
+                AssignCrewRequest(
+                    driver_name="Tài xế Sơn Trà 02",
+                    driver_phone="+84907000222",
+                    pilot_name="Phi công Sơn Trà 02",
+                    pilot_phone="+84908000222",
+                ),
             )
             update_flight_status_use_case().execute(online_result["booking"].code, "EN_ROUTE")
             update_flight_status_use_case().execute(online_result["booking"].code, "FLYING")
@@ -467,11 +474,27 @@ class Command(BaseCommand):
                 "preferred_language": "vi",
             },
             {
+                "full_name": "Tài xế Sơn Trà 01",
+                "email": "taixe01@danangparagliding.vn",
+                "phone": "+84907000111",
+                "password": "Taixe12345!",
+                "role": "DRIVER",
+                "preferred_language": "vi",
+            },
+            {
                 "full_name": "Phi công Sơn Trà 02",
                 "email": "phicong02@danangparagliding.vn",
                 "phone": "+84908000222",
                 "password": "Phicong12345!",
                 "role": "PILOT",
+                "preferred_language": "vi",
+            },
+            {
+                "full_name": "Tài xế Sơn Trà 02",
+                "email": "taixe02@danangparagliding.vn",
+                "phone": "+84907000222",
+                "password": "Taixe12345!",
+                "role": "DRIVER",
                 "preferred_language": "vi",
             },
         ]

@@ -93,6 +93,8 @@ export type Booking = {
   approval_status: string;
   rejection_reason: string | null;
   flight_status: string;
+  assigned_driver_name: string | null;
+  assigned_driver_phone: string | null;
   assigned_pilot_name: string | null;
   assigned_pilot_phone: string | null;
   created_at: string | null;

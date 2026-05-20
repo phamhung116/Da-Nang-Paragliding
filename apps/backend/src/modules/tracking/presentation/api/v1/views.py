@@ -18,7 +18,7 @@ from modules.tracking.presentation.api.v1.serializers import (
     FlightTrackingSerializer,
     LiveTrackingPointSerializer,
 )
-from shared.auth import BearerTokenAuthentication, IsAdminAccount, IsPilotAccount
+from shared.auth import BearerTokenAuthentication, IsAdminAccount, IsFlightCrewAccount
 from shared.exceptions import DomainError
 from shared.responses import error, success
 from shared.throttling import AccountScopedRateThrottle
@@ -88,7 +88,7 @@ class AdminBookingTrackingApi(APIView):
 
 class PilotFlightStatusUpdateApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
-    permission_classes = [IsPilotAccount]
+    permission_classes = [IsFlightCrewAccount]
 
     def patch(self, request, code: str):
         serializer = FlightStatusUpdateSerializer(data=request.data)
@@ -98,6 +98,7 @@ class PilotFlightStatusUpdateApi(APIView):
             result = update_pilot_flight_status_use_case().execute(
                 code,
                 request.user.phone,
+                request.user.role,
                 serializer.validated_data["status"],
                 serializer.to_location_or_none("GPS trực tiếp của phi công"),
             )
@@ -113,7 +114,7 @@ class PilotFlightStatusUpdateApi(APIView):
 
 class PilotTrackingStartApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
-    permission_classes = [IsPilotAccount]
+    permission_classes = [IsFlightCrewAccount]
 
     def post(self, request, code: str):
         serializer = LiveTrackingPointSerializer(data=request.data)
@@ -123,6 +124,7 @@ class PilotTrackingStartApi(APIView):
             result = start_pilot_tracking_use_case().execute(
                 code,
                 request.user.phone,
+                request.user.role,
                 serializer.to_location("Bắt đầu hành trình"),
             )
             return success(
@@ -137,7 +139,7 @@ class PilotTrackingStartApi(APIView):
 
 class PilotTrackingPingApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
-    permission_classes = [IsPilotAccount]
+    permission_classes = [IsFlightCrewAccount]
 
     def post(self, request, code: str):
         serializer = LiveTrackingPointSerializer(data=request.data)
@@ -147,6 +149,7 @@ class PilotTrackingPingApi(APIView):
             result = append_pilot_tracking_point_use_case().execute(
                 code,
                 request.user.phone,
+                request.user.role,
                 serializer.to_location("Vị trí hiện tại"),
             )
             return success(
@@ -161,7 +164,7 @@ class PilotTrackingPingApi(APIView):
 
 class PilotTrackingStopApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
-    permission_classes = [IsPilotAccount]
+    permission_classes = [IsFlightCrewAccount]
 
     def post(self, request, code: str):
         serializer = LiveTrackingPointSerializer(data=request.data)
@@ -171,6 +174,7 @@ class PilotTrackingStopApi(APIView):
             result = stop_pilot_tracking_use_case().execute(
                 code,
                 request.user.phone,
+                request.user.role,
                 serializer.to_location("Đã hạ cánh"),
             )
             return success(

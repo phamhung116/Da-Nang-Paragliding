@@ -28,12 +28,16 @@ class BookingCreateRequest:
 class ReviewBookingRequest:
     decision: str
     reason: str | None = None
+    driver_name: str | None = None
+    driver_phone: str | None = None
     pilot_name: str | None = None
     pilot_phone: str | None = None
 
 
 @dataclass(slots=True)
-class AssignPilotRequest:
+class AssignCrewRequest:
+    driver_name: str
+    driver_phone: str
     pilot_name: str
     pilot_phone: str
 

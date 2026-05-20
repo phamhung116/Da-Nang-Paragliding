@@ -54,3 +54,19 @@ class IsAdminAccount(HasAccountRole):
 
 class IsPilotAccount(HasAccountRole):
     required_role = "PILOT"
+
+
+class IsDriverAccount(HasAccountRole):
+    required_role = "DRIVER"
+
+
+class IsFlightCrewAccount(IsAuthenticatedAccount):
+    message = "Bạn không đủ quyền truy cập tài nguyên vận hành này."
+
+    def has_permission(self, request, view) -> bool:
+        user = getattr(request, "user", None)
+        return bool(
+            user
+            and getattr(user, "is_authenticated", False)
+            and getattr(user, "role", None) in {"DRIVER", "PILOT"}
+        )

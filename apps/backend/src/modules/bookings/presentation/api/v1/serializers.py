@@ -5,7 +5,7 @@ from datetime import date
 from rest_framework import serializers
 
 from modules.bookings.application.dto import (
-    AssignPilotRequest,
+    AssignCrewRequest,
     BookingCreateRequest,
     CancelBookingRequest,
     ReviewBookingRequest,
@@ -44,6 +44,8 @@ class BookingReadSerializer(serializers.Serializer):
     approval_status = serializers.CharField()
     rejection_reason = serializers.CharField(allow_null=True, allow_blank=True)
     flight_status = serializers.CharField()
+    assigned_driver_name = serializers.CharField(allow_null=True, allow_blank=True)
+    assigned_driver_phone = serializers.CharField(allow_null=True, allow_blank=True)
     assigned_pilot_name = serializers.CharField(allow_null=True, allow_blank=True)
     assigned_pilot_phone = serializers.CharField(allow_null=True, allow_blank=True)
     created_at = serializers.DateTimeField(allow_null=True)
@@ -116,6 +118,8 @@ class PickupLocationSerializer(serializers.Serializer):
 class ReviewBookingSerializer(serializers.Serializer):
     decision = serializers.ChoiceField(choices=["confirm", "reject"])
     reason = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+    driver_name = serializers.CharField(max_length=120, required=False, allow_blank=True, allow_null=True)
+    driver_phone = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
     pilot_name = serializers.CharField(max_length=120, required=False, allow_blank=True, allow_null=True)
     pilot_phone = serializers.CharField(max_length=20, required=False, allow_blank=True, allow_null=True)
 
@@ -123,17 +127,23 @@ class ReviewBookingSerializer(serializers.Serializer):
         return ReviewBookingRequest(
             decision=self.validated_data["decision"],
             reason=self.validated_data.get("reason"),
+            driver_name=self.validated_data.get("driver_name") or None,
+            driver_phone=normalize_phone(self.validated_data.get("driver_phone", "")) if self.validated_data.get("driver_phone") else None,
             pilot_name=self.validated_data.get("pilot_name") or None,
             pilot_phone=normalize_phone(self.validated_data.get("pilot_phone", "")) if self.validated_data.get("pilot_phone") else None,
         )
 
 
 class AssignPilotSerializer(serializers.Serializer):
+    driver_name = serializers.CharField(max_length=120)
+    driver_phone = serializers.CharField(max_length=20)
     pilot_name = serializers.CharField(max_length=120)
     pilot_phone = serializers.CharField(max_length=20)
 
-    def to_request(self) -> AssignPilotRequest:
-        return AssignPilotRequest(
+    def to_request(self) -> AssignCrewRequest:
+        return AssignCrewRequest(
+            driver_name=self.validated_data["driver_name"],
+            driver_phone=normalize_phone(self.validated_data["driver_phone"]),
             pilot_name=self.validated_data["pilot_name"],
             pilot_phone=normalize_phone(self.validated_data["pilot_phone"]),
         )

@@ -27,9 +27,10 @@ from shared.utils import normalize_phone
 
 ROLE_ADMIN = "ADMIN"
 ROLE_CUSTOMER = "CUSTOMER"
+ROLE_DRIVER = "DRIVER"
 ROLE_PILOT = "PILOT"
-MANAGEABLE_ROLES = {ROLE_ADMIN, ROLE_PILOT}
-ALL_ROLES = {ROLE_ADMIN, ROLE_CUSTOMER, ROLE_PILOT}
+MANAGEABLE_ROLES = {ROLE_ADMIN, ROLE_DRIVER, ROLE_PILOT}
+ALL_ROLES = {ROLE_ADMIN, ROLE_CUSTOMER, ROLE_DRIVER, ROLE_PILOT}
 
 
 def _normalize_email(email: str) -> str:
@@ -394,7 +395,7 @@ class UpdateManagedAccountUseCase:
             raise NotFoundError("Không tìm thấy tài khoản.")
         if account.role == ROLE_CUSTOMER:
             raise ValidationError("Không thể sửa thông tin tài khoản khách hàng từ khu vực quản trị.")
-        if account.role == ROLE_PILOT and request.password:
+        if account.role in {ROLE_DRIVER, ROLE_PILOT} and request.password:
             raise ValidationError("Quản trị viên không được thay đổi mật khẩu tài khoản phi công.")
         if request.role not in ALL_ROLES:
             raise ValidationError("Vai trò không hợp lệ.")

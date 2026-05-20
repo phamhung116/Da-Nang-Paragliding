@@ -54,10 +54,10 @@ export const LoginPage = () => {
   const mutation = useMutation({
     mutationFn: async (payload: LoginPayload) => {
       const result = await authApi.login(payload);
-      if (!["ADMIN", "PILOT"].includes(result.account.role)) {
+      if (!["ADMIN", "DRIVER", "PILOT"].includes(result.account.role)) {
         throw new Error("Tài khoản này không có quyền truy cập khu vực vận hành.");
       }
-      if (result.account.role === "PILOT" && !PILOT_APP_URL) {
+      if (["DRIVER", "PILOT"].includes(result.account.role) && !PILOT_APP_URL) {
         throw new Error("Thiếu biến VITE_PILOT_APP_URL cho khu vực quản trị trên Vercel.");
       }
       return result;

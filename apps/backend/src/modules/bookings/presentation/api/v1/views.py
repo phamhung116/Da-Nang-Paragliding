@@ -31,7 +31,7 @@ from shared.auth import (
     BearerTokenAuthentication,
     IsAdminAccount,
     IsAuthenticatedAccount,
-    IsPilotAccount,
+    IsFlightCrewAccount,
 )
 from shared.exceptions import DomainError
 from shared.responses import error, success
@@ -213,10 +213,10 @@ class AdminAssignPilotApi(APIView):
 
 class PilotFlightListApi(APIView):
     authentication_classes = [BearerTokenAuthentication]
-    permission_classes = [IsPilotAccount]
+    permission_classes = [IsFlightCrewAccount]
 
     def get(self, request):
-        flights = list_pilot_flights_use_case().execute(request.user.phone)
+        flights = list_pilot_flights_use_case().execute(request.user.phone, role=request.user.role)
         payload = []
         for item in flights:
             payload.append(

@@ -35,5 +35,7 @@ class BookingPayload:
     approval_status: str
     rejection_reason: str | None
     flight_status: str
+    assigned_driver_name: str | None
+    assigned_driver_phone: str | None
     assigned_pilot_name: str | None
     assigned_pilot_phone: str | None

@@ -178,12 +178,22 @@ class UpdatePilotFlightStatusUseCase:
         self.booking_repository = booking_repository
         self.update_flight_status_use_case = update_flight_status_use_case
 
-    def execute(self, booking_code: str, pilot_phone: str, status: str, location: dict[str, object] | None = None):
+    def execute(self, booking_code: str, crew_phone: str, crew_role: str, status: str, location: dict[str, object] | None = None):
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
-        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
+        if crew_role == "DRIVER":
+            if normalize_phone(booking.assigned_driver_phone or "") != normalize_phone(crew_phone):
+                raise ValidationError("Tài xế này không được gán cho lịch đặt này.")
+            if status not in {FLIGHT_STATUS_PICKING_UP, FLIGHT_STATUS_EN_ROUTE}:
+                raise ValidationError("Tài xế chỉ được cập nhật trạng thái đưa đón khách.")
+            return self.update_flight_status_use_case.execute(booking_code, status, location)
+        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(crew_phone):
             raise ValidationError("Phi công này không được gán cho lịch đặt này.")
+        if status not in {FLIGHT_STATUS_FLYING, FLIGHT_STATUS_LANDED}:
+            raise ValidationError("Phi công chỉ được cập nhật trạng thái bay.")
+        if status == FLIGHT_STATUS_FLYING and booking.flight_status != FLIGHT_STATUS_EN_ROUTE:
+            raise ValidationError("Chỉ có thể bắt đầu bay sau khi khách đang di chuyển đến điểm bay.")
         return self.update_flight_status_use_case.execute(booking_code, status, location)
 
 
@@ -192,8 +202,8 @@ class StartPilotTrackingUseCase:
         self.booking_repository = booking_repository
         self.tracking_repository = tracking_repository
 
-    def execute(self, booking_code: str, pilot_phone: str, location: dict[str, object]):
-        booking = self._validate_assigned_booking(booking_code, pilot_phone)
+    def execute(self, booking_code: str, crew_phone: str, crew_role: str, location: dict[str, object]):
+        booking = self._validate_assigned_booking(booking_code, crew_phone, crew_role)
         tracking = self.tracking_repository.get_by_booking_code(booking.code)
         if tracking is None:
             raise NotFoundError("Không tìm thấy dữ liệu theo dõi.")
@@ -232,14 +242,20 @@ class StartPilotTrackingUseCase:
         )
         return {"booking": updated_booking, "tracking": tracking}
 
-    def _validate_assigned_booking(self, booking_code: str, pilot_phone: str):
+    def _validate_assigned_booking(self, booking_code: str, crew_phone: str, crew_role: str):
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
         if booking.approval_status != BOOKING_APPROVAL_CONFIRMED:
             raise ValidationError("Lịch đặt này chưa được xác nhận.")
-        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
+        if crew_role == "DRIVER":
+            if normalize_phone(booking.assigned_driver_phone or "") != normalize_phone(crew_phone):
+                raise ValidationError("Tài xế này không được gán cho lịch đặt này.")
+            return booking
+        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(crew_phone):
             raise ValidationError("Phi công này không được gán cho lịch đặt này.")
+        if booking.flight_status != FLIGHT_STATUS_EN_ROUTE:
+            raise ValidationError("Phi công chỉ bắt đầu theo dõi sau khi khách đang di chuyển đến điểm bay.")
         return booking
 
 
@@ -248,11 +264,12 @@ class AppendPilotTrackingPointUseCase:
         self.booking_repository = booking_repository
         self.tracking_repository = tracking_repository
 
-    def execute(self, booking_code: str, pilot_phone: str, location: dict[str, object]):
+    def execute(self, booking_code: str, crew_phone: str, crew_role: str, location: dict[str, object]):
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
-        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
+        assigned_phone = booking.assigned_driver_phone if crew_role == "DRIVER" else booking.assigned_pilot_phone
+        if normalize_phone(assigned_phone or "") != normalize_phone(crew_phone):
             raise ValidationError("Phi công này không được gán cho lịch đặt này.")
         tracking = self.tracking_repository.get_by_booking_code(booking_code)
         if tracking is None:
@@ -272,11 +289,13 @@ class StopPilotTrackingUseCase:
         self.booking_repository = booking_repository
         self.tracking_repository = tracking_repository
 
-    def execute(self, booking_code: str, pilot_phone: str, location: dict[str, object]):
+    def execute(self, booking_code: str, crew_phone: str, crew_role: str, location: dict[str, object]):
         booking = self.booking_repository.get_by_code(booking_code)
         if booking is None:
             raise NotFoundError("Không tìm thấy lịch đặt.")
-        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(pilot_phone):
+        if crew_role != "PILOT":
+            raise ValidationError("Chỉ phi công được kết thúc chuyến bay sau khi hạ cánh.")
+        if normalize_phone(booking.assigned_pilot_phone or "") != normalize_phone(crew_phone):
             raise ValidationError("Phi công này không được gán cho lịch đặt này.")
         tracking = self.tracking_repository.get_by_booking_code(booking_code)
         if tracking is None:
